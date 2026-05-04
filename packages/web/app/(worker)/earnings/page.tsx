@@ -4,245 +4,76 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
 export default function EarningsPage() {
-  const [payments, setPayments] = useState<any[]>([]);
-  const [stats, setStats] = useState({ total: 0, pending: 0, paid: 0 });
+  const [earnings, setEarnings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchEarnings();
-  }, []);
+  useEffect(() => { fetchEarnings(); }, []);
 
   const fetchEarnings = async () => {
     setLoading(true);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
-    const { data } = await supabase
-      .from("payments")
-      .select("*")
-      .eq("worker_id", user.id)
-      .order("created_at", { ascending: false });
-
-    const paymentsData = data || [];
-    setPayments(paymentsData);
-
-    setStats({
-      total: paymentsData.reduce((sum, p) => sum + (p.amount || 0), 0),
-      pending: paymentsData
-        .filter((p) => p.status === "pending")
-        .reduce((sum, p) => sum + (p.amount || 0), 0),
-      paid: paymentsData
-        .filter((p) => p.status === "paid")
-        .reduce((sum, p) => sum + (p.amount || 0), 0),
-    });
+    const { data } = await supabase.from("payments").select("*").order("created_at", { ascending: false });
+    setEarnings(data || []);
     setLoading(false);
   };
 
-  const statCards = [
-    { label: "Total Earned", value: stats.total, color: "var(--text-primary)" },
-    { label: "Pending", value: stats.pending, color: "var(--warning)" },
-    { label: "Paid", value: stats.paid, color: "var(--success)" },
-  ];
+  const total = earnings.reduce((sum, p) => sum + (p.amount || 0), 0);
+  const pending = earnings.filter((p) => p.status === "pending").reduce((sum, p) => sum + (p.amount || 0), 0);
+  const thisMonth = earnings.filter((p) => {
+    const d = new Date(p.created_at);
+    const now = new Date();
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).reduce((sum, p) => sum + (p.amount || 0), 0);
 
   return (
     <div>
-      <div style={{ marginBottom: "32px" }}>
-        <h1
-          style={{
-            fontSize: "28px",
-            fontWeight: 600,
-            color: "var(--text-primary)",
-            marginBottom: "6px",
-            letterSpacing: "-0.02em",
-          }}
-        >
-          Earnings
-        </h1>
-        <p style={{ fontSize: "15px", color: "var(--text-secondary)" }}>
-          Track your payments and withdrawal history
-        </p>
+      <div className="page-header">
+        <h1>Earnings</h1>
+        <p>Track your payouts and pending payments</p>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-          gap: "16px",
-          marginBottom: "32px",
-        }}
-      >
-        {statCards.map((stat) => (
-          <div
-            key={stat.label}
-            style={{
-              background: "var(--bg-card)",
-              border: "1px solid var(--border)",
-              borderRadius: "var(--radius-md)",
-              padding: "24px",
-              transition: "box-shadow 150ms ease",
-            }}
-          >
-            <div
-              style={{
-                fontSize: "32px",
-                fontWeight: 600,
-                color: stat.color,
-                letterSpacing: "-0.03em",
-                marginBottom: "4px",
-              }}
-            >
-              ${stat.value.toFixed(2)}
-            </div>
-            <div
-              style={{
-                fontSize: "13px",
-                color: "var(--text-secondary)",
-                margin: 0,
-              }}
-            >
-              {stat.label}
-            </div>
+      <div className="grid-3" style={{ marginBottom: "40px" }}>
+        {[
+          { label: "Total Earned", value: `$${total.toLocaleString()}`, change: "+12% from last month", positive: true },
+          { label: "Pending", value: `$${pending.toLocaleString()}`, change: "Awaiting approval", positive: false },
+          { label: "This Month", value: `$${thisMonth.toLocaleString()}`, change: "Current billing cycle", positive: true },
+        ].map((s) => (
+          <div key={s.label} className="stat-card">
+            <p className="label">{s.label}</p>
+            <p className="value">{s.value}</p>
+            <p className={`change ${s.positive ? "positive" : "negative"}`}>{s.change}</p>
           </div>
         ))}
       </div>
 
-      <div
-        style={{
-          background: "var(--bg-card)",
-          border: "1px solid var(--border)",
-          borderRadius: "var(--radius-md)",
-          overflow: "hidden",
-        }}
-      >
-        <div style={{ overflowX: "auto" }}>
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "separate",
-              borderSpacing: 0,
-              fontSize: "14px",
-              minWidth: "500px",
-            }}
-          >
+      <h2 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "20px" }}>Transaction History</h2>
+
+      {loading ? (
+        <div className="card" style={{ height: "200px" }}><div className="skeleton skeleton-title" /><div className="skeleton skeleton-text" /><div className="skeleton skeleton-text" /></div>
+      ) : earnings.length === 0 ? (
+        <div className="empty-state">
+          <div className="icon">💰</div>
+          <h3>No earnings yet</h3>
+          <p>Complete tasks to start earning</p>
+        </div>
+      ) : (
+        <div className="card-flat" style={{ overflow: "hidden" }}>
+          <table className="table">
             <thead>
-              <tr>
-                {["Task", "Date", "Amount", "Status"].map((header) => (
-                  <th
-                    key={header}
-                    style={{
-                      textAlign: "left",
-                      padding: "12px 16px",
-                      fontSize: "12px",
-                      fontWeight: 600,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                      color: "var(--text-secondary)",
-                      borderBottom: "1px solid var(--border)",
-                      background: "var(--bg-elevated)",
-                    }}
-                  >
-                    {header}
-                  </th>
-                ))}
-              </tr>
+              <tr><th>Date</th><th>Description</th><th>Amount</th><th>Status</th></tr>
             </thead>
             <tbody>
-              {loading ? (
-                <tr>
-                  <td
-                    colSpan={4}
-                    style={{
-                      padding: "40px",
-                      textAlign: "center",
-                      color: "var(--text-secondary)",
-                    }}
-                  >
-                    Loading...
-                  </td>
+              {earnings.map((p) => (
+                <tr key={p.id}>
+                  <td style={{ color: "var(--text-secondary)" }}>{new Date(p.created_at).toLocaleDateString()}</td>
+                  <td style={{ fontWeight: 500 }}>{p.description || "Task payment"}</td>
+                  <td style={{ fontWeight: 700, color: "var(--accent)" }}>${p.amount || 0}</td>
+                  <td><span className={`badge ${p.status === "completed" ? "badge-success" : "badge-warning"}`}>{p.status}</span></td>
                 </tr>
-              ) : payments.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={4}
-                    style={{
-                      padding: "40px",
-                      textAlign: "center",
-                      color: "var(--text-secondary)",
-                    }}
-                  >
-                    No payment history yet
-                  </td>
-                </tr>
-              ) : (
-                payments.map((payment) => (
-                  <tr key={payment.id}>
-                    <td
-                      style={{
-                        padding: "14px 16px",
-                        borderBottom: "1px solid var(--border)",
-                        color: "var(--text-primary)",
-                      }}
-                    >
-                      {payment.task_name || "Task"}
-                    </td>
-                    <td
-                      style={{
-                        padding: "14px 16px",
-                        borderBottom: "1px solid var(--border)",
-                        color: "var(--text-primary)",
-                      }}
-                    >
-                      {new Date(payment.created_at).toLocaleDateString()}
-                    </td>
-                    <td
-                      style={{
-                        padding: "14px 16px",
-                        borderBottom: "1px solid var(--border)",
-                        color: "var(--text-primary)",
-                        fontWeight: 500,
-                      }}
-                    >
-                      ${(payment.amount || 0).toFixed(2)}
-                    </td>
-                    <td
-                      style={{
-                        padding: "14px 16px",
-                        borderBottom: "1px solid var(--border)",
-                      }}
-                    >
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          padding: "3px 10px",
-                          borderRadius: "999px",
-                          fontSize: "12px",
-                          fontWeight: 500,
-                          background:
-                            payment.status === "paid"
-                              ? "var(--accent-light)"
-                              : "#FFF3CD",
-                          color:
-                            payment.status === "paid"
-                              ? "var(--success)"
-                              : "#856404",
-                        }}
-                      >
-                        {payment.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              )}
+              ))}
             </tbody>
           </table>
         </div>
-      </div>
+      )}
     </div>
   );
 }

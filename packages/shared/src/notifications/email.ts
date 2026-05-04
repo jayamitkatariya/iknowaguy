@@ -15,7 +15,7 @@ export class EmailAdapter {
     this.secure = process.env.NOTIFY_EMAIL_PORT === '465';
     this.user = process.env.NOTIFY_EMAIL_USER;
     this.pass = process.env.NOTIFY_EMAIL_PASS;
-    this.from = process.env.NOTIFY_EMAIL_FROM || 'HireAHuman <noreply@hireahuman.ai>';
+    this.from = process.env.NOTIFY_EMAIL_FROM || 'HireAHuman <noreply@hireahuman-app.vercel.app>';
   }
 
   async send(

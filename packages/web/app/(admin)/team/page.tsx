@@ -5,205 +5,84 @@ import { supabase } from "@/lib/supabase";
 
 export default function TeamPage() {
   const [members, setMembers] = useState<any[]>([]);
+  const [inviteEmail, setInviteEmail] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchMembers();
-  }, []);
+  useEffect(() => { fetchMembers(); }, []);
 
   const fetchMembers = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("human_profiles")
-      .select("*, users(email)")
-      .order("full_name", { ascending: true });
-
+    const { data } = await supabase.from("team_members").select("*").order("created_at", { ascending: false });
     setMembers(data || []);
     setLoading(false);
   };
 
+  const handleInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await supabase.from("team_members").insert({ email: inviteEmail, role: "viewer" });
+    setInviteEmail("");
+    fetchMembers();
+  };
+
+  const roleBadge = (role: string) => {
+    const map: Record<string, string> = { admin: "badge-success", manager: "badge-warning", viewer: "badge-neutral" };
+    return map[role] || "badge-neutral";
+  };
+
   return (
     <div>
-      <div style={{ marginBottom: "32px" }}>
-        <h1
-          style={{
-            fontSize: "28px",
-            fontWeight: 600,
-            color: "var(--text-primary)",
-            marginBottom: "6px",
-            letterSpacing: "-0.02em",
-          }}
-        >
-          Team
-        </h1>
-        <p style={{ fontSize: "15px", color: "var(--text-secondary)" }}>
-          Human team members and workers
-        </p>
+      <div className="page-header">
+        <h1>Team</h1>
+        <p>Manage your team members and roles</p>
       </div>
 
-      <div
-        style={{
-          background: "var(--bg-card)",
-          border: "1px solid var(--border)",
-          borderRadius: "var(--radius-md)",
-          overflow: "hidden",
-        }}
-      >
-        <div style={{ overflowX: "auto" }}>
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "separate",
-              borderSpacing: 0,
-              fontSize: "14px",
-              minWidth: "500px",
-            }}
-          >
+      {/* Invite Form */}
+      <div className="card" style={{ padding: "24px", marginBottom: "32px" }}>
+        <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "16px" }}>Invite Member</h3>
+        <form onSubmit={handleInvite} style={{ display: "flex", gap: "12px" }}>
+          <input className="input" type="email" placeholder="colleague@company.com" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} required style={{ flex: 1 }} />
+          <button type="submit" className="btn btn-primary">Send Invite</button>
+        </form>
+      </div>
+
+      {/* Members List */}
+      {loading ? (
+        <div className="card" style={{ height: "200px" }}><div className="skeleton skeleton-title" /><div className="skeleton skeleton-text" /></div>
+      ) : members.length === 0 ? (
+        <div className="empty-state">
+          <div className="icon">👥</div>
+          <h3>No team members yet</h3>
+          <p>Invite your first team member above</p>
+        </div>
+      ) : (
+        <div className="card-flat" style={{ overflow: "hidden" }}>
+          <table className="table">
             <thead>
-              <tr>
-                {["Name", "Email", "Location", "Rating", "Tasks"].map(
-                  (h) => (
-                    <th
-                      key={h}
-                      style={{
-                        textAlign: "left",
-                        padding: "12px 16px",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.05em",
-                        color: "var(--text-secondary)",
-                        borderBottom: "1px solid var(--border)",
-                        background: "var(--bg-elevated)",
-                      }}
-                    >
-                      {h}
-                    </th>
-                  )
-                )}
-              </tr>
+              <tr><th>Member</th><th>Role</th><th>Joined</th><th>Actions</th></tr>
             </thead>
             <tbody>
-              {loading ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    style={{
-                      padding: "40px",
-                      textAlign: "center",
-                      color: "var(--text-secondary)",
-                    }}
-                  >
-                    Loading...
+              {members.map((m) => (
+                <tr key={m.id}>
+                  <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      <div style={{
+                        width: "36px", height: "36px", borderRadius: "50%",
+                        background: "var(--accent-light)", display: "flex",
+                        alignItems: "center", justifyContent: "center",
+                        fontSize: "14px", fontWeight: 700, color: "var(--accent)",
+                      }}>{m.email?.charAt(0)?.toUpperCase() || "?"}</div>
+                      <span style={{ fontWeight: 600 }}>{m.email}</span>
+                    </div>
                   </td>
+                  <td><span className={`badge ${roleBadge(m.role)}`}>{m.role}</span></td>
+                  <td style={{ color: "var(--text-secondary)" }}>{new Date(m.created_at).toLocaleDateString()}</td>
+                  <td><button className="btn btn-ghost btn-sm" style={{ color: "var(--text-secondary)" }}>Edit</button></td>
                 </tr>
-              ) : members.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    style={{
-                      padding: "40px",
-                      textAlign: "center",
-                      color: "var(--text-secondary)",
-                    }}
-                  >
-                    No team members found
-                  </td>
-                </tr>
-              ) : (
-                members.map((m) => (
-                  <tr key={m.id}>
-                    <td
-                      style={{
-                        padding: "14px 16px",
-                        borderBottom: "1px solid var(--border)",
-                        color: "var(--text-primary)",
-                        fontWeight: 500,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "12px",
-                      }}
-                    >
-                      {m.avatar_url ? (
-                        <img
-                          src={m.avatar_url}
-                          alt={m.full_name}
-                          style={{
-                            width: "32px",
-                            height: "32px",
-                            borderRadius: "50%",
-                            objectFit: "cover",
-                          }}
-                        />
-                      ) : (
-                        <div
-                          style={{
-                            width: "32px",
-                            height: "32px",
-                            borderRadius: "50%",
-                            background: "var(--accent-light)",
-                            color: "var(--accent)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: "12px",
-                            fontWeight: 600,
-                          }}
-                        >
-                          {m.full_name?.charAt(0)?.toUpperCase() || "?"}
-                        </div>
-                      )}
-                      {m.full_name}
-                    </td>
-                    <td
-                      style={{
-                        padding: "14px 16px",
-                        borderBottom: "1px solid var(--border)",
-                        color: "var(--text-secondary)",
-                        fontSize: "13px",
-                      }}
-                    >
-                      {m.users?.email || "—"}
-                    </td>
-                    <td
-                      style={{
-                        padding: "14px 16px",
-                        borderBottom: "1px solid var(--border)",
-                        color: "var(--text-secondary)",
-                        fontSize: "13px",
-                      }}
-                    >
-                      {m.location_city && m.location_country
-                        ? `${m.location_city}, ${m.location_country}`
-                        : m.location_city || m.location_country || "—"}
-                    </td>
-                    <td
-                      style={{
-                        padding: "14px 16px",
-                        borderBottom: "1px solid var(--border)",
-                        color: "var(--text-primary)",
-                        fontWeight: 500,
-                      }}
-                    >
-                      {m.rating > 0 ? m.rating.toFixed(2) : "—"}
-                    </td>
-                    <td
-                      style={{
-                        padding: "14px 16px",
-                        borderBottom: "1px solid var(--border)",
-                        color: "var(--text-primary)",
-                        fontWeight: 500,
-                      }}
-                    >
-                      {m.completed_tasks || 0}
-                    </td>
-                  </tr>
-                ))
-              )}
+              ))}
             </tbody>
           </table>
         </div>
-      </div>
+      )}
     </div>
   );
 }

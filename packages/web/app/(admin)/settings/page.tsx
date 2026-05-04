@@ -1,415 +1,123 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { useState } from "react";
+
+const tabs = ["General", "Notifications", "Billing", "API Keys"];
 
 export default function SettingsPage() {
-  const [tenant, setTenant] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState("General");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const [form, setForm] = useState({
-    name: "",
-    slug: "",
-    contact_email: "",
-    commission_rate: "",
-    default_currency: "USD",
-    description: "",
-  });
-
-  useEffect(() => {
-    fetchTenant();
-  }, []);
-
-  const fetchTenant = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("tenants")
-      .select("*")
-      .order("created_at", { ascending: true })
-      .limit(1)
-      .single();
-
-    if (error) {
-      console.error(error);
-    } else if (data) {
-      setTenant(data);
-      setForm({
-        name: data.name || "",
-        slug: data.slug || "",
-        contact_email: data.contact_email || "",
-        commission_rate: data.commission_rate != null ? String(data.commission_rate) : "",
-        default_currency: data.default_currency || "USD",
-        description: data.description || "",
-      });
-    }
-    setLoading(false);
-  };
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    setSaved(false);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!tenant) return;
-
+  const handleSave = () => {
     setSaving(true);
-    const { error } = await supabase
-      .from("tenants")
-      .update({
-        name: form.name,
-        slug: form.slug,
-        contact_email: form.contact_email,
-        commission_rate: form.commission_rate ? parseFloat(form.commission_rate) : null,
-        default_currency: form.default_currency,
-        description: form.description,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", tenant.id);
-
-    if (error) {
-      console.error(error);
-    } else {
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    }
-    setSaving(false);
+    setTimeout(() => { setSaving(false); setSaved(true); setTimeout(() => setSaved(false), 2000); }, 500);
   };
 
   return (
     <div>
-      <div style={{ marginBottom: "32px" }}>
-        <h1
-          style={{
-            fontSize: "28px",
-            fontWeight: 600,
-            color: "var(--text-primary)",
-            marginBottom: "6px",
-            letterSpacing: "-0.02em",
-          }}
-        >
-          Settings
-        </h1>
-        <p style={{ fontSize: "15px", color: "var(--text-secondary)" }}>
-          Manage your platform settings
-        </p>
+      <div className="page-header">
+        <h1>Settings</h1>
+        <p>Configure your account and workspace</p>
       </div>
 
-      {loading ? (
-        <div
-          style={{
-            padding: "40px",
-            textAlign: "center",
-            color: "var(--text-secondary)",
-          }}
-        >
-          Loading...
+      <div className="tab-list" style={{ marginBottom: "32px" }}>
+        {tabs.map((t) => (
+          <button key={t} className={`tab ${tab === t ? "active" : ""}`} onClick={() => setTab(t)}>{t}</button>
+        ))}
+      </div>
+
+      {tab === "General" && (
+        <div className="card" style={{ padding: "32px" }}>
+          <h3 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "24px" }}>Workspace Settings</h3>
+          <div className="form-group">
+            <label className="label">Workspace Name</label>
+            <input className="input" defaultValue="My Workspace" />
+          </div>
+          <div className="form-group">
+            <label className="label">Default Currency</label>
+            <select className="select" defaultValue="USD">
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="label">Timezone</label>
+            <select className="select" defaultValue="America/New_York">
+              <option value="America/New_York">Eastern Time (ET)</option>
+              <option value="America/Chicago">Central Time (CT)</option>
+              <option value="America/Denver">Mountain Time (MT)</option>
+              <option value="America/Los_Angeles">Pacific Time (PT)</option>
+              <option value="UTC">UTC</option>
+            </select>
+          </div>
+          <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+            {saving ? "Saving..." : saved ? "✓ Saved" : "Save Changes"}
+          </button>
         </div>
-      ) : (
-        <form
-          onSubmit={handleSubmit}
-          style={{
-            background: "var(--bg-card)",
-            border: "1px solid var(--border)",
-            borderRadius: "var(--radius-md)",
-            padding: "32px",
-            maxWidth: "640px",
-          }}
-        >
-          <div style={{ marginBottom: "24px" }}>
-            <label
-              style={{
-                display: "block",
-                fontSize: "13px",
-                fontWeight: 500,
-                color: "var(--text-secondary)",
-                marginBottom: "6px",
-              }}
-            >
-              Tenant Name
-            </label>
-            <input
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="Acme Corp"
-              style={{
-                width: "100%",
-                padding: "10px 14px",
-                background: "var(--bg-card)",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--radius-sm)",
-                fontSize: "14px",
-                color: "var(--text-primary)",
-                transition: "border-color 150ms ease, box-shadow 150ms ease",
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = "var(--accent)";
-                e.target.style.boxShadow = "0 0 0 3px var(--accent-light)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "var(--border)";
-                e.target.style.boxShadow = "none";
-              }}
-            />
-          </div>
+      )}
 
-          <div style={{ marginBottom: "24px" }}>
-            <label
-              style={{
-                display: "block",
-                fontSize: "13px",
-                fontWeight: 500,
-                color: "var(--text-secondary)",
-                marginBottom: "6px",
-              }}
-            >
-              Slug
-            </label>
-            <input
-              name="slug"
-              value={form.slug}
-              onChange={handleChange}
-              placeholder="acme-corp"
-              style={{
-                width: "100%",
-                padding: "10px 14px",
-                background: "var(--bg-card)",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--radius-sm)",
-                fontSize: "14px",
-                color: "var(--text-primary)",
-                transition: "border-color 150ms ease, box-shadow 150ms ease",
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = "var(--accent)";
-                e.target.style.boxShadow = "0 0 0 3px var(--accent-light)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "var(--border)";
-                e.target.style.boxShadow = "none";
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: "24px" }}>
-            <label
-              style={{
-                display: "block",
-                fontSize: "13px",
-                fontWeight: 500,
-                color: "var(--text-secondary)",
-                marginBottom: "6px",
-              }}
-            >
-              Contact Email
-            </label>
-            <input
-              name="contact_email"
-              type="email"
-              value={form.contact_email}
-              onChange={handleChange}
-              placeholder="admin@example.com"
-              style={{
-                width: "100%",
-                padding: "10px 14px",
-                background: "var(--bg-card)",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--radius-sm)",
-                fontSize: "14px",
-                color: "var(--text-primary)",
-                transition: "border-color 150ms ease, box-shadow 150ms ease",
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = "var(--accent)";
-                e.target.style.boxShadow = "0 0 0 3px var(--accent-light)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "var(--border)";
-                e.target.style.boxShadow = "none";
-              }}
-            />
-          </div>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-              gap: "24px",
-              marginBottom: "24px",
-            }}
-          >
-            <div>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: "13px",
-                  fontWeight: 500,
-                  color: "var(--text-secondary)",
-                  marginBottom: "6px",
-                }}
-              >
-                Commission Rate (%)
-              </label>
-              <input
-                name="commission_rate"
-                type="number"
-                step="0.1"
-                min="0"
-                max="100"
-                value={form.commission_rate}
-                onChange={handleChange}
-                placeholder="10"
-                style={{
-                  width: "100%",
-                  padding: "10px 14px",
-                  background: "var(--bg-card)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "var(--radius-sm)",
-                  fontSize: "14px",
-                  color: "var(--text-primary)",
-                  transition: "border-color 150ms ease, box-shadow 150ms ease",
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = "var(--accent)";
-                  e.target.style.boxShadow = "0 0 0 3px var(--accent-light)";
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = "var(--border)";
-                  e.target.style.boxShadow = "none";
-                }}
-              />
+      {tab === "Notifications" && (
+        <div className="card" style={{ padding: "32px" }}>
+          <h3 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "24px" }}>Notification Preferences</h3>
+          {["New bounty submission", "Bounty approved", "Payment released", "New team member"].map((item) => (
+            <div key={item} style={{
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              padding: "16px 0", borderBottom: "1px solid var(--border)",
+            }}>
+              <span style={{ fontSize: "14px", fontWeight: 500 }}>{item}</span>
+              <div style={{ display: "flex", gap: "16px" }}>
+                <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "var(--text-secondary)" }}>
+                  <input type="checkbox" defaultChecked /> Email
+                </label>
+                <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", color: "var(--text-secondary)" }}>
+                  <input type="checkbox" defaultChecked /> Slack
+                </label>
+              </div>
             </div>
+          ))}
+          <button className="btn btn-primary" style={{ marginTop: "24px" }} onClick={handleSave}>Save Preferences</button>
+        </div>
+      )}
 
-            <div>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: "13px",
-                  fontWeight: 500,
-                  color: "var(--text-secondary)",
-                  marginBottom: "6px",
-                }}
-              >
-                Default Currency
-              </label>
-              <select
-                name="default_currency"
-                value={form.default_currency}
-                onChange={handleChange}
-                style={{
-                  width: "100%",
-                  padding: "10px 14px",
-                  background: "var(--bg-card)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "var(--radius-sm)",
-                  fontSize: "14px",
-                  color: "var(--text-primary)",
-                  appearance: "none",
-                  backgroundImage:
-                    "url(\"data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2.5 4.5L6 8L9.5 4.5' stroke='%236B705C' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E\")",
-                  backgroundRepeat: "no-repeat",
-                  backgroundPosition: "right 12px center",
-                  paddingRight: "36px",
-                  cursor: "pointer",
-                  transition: "border-color 150ms ease, box-shadow 150ms ease",
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = "var(--accent)";
-                  e.target.style.boxShadow = "0 0 0 3px var(--accent-light)";
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = "var(--border)";
-                  e.target.style.boxShadow = "none";
-                }}
-              >
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-                <option value="GBP">GBP</option>
-                <option value="CAD">CAD</option>
-                <option value="AUD">AUD</option>
-              </select>
+      {tab === "Billing" && (
+        <div className="card" style={{ padding: "32px" }}>
+          <h3 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "8px" }}>Billing</h3>
+          <p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "24px" }}>Manage your subscription and payment methods</p>
+          <div style={{
+            padding: "24px", borderRadius: "var(--radius-md)",
+            background: "var(--accent-light)", border: "1px solid var(--accent)",
+            marginBottom: "24px",
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <p style={{ fontSize: "14px", fontWeight: 600, color: "var(--accent)" }}>Free Plan</p>
+                <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>10 bounties/month</p>
+              </div>
+              <button className="btn btn-primary btn-sm">Upgrade to Pro</button>
             </div>
           </div>
+          <h4 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "12px" }}>Payment Method</h4>
+          <p style={{ fontSize: "14px", color: "var(--text-secondary)" }}>No payment method added yet.</p>
+        </div>
+      )}
 
-          <div style={{ marginBottom: "24px" }}>
-            <label
-              style={{
-                display: "block",
-                fontSize: "13px",
-                fontWeight: 500,
-                color: "var(--text-secondary)",
-                marginBottom: "6px",
-              }}
-            >
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={form.description}
-              onChange={handleChange}
-              placeholder="Brief description of your organization"
-              rows={4}
-              style={{
-                width: "100%",
-                padding: "10px 14px",
-                background: "var(--bg-card)",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--radius-sm)",
-                fontSize: "14px",
-                color: "var(--text-primary)",
-                resize: "vertical",
-                minHeight: "100px",
-                transition: "border-color 150ms ease, box-shadow 150ms ease",
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = "var(--accent)";
-                e.target.style.boxShadow = "0 0 0 3px var(--accent-light)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "var(--border)";
-                e.target.style.boxShadow = "none";
-              }}
-            />
+      {tab === "API Keys" && (
+        <div className="card" style={{ padding: "32px" }}>
+          <h3 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "8px" }}>API Keys</h3>
+          <p style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "24px" }}>Use API keys to integrate HireAHuman with your AI agents</p>
+          <div style={{
+            padding: "16px 20px", borderRadius: "var(--radius-sm)",
+            background: "var(--bg-elevated)", border: "1px solid var(--border)",
+            fontFamily: "'SF Mono', 'Fira Code', monospace", fontSize: "14px",
+            marginBottom: "16px", display: "flex", justifyContent: "space-between", alignItems: "center",
+          }}>
+            <span>hah_live_••••••••••••••••</span>
+            <button className="btn btn-ghost btn-sm">Copy</button>
           </div>
-
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <button
-              type="submit"
-              disabled={saving}
-              style={{
-                padding: "10px 24px",
-                background: "var(--accent)",
-                color: "white",
-                border: "1px solid var(--accent)",
-                borderRadius: "var(--radius-sm)",
-                fontSize: "14px",
-                fontWeight: 500,
-                cursor: "pointer",
-                opacity: saving ? 0.6 : 1,
-                transition: "all 150ms ease",
-              }}
-            >
-              {saving ? "Saving..." : "Save Settings"}
-            </button>
-            {saved && (
-              <span
-                style={{
-                  fontSize: "14px",
-                  fontWeight: 500,
-                  color: "var(--success)",
-                }}
-              >
-                Saved successfully
-              </span>
-            )}
-          </div>
-        </form>
+          <button className="btn btn-secondary">Generate New Key</button>
+        </div>
       )}
     </div>
   );

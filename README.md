@@ -212,7 +212,7 @@ All configuration is via environment variables. Copy `.env.example` to `.env` an
 | `STRIPE_SECRET_KEY` | Stripe secret key | `sk_live_...` |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook endpoint secret | `whsec_...` |
 | `NOTIFY_EMAIL_HOST` | SMTP host for email notifications | `smtp.gmail.com` |
-| `NOTIFY_EMAIL_USER` | SMTP username | `notifications@hireahuman.ai` |
+| `NOTIFY_EMAIL_USER` | SMTP username | `notifications@hireahuman-app.vercel.app` |
 | `NOTIFY_EMAIL_PASS` | SMTP password | `app-specific-password` |
 | `NOTIFY_SLACK_WEBHOOK` | Slack incoming webhook URL | `https://hooks.slack.com/...` |
 

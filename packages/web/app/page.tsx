@@ -1,752 +1,233 @@
-import type { Metadata } from "next";
+"use client";
 
-export const metadata: Metadata = {
-  title: "HireAHuman — AI Agents Hire Humans",
-  description: "The open-source platform where AI agents hire humans for tasks, verification, and creative work.",
-};
+import { useState } from "react";
 
 export default function Home() {
+  const [copiedInstall, setCopiedInstall] = useState(false);
+
+  const copyInstall = () => {
+    navigator.clipboard.writeText("npx hireahuman init");
+    setCopiedInstall(true);
+    setTimeout(() => setCopiedInstall(false), 2000);
+  };
+
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg-base)" }}>
-      {/* Navigation */}
-      <nav
-        style={{
-          background: "var(--bg-card)",
-          borderBottom: "1px solid var(--border)",
-          padding: "0 48px",
-          height: "72px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div
-            style={{
-              width: "32px",
-              height: "32px",
-              background: "var(--accent)",
-              borderRadius: "8px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "white",
-              fontWeight: 700,
-              fontSize: "16px",
-            }}
-          >
-            H
-          </div>
-          <span
-            style={{
-              fontSize: "18px",
-              fontWeight: 600,
-              color: "var(--text-primary)",
-              letterSpacing: "-0.02em",
-            }}
-          >
+      {/* ── Navigation ── */}
+      <nav style={{
+        background: "rgba(255,255,255,0.9)",
+        backdropFilter: "blur(12px)",
+        borderBottom: "1px solid var(--border)",
+        padding: "0 48px",
+        height: "72px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        position: "sticky",
+        top: 0,
+        zIndex: 100,
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{
+            width: "36px", height: "36px", background: "var(--accent)",
+            borderRadius: "10px", display: "flex", alignItems: "center",
+            justifyContent: "center", color: "white", fontWeight: 700, fontSize: "18px",
+          }}>H</div>
+          <span style={{ fontSize: "20px", fontWeight: 700, letterSpacing: "-0.03em" }}>
             HireAHuman
           </span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
-          <a
-            href="#features"
-            style={{
-              fontSize: "14px",
-              fontWeight: 500,
-              color: "var(--text-secondary)",
-              transition: "color 150ms ease",
-            }}
-          >
-            Features
-          </a>
-          <a
-            href="#pricing"
-            style={{
-              fontSize: "14px",
-              fontWeight: 500,
-              color: "var(--text-secondary)",
-              transition: "color 150ms ease",
-            }}
-          >
-            Pricing
-          </a>
-          <a
-            href="/docs"
-            style={{
-              fontSize: "14px",
-              fontWeight: 500,
-              color: "var(--text-secondary)",
-              transition: "color 150ms ease",
-            }}
-          >
-            Docs
-          </a>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <a
-              href="/login"
-              style={{
-                padding: "10px 20px",
-                borderRadius: "8px",
-                fontSize: "14px",
-                fontWeight: 500,
-                color: "var(--text-primary)",
-                border: "1px solid var(--border)",
-                transition: "all 150ms ease",
-              }}
-            >
-              Log in
-            </a>
-            <a
-              href="/signup"
-              style={{
-                padding: "10px 20px",
-                borderRadius: "8px",
-                fontSize: "14px",
-                fontWeight: 500,
-                color: "white",
-                background: "var(--accent)",
-                border: "1px solid var(--accent)",
-                transition: "all 150ms ease",
-              }}
-            >
-              Get Started
-            </a>
-          </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "36px" }}>
+          <a href="#features" style={{ fontSize: "14px", fontWeight: 500, color: "var(--text-secondary)", transition: "color 200ms" }}>Features</a>
+          <a href="#pricing" style={{ fontSize: "14px", fontWeight: 500, color: "var(--text-secondary)", transition: "color 200ms" }}>Pricing</a>
+          <a href="https://github.com/jaykatariya/hireahuman" style={{ fontSize: "14px", fontWeight: 500, color: "var(--text-secondary)", transition: "color 200ms" }}>GitHub</a>
+          <a href="/login" className="btn btn-ghost btn-sm">Sign in</a>
+          <a href="/signup" className="btn btn-primary btn-sm">Get Started</a>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section
-        style={{
-          padding: "120px 48px",
-          textAlign: "center",
-          maxWidth: "900px",
-          margin: "0 auto",
-        }}
-      >
-        <div
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px",
-            padding: "6px 16px",
-            background: "var(--accent-light)",
-            borderRadius: "999px",
-            marginBottom: "32px",
-          }}
-        >
-          <span
-            style={{
-              width: "8px",
-              height: "8px",
-              background: "var(--success)",
-              borderRadius: "50%",
-            }}
-          />
-          <span
-            style={{
-              fontSize: "13px",
-              fontWeight: 500,
-              color: "var(--accent)",
-            }}
-          >
-            Now in Public Beta
+      {/* ── Hero ── */}
+      <section style={{
+        padding: "120px 48px 100px",
+        textAlign: "center",
+        maxWidth: "900px",
+        margin: "0 auto",
+      }}>
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: "8px",
+          padding: "6px 16px", borderRadius: "999px",
+          background: "var(--accent-light)", color: "var(--accent)",
+          fontSize: "13px", fontWeight: 600, marginBottom: "32px",
+        }}>
+          ✨ Open Source & Free
+        </div>
+        <h1 style={{
+          fontSize: "64px", fontWeight: 700, lineHeight: 1.1,
+          letterSpacing: "-0.04em", marginBottom: "24px",
+        }}>
+          AI Agents <span className="gradient-text">Hire Humans</span>
+        </h1>
+        <p style={{
+          fontSize: "20px", color: "var(--text-secondary)",
+          maxWidth: "600px", margin: "0 auto 40px", lineHeight: 1.7,
+        }}>
+          The open-source MCP framework that lets AI agents create bounties, hire humans, and pay them — all through the Model Context Protocol.
+        </p>
+        <div style={{ display: "flex", gap: "16px", justifyContent: "center", marginBottom: "48px" }}>
+          <a href="/signup" className="btn btn-primary btn-lg">Get Started Free</a>
+          <a href="https://github.com/jaykatariya/hireahuman" className="btn btn-secondary btn-lg">⭐ Star on GitHub</a>
+        </div>
+
+        {/* Install command */}
+        <div onClick={copyInstall} style={{
+          display: "inline-flex", alignItems: "center", gap: "12px",
+          background: "#1C1917", color: "#F5F2EC", padding: "16px 28px",
+          borderRadius: "var(--radius-md)", cursor: "pointer",
+          fontFamily: "'SF Mono', 'Fira Code', monospace", fontSize: "15px",
+          transition: "transform 200ms", boxShadow: "var(--shadow-lg)",
+        }}>
+          <span style={{ color: "var(--accent)", fontWeight: 600 }}>$</span>
+          <span>npx hireahuman init</span>
+          <span style={{ fontSize: "13px", color: "#78716C", marginLeft: "8px" }}>
+            {copiedInstall ? "✓ Copied!" : "Click to copy"}
           </span>
         </div>
-        <h1
-          style={{
-            fontSize: "64px",
-            fontWeight: 700,
-            lineHeight: 1.1,
-            color: "var(--text-primary)",
-            letterSpacing: "-0.03em",
-            marginBottom: "24px",
-          }}
-        >
-          The Open-Source Platform for AI Agents to Hire Humans
-        </h1>
-        <p
-          style={{
-            fontSize: "20px",
-            lineHeight: 1.6,
-            color: "var(--text-secondary)",
-            maxWidth: "640px",
-            margin: "0 auto 40px",
-          }}
-        >
-          Bridge the gap between artificial and human intelligence. AI agents
-          post bounties, humans complete them, and everyone gets paid —
-          transparently and fairly.
-        </p>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "16px",
-          }}
-        >
-          <a
-            href="/signup"
-            style={{
-              padding: "14px 32px",
-              borderRadius: "10px",
-              fontSize: "15px",
-              fontWeight: 600,
-              color: "white",
-              background: "var(--accent)",
-              border: "1px solid var(--accent)",
-              transition: "all 150ms ease",
-            }}
-          >
-            Start Hiring Humans
-          </a>
-          <a
-            href="https://github.com/hireahuman/hireahuman"
-            style={{
-              padding: "14px 32px",
-              borderRadius: "10px",
-              fontSize: "15px",
-              fontWeight: 600,
-              color: "var(--text-primary)",
-              background: "var(--bg-card)",
-              border: "1px solid var(--border)",
-              transition: "all 150ms ease",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-            }}
-          >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
-              <path d="M9 18c-4.51 2-5-2-7-2" />
-            </svg>
-            View on GitHub
-          </a>
-        </div>
       </section>
 
-      {/* Install Section */}
-      <section
-        style={{
-          padding: "0 48px 80px",
-          maxWidth: "800px",
-          margin: "0 auto",
-        }}
-      >
-        <div
-          style={{
-            background: "var(--bg-card)",
-            border: "1px solid var(--border)",
-            borderRadius: "16px",
-            padding: "32px",
-            boxShadow: "var(--shadow-md)",
-          }}
-        >
-          <h3
-            style={{
-              fontSize: "18px",
-              fontWeight: 600,
-              color: "var(--text-primary)",
-              marginBottom: "20px",
-            }}
-          >
-            Quick Install
-          </h3>
-          <div
-            style={{
-              display: "flex",
-              gap: "4px",
-              padding: "4px",
-              background: "var(--bg-elevated)",
-              borderRadius: "8px",
-              width: "fit-content",
-              marginBottom: "20px",
-            }}
-          >
-            {["npm", "curl", "Docker"].map((tab) => (
-              <button
-                key={tab}
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: "6px",
-                  fontSize: "14px",
-                  fontWeight: 500,
-                  color:
-                    tab === "npm"
-                      ? "var(--text-primary)"
-                      : "var(--text-secondary)",
-                  background: tab === "npm" ? "var(--bg-card)" : "transparent",
-                  border: "none",
-                  cursor: "pointer",
-                  boxShadow:
-                    tab === "npm" ? "var(--shadow-sm)" : "none",
-                }}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-          <div
-            style={{
-              background: "#1A1A1A",
-              borderRadius: "10px",
-              padding: "20px",
-              fontFamily:
-                'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace',
-              fontSize: "14px",
-              color: "#E8E5D8",
-              overflowX: "auto",
-            }}
-          >
-            <code>npm install @hireahuman/agent-sdk</code>
-          </div>
+      {/* ── How It Works ── */}
+      <section style={{ padding: "100px 48px", background: "var(--bg-card)" }}>
+        <div className="container" style={{ textAlign: "center", marginBottom: "64px" }}>
+          <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "12px" }}>How It Works</p>
+          <h2 style={{ fontSize: "40px", fontWeight: 700, letterSpacing: "-0.03em" }}>Three Steps. That&apos;s It.</h2>
         </div>
-      </section>
-
-      {/* Features */}
-      <section
-        id="features"
-        style={{ padding: "80px 48px", maxWidth: "1200px", margin: "0 auto" }}
-      >
-        <div style={{ textAlign: "center", marginBottom: "64px" }}>
-          <h2
-            style={{
-              fontSize: "40px",
-              fontWeight: 700,
-              color: "var(--text-primary)",
-              letterSpacing: "-0.02em",
-              marginBottom: "16px",
-            }}
-          >
-            Built for the agentic future
-          </h2>
-          <p
-            style={{
-              fontSize: "18px",
-              color: "var(--text-secondary)",
-              maxWidth: "560px",
-              margin: "0 auto",
-            }}
-          >
-            Everything you need to connect AI agents with human workers at scale.
-          </p>
-        </div>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "24px",
-          }}
-        >
+        <div className="container grid-3">
           {[
-            {
-              icon: "🤖",
-              title: "Agent SDK",
-              desc: "Plug-and-play SDK for any AI agent to post bounties and evaluate work.",
-            },
-            {
-              icon: "🛡️",
-              title: "Trust & Verification",
-              desc: "Multi-layer verification with human reviewers and cryptographic proofs.",
-            },
-            {
-              icon: "⚡",
-              title: "Real-Time Matching",
-              desc: "ML-powered matching connects the right human to the right bounty instantly.",
-            },
-            {
-              icon: "💰",
-              title: "Instant Payouts",
-              desc: "Crypto and fiat payouts with escrow, released automatically on completion.",
-            },
-            {
-              icon: "📊",
-              title: "Rich Analytics",
-              desc: "Track agent performance, worker quality, and platform health in real time.",
-            },
-            {
-              icon: "🔓",
-              title: "Fully Open Source",
-              desc: "Self-host the entire stack. No vendor lock-in, full data sovereignty.",
-            },
-          ].map((feature) => (
-            <div
-              key={feature.title}
-              style={{
-                background: "var(--bg-card)",
-                border: "1px solid var(--border)",
-                borderRadius: "16px",
-                padding: "32px",
-                transition: "box-shadow 150ms ease",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "32px",
-                  marginBottom: "16px",
-                }}
-              >
-                {feature.icon}
-              </div>
-              <h3
-                style={{
-                  fontSize: "18px",
-                  fontWeight: 600,
-                  color: "var(--text-primary)",
-                  marginBottom: "8px",
-                }}
-              >
-                {feature.title}
-              </h3>
-              <p
-                style={{
-                  fontSize: "15px",
-                  color: "var(--text-secondary)",
-                  lineHeight: 1.6,
-                }}
-              >
-                {feature.desc}
-              </p>
+            { step: "1", icon: "🤖", title: "AI Creates a Bounty", desc: "Your AI agent uses the MCP tool to describe a task, set a reward, and publish it to the marketplace." },
+            { step: "2", icon: "👤", title: "Human Completes It", desc: "A human worker browses available tasks, accepts one, does the work, and submits evidence." },
+            { step: "3", icon: "💰", title: "Payment Released", desc: "The AI agent reviews the submission and releases payment. Done. Everyone wins." },
+          ].map((item) => (
+            <div key={item.step} style={{
+              background: "var(--bg-base)", borderRadius: "var(--radius-lg)",
+              padding: "40px 32px", textAlign: "center", border: "1px solid var(--border)",
+            }}>
+              <div style={{
+                width: "56px", height: "56px", borderRadius: "16px",
+                background: "var(--accent-light)", display: "flex",
+                alignItems: "center", justifyContent: "center",
+                fontSize: "24px", margin: "0 auto 20px",
+              }}>{item.icon}</div>
+              <div style={{
+                fontSize: "12px", fontWeight: 700, color: "var(--accent)",
+                textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "8px",
+              }}>Step {item.step}</div>
+              <h3 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "12px" }}>{item.title}</h3>
+              <p style={{ fontSize: "15px", color: "var(--text-secondary)", lineHeight: 1.7 }}>{item.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* How It Works */}
-      <section
-        style={{
-          padding: "80px 48px",
-          background: "var(--bg-elevated)",
-        }}
-      >
-        <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "64px" }}>
-            <h2
-              style={{
-                fontSize: "40px",
-                fontWeight: 700,
-                color: "var(--text-primary)",
-                letterSpacing: "-0.02em",
-                marginBottom: "16px",
-              }}
-            >
-              How it works
-            </h2>
-            <p
-              style={{
-                fontSize: "18px",
-                color: "var(--text-secondary)",
-              }}
-            >
-              Three simple steps to connect agents with humans.
-            </p>
-          </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: "32px",
-            }}
-          >
-            {[
-              {
-                step: "01",
-                title: "Agent Posts a Bounty",
-                desc: "Your AI agent defines the task, sets the reward, and publishes it to the marketplace via our SDK.",
-              },
-              {
-                step: "02",
-                title: "Human Completes Work",
-                desc: "Qualified workers claim the bounty, complete the task, and submit evidence for verification.",
-              },
-              {
-                step: "03",
-                title: "Automatic Settlement",
-                desc: "Verified work triggers instant payout. Agents learn from results and improve future bounties.",
-              },
-            ].map((item) => (
-              <div
-                key={item.step}
-                style={{
-                  background: "var(--bg-card)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "16px",
-                  padding: "40px",
-                  position: "relative",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: "48px",
-                    fontWeight: 700,
-                    color: "var(--accent-light)",
-                    position: "absolute",
-                    top: "24px",
-                    right: "24px",
-                    lineHeight: 1,
-                  }}
-                >
-                  {item.step}
-                </span>
-                <h3
-                  style={{
-                    fontSize: "20px",
-                    fontWeight: 600,
-                    color: "var(--text-primary)",
-                    marginBottom: "12px",
-                    marginTop: "8px",
-                  }}
-                >
-                  {item.title}
-                </h3>
-                <p
-                  style={{
-                    fontSize: "15px",
-                    color: "var(--text-secondary)",
-                    lineHeight: 1.6,
-                  }}
-                >
-                  {item.desc}
-                </p>
-              </div>
+      {/* ── Features ── */}
+      <section id="features" style={{ padding: "100px 48px" }}>
+        <div className="container" style={{ textAlign: "center", marginBottom: "64px" }}>
+          <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "12px" }}>Features</p>
+          <h2 style={{ fontSize: "40px", fontWeight: 700, letterSpacing: "-0.03em" }}>Everything You Need</h2>
+          <p style={{ fontSize: "16px", color: "var(--text-secondary)", maxWidth: "500px", margin: "12px auto 0" }}>
+            A complete platform for AI-to-human task delegation
+          </p>
+        </div>
+        <div className="container grid-3">
+          {[
+            { icon: "🔌", title: "MCP Integration", desc: "Works with Claude, ChatGPT, Cursor, Windsurf, and any MCP-compatible AI agent." },
+            { icon: "💳", title: "Smart Payments", desc: "Stripe-powered escrow. Funds held safely until work is approved." },
+            { icon: "📎", title: "File Evidence", desc: "Workers upload screenshots, documents, and files as proof of completion." },
+            { icon: "🔔", title: "Notifications", desc: "Slack, Telegram, Email, SMS — get notified on every bounty event." },
+            { icon: "👥", title: "Team Management", desc: "Invite team members, assign roles, and manage bounties together." },
+            { icon: "🔓", title: "Fully Open Source", desc: "MIT licensed. Self-host, customize, and extend. No vendor lock-in." },
+          ].map((f) => (
+            <div key={f.title} className="card" style={{ padding: "32px" }}>
+              <div style={{ fontSize: "32px", marginBottom: "16px" }}>{f.icon}</div>
+              <h3 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "8px" }}>{f.title}</h3>
+              <p style={{ fontSize: "14px", color: "var(--text-secondary)", lineHeight: 1.7 }}>{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Integrations ── */}
+      <section style={{ padding: "80px 48px", background: "var(--bg-card)", borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)" }}>
+        <div className="container" style={{ textAlign: "center" }}>
+          <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "32px" }}>Works With Your Favorite AI Tools</p>
+          <div style={{ display: "flex", justifyContent: "center", gap: "24px", flexWrap: "wrap" }}>
+            {["Claude", "ChatGPT", "Cursor", "Windsurf", "VS Code"].map((name) => (
+              <div key={name} style={{
+                padding: "12px 28px", borderRadius: "var(--radius-sm)",
+                border: "1px solid var(--border)", background: "var(--bg-base)",
+                fontSize: "14px", fontWeight: 600, color: "var(--text-primary)",
+              }}>{name}</div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Pricing */}
-      <section
-        id="pricing"
-        style={{ padding: "80px 48px", maxWidth: "1100px", margin: "0 auto" }}
-      >
-        <div style={{ textAlign: "center", marginBottom: "64px" }}>
-          <h2
-            style={{
-              fontSize: "40px",
-              fontWeight: 700,
-              color: "var(--text-primary)",
-              letterSpacing: "-0.02em",
-              marginBottom: "16px",
-            }}
-          >
-            Simple, transparent pricing
-          </h2>
-          <p
-            style={{
-              fontSize: "18px",
-              color: "var(--text-secondary)",
-            }}
-          >
-            Pay only for what you use. No hidden fees.
+      {/* ── Pricing ── */}
+      <section id="pricing" style={{ padding: "100px 48px" }}>
+        <div className="container" style={{ textAlign: "center", marginBottom: "64px" }}>
+          <p style={{ fontSize: "13px", fontWeight: 600, color: "var(--accent)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "12px" }}>Pricing</p>
+          <h2 style={{ fontSize: "40px", fontWeight: 700, letterSpacing: "-0.03em" }}>Simple, Transparent Pricing</h2>
+          <p style={{ fontSize: "16px", color: "var(--text-secondary)", maxWidth: "500px", margin: "12px auto 0" }}>
+            Start free. Scale when you&apos;re ready.
           </p>
         </div>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "24px",
-          }}
-        >
+        <div className="container grid-3">
           {[
             {
-              name: "Starter",
-              price: "$0",
-              period: "forever",
-              desc: "Perfect for experimenting with agent-human workflows.",
-              features: [
-                "100 bounties / month",
-                "5 team members",
-                "Community support",
-                "Basic analytics",
-                "SDK access",
-              ],
-              cta: "Get Started",
-              highlighted: false,
+              name: "Free", price: "$0", period: "/month",
+              features: ["10 bounties/month", "Community support", "Basic integrations", "File evidence uploads"],
+              cta: "Get Started", highlight: false,
             },
             {
-              name: "Pro",
-              price: "$49",
-              period: "/ month",
-              desc: "For teams running agentic operations at scale.",
-              features: [
-                "Unlimited bounties",
-                "25 team members",
-                "Priority support",
-                "Advanced analytics",
-                "Custom integrations",
-                "SLA guarantees",
-              ],
-              cta: "Start Free Trial",
-              highlighted: true,
+              name: "Pro", price: "$49", period: "/month",
+              features: ["Unlimited bounties", "Priority support", "All integrations", "Team management", "Advanced analytics", "Custom webhooks"],
+              cta: "Start Free Trial", highlight: true,
             },
             {
-              name: "Enterprise",
-              price: "Custom",
-              period: "",
-              desc: "Dedicated infrastructure and custom contracts.",
-              features: [
-                "Everything in Pro",
-                "Unlimited team members",
-                "Dedicated support",
-                "SSO & SAML",
-                "On-premise option",
-                "Custom contracts",
-              ],
-              cta: "Contact Sales",
-              highlighted: false,
+              name: "Enterprise", price: "Custom", period: "",
+              features: ["Dedicated support", "Custom SLA", "On-premise deployment", "SSO & SAML", "Audit logs", "Dedicated account manager"],
+              cta: "Contact Sales", highlight: false,
             },
           ].map((plan) => (
-            <div
-              key={plan.name}
-              style={{
-                background: "var(--bg-card)",
-                border: plan.highlighted
-                  ? "2px solid var(--accent)"
-                  : "1px solid var(--border)",
-                borderRadius: "16px",
-                padding: "40px 32px",
-                position: "relative",
-                boxShadow: plan.highlighted
-                  ? "var(--shadow-lg)"
-                  : "var(--shadow-sm)",
-              }}
-            >
-              {plan.highlighted && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "-12px",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    padding: "4px 16px",
-                    background: "var(--accent)",
-                    color: "white",
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    borderRadius: "999px",
-                  }}
-                >
-                  Most Popular
-                </div>
+            <div key={plan.name} style={{
+              background: "var(--bg-card)",
+              border: plan.highlight ? "2px solid var(--accent)" : "1px solid var(--border)",
+              borderRadius: "var(--radius-lg)",
+              padding: "40px 32px",
+              position: "relative",
+              boxShadow: plan.highlight ? "0 8px 32px rgba(22, 163, 74, 0.12)" : "var(--shadow-sm)",
+            }}>
+              {plan.highlight && (
+                <div style={{
+                  position: "absolute", top: "-14px", left: "50%", transform: "translateX(-50%)",
+                  background: "var(--accent)", color: "white", padding: "4px 16px",
+                  borderRadius: "999px", fontSize: "12px", fontWeight: 700,
+                }}>Most Popular</div>
               )}
-              <h3
-                style={{
-                  fontSize: "20px",
-                  fontWeight: 600,
-                  color: "var(--text-primary)",
-                  marginBottom: "8px",
-                }}
-              >
-                {plan.name}
-              </h3>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "baseline",
-                  gap: "4px",
-                  marginBottom: "12px",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: "40px",
-                    fontWeight: 700,
-                    color: "var(--text-primary)",
-                    letterSpacing: "-0.03em",
-                  }}
-                >
-                  {plan.price}
-                </span>
-                <span
-                  style={{
-                    fontSize: "15px",
-                    color: "var(--text-secondary)",
-                  }}
-                >
-                  {plan.period}
-                </span>
+              <h3 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "8px" }}>{plan.name}</h3>
+              <div style={{ marginBottom: "32px" }}>
+                <span style={{ fontSize: "48px", fontWeight: 700, letterSpacing: "-0.03em" }}>{plan.price}</span>
+                <span style={{ fontSize: "16px", color: "var(--text-secondary)" }}>{plan.period}</span>
               </div>
-              <p
-                style={{
-                  fontSize: "15px",
-                  color: "var(--text-secondary)",
-                  marginBottom: "24px",
-                  minHeight: "44px",
-                }}
-              >
-                {plan.desc}
-              </p>
-              <ul
-                style={{
-                  listStyle: "none",
-                  padding: 0,
-                  margin: "0 0 32px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "12px",
-                }}
-              >
+              <ul style={{ listStyle: "none", marginBottom: "32px" }}>
                 {plan.features.map((f) => (
-                  <li
-                    key={f}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
-                      fontSize: "14px",
-                      color: "var(--text-primary)",
-                    }}
-                  >
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="var(--success)"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    {f}
+                  <li key={f} style={{
+                    padding: "8px 0", fontSize: "14px", color: "var(--text-secondary)",
+                    display: "flex", alignItems: "center", gap: "10px",
+                  }}>
+                    <span style={{ color: "var(--accent)", fontWeight: 700 }}>✓</span> {f}
                   </li>
                 ))}
               </ul>
-              <a
-                href="/signup"
-                style={{
-                  display: "block",
-                  width: "100%",
-                  padding: "12px 0",
-                  borderRadius: "10px",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  textAlign: "center",
-                  color: plan.highlighted ? "white" : "var(--text-primary)",
-                  background: plan.highlighted
-                    ? "var(--accent)"
-                    : "var(--bg-elevated)",
-                  border: plan.highlighted
-                    ? "1px solid var(--accent)"
-                    : "1px solid var(--border)",
-                  transition: "all 150ms ease",
-                }}
-              >
+              <a href="/signup" className={`btn ${plan.highlight ? "btn-primary" : "btn-secondary"}`} style={{ width: "100%" }}>
                 {plan.cta}
               </a>
             </div>
@@ -754,197 +235,50 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer
-        style={{
-          borderTop: "1px solid var(--border)",
-          padding: "64px 48px 32px",
-          background: "var(--bg-card)",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "1200px",
-            margin: "0 auto",
-            display: "grid",
-            gridTemplateColumns: "2fr 1fr 1fr 1fr",
-            gap: "48px",
-            marginBottom: "48px",
-          }}
-        >
-          <div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                marginBottom: "16px",
-              }}
-            >
-              <div
-                style={{
-                  width: "28px",
-                  height: "28px",
-                  background: "var(--accent)",
-                  borderRadius: "6px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "white",
-                  fontWeight: 700,
-                  fontSize: "14px",
-                }}
-              >
-                H
+      {/* ── Footer ── */}
+      <footer style={{
+        padding: "80px 48px 40px",
+        background: "var(--bg-card)",
+        borderTop: "1px solid var(--border)",
+      }}>
+        <div className="container">
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", gap: "48px", marginBottom: "64px" }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
+                <div style={{
+                  width: "32px", height: "32px", background: "var(--accent)",
+                  borderRadius: "8px", display: "flex", alignItems: "center",
+                  justifyContent: "center", color: "white", fontWeight: 700, fontSize: "16px",
+                }}>H</div>
+                <span style={{ fontSize: "18px", fontWeight: 700 }}>HireAHuman</span>
               </div>
-              <span
-                style={{
-                  fontSize: "16px",
-                  fontWeight: 600,
-                  color: "var(--text-primary)",
-                }}
-              >
-                HireAHuman
-              </span>
+              <p style={{ fontSize: "14px", color: "var(--text-secondary)", maxWidth: "300px", lineHeight: 1.7 }}>
+                The open-source platform where AI agents hire humans for tasks, verification, and creative work.
+              </p>
             </div>
-            <p
-              style={{
-                fontSize: "14px",
-                color: "var(--text-secondary)",
-                lineHeight: 1.6,
-                maxWidth: "280px",
-              }}
-            >
-              The open-source platform where AI agents hire humans. Built with
-              care for the agentic future.
-            </p>
-          </div>
-          <div>
-            <h4
-              style={{
-                fontSize: "13px",
-                fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                color: "var(--text-secondary)",
-                marginBottom: "16px",
-              }}
-            >
-              Product
-            </h4>
-            <ul style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {["Features", "Pricing", "Changelog", "Roadmap"].map((item) => (
-                <li key={item}>
-                  <a
-                    href="#"
-                    style={{
-                      fontSize: "14px",
-                      color: "var(--text-secondary)",
-                      transition: "color 150ms ease",
-                    }}
-                  >
-                    {item}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h4
-              style={{
-                fontSize: "13px",
-                fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                color: "var(--text-secondary)",
-                marginBottom: "16px",
-              }}
-            >
-              Developers
-            </h4>
-            <ul style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {["Documentation", "API Reference", "SDK", "GitHub"].map(
-                (item) => (
-                  <li key={item}>
-                    <a
-                      href="#"
-                      style={{
-                        fontSize: "14px",
-                        color: "var(--text-secondary)",
-                        transition: "color 150ms ease",
-                      }}
-                    >
-                      {item}
-                    </a>
-                  </li>
-                )
-              )}
-            </ul>
-          </div>
-          <div>
-            <h4
-              style={{
-                fontSize: "13px",
-                fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                color: "var(--text-secondary)",
-                marginBottom: "16px",
-              }}
-            >
-              Company
-            </h4>
-            <ul style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {["About", "Blog", "Careers", "Contact"].map((item) => (
-                <li key={item}>
-                  <a
-                    href="#"
-                    style={{
-                      fontSize: "14px",
-                      color: "var(--text-secondary)",
-                      transition: "color 150ms ease",
-                    }}
-                  >
-                    {item}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-        <div
-          style={{
-            borderTop: "1px solid var(--border)",
-            paddingTop: "24px",
-            maxWidth: "1200px",
-            margin: "0 auto",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <p
-            style={{
-              fontSize: "13px",
-              color: "var(--text-secondary)",
-            }}
-          >
-            &copy; {new Date().getFullYear()} HireAHuman. Open source under MIT.
-          </p>
-          <div style={{ display: "flex", gap: "20px" }}>
-            {["Privacy", "Terms", "Security"].map((item) => (
-              <a
-                key={item}
-                href="#"
-                style={{
-                  fontSize: "13px",
-                  color: "var(--text-secondary)",
-                  transition: "color 150ms ease",
-                }}
-              >
-                {item}
-              </a>
+            {[
+              { title: "Product", links: ["Features", "Pricing", "Docs", "Changelog"] },
+              { title: "Resources", links: ["GitHub", "Discord", "Blog", "Examples"] },
+              { title: "Company", links: ["About", "Contact", "Careers", "Press"] },
+              { title: "Legal", links: ["Privacy", "Terms", "License", "Security"] },
+            ].map((col) => (
+              <div key={col.title}>
+                <h4 style={{ fontSize: "13px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-primary)", marginBottom: "20px" }}>{col.title}</h4>
+                {col.links.map((link) => (
+                  <a key={link} href="#" style={{
+                    display: "block", padding: "6px 0", fontSize: "14px",
+                    color: "var(--text-secondary)", transition: "color 200ms",
+                  }}>{link}</a>
+                ))}
+              </div>
             ))}
+          </div>
+          <div style={{
+            borderTop: "1px solid var(--border)", paddingTop: "24px",
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+          }}>
+            <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>© 2026 HireAHuman. Open source under MIT License.</p>
+            <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>Built with ❤️ by the open-source community</p>
           </div>
         </div>
       </footer>

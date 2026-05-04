@@ -4,311 +4,81 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
-
-  const [bio, setBio] = useState("");
-  const [skills, setSkills] = useState("");
-  const [location, setLocation] = useState("");
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    fetchProfile();
+    const getUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data.user) {
+        setUser(data.user);
+        setName(data.user.user_metadata?.name || "");
+        setEmail(data.user.email || "");
+      }
+    };
+    getUser();
   }, []);
 
-  const fetchProfile = async () => {
-    setLoading(true);
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
-
-    const p = data || {};
-    setProfile(p);
-    setBio(p.bio || "");
-    setSkills((p.skills || []).join(", "));
-    setLocation(p.location || "");
-    setLoading(false);
-  };
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSave = async () => {
     setSaving(true);
-    setMessage("");
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      setSaving(false);
-      return;
-    }
-
-    const updates = {
-      id: user.id,
-      bio: bio.trim(),
-      skills: skills.split(",").map((s) => s.trim()).filter(Boolean),
-      location: location.trim(),
-      updated_at: new Date().toISOString(),
-    };
-
-    const { error } = await supabase
-      .from("profiles")
-      .upsert(updates, { onConflict: "id" });
-
-    if (error) {
-      setMessage("Error saving profile: " + error.message);
-    } else {
-      setMessage("Profile saved successfully!");
-      fetchProfile();
-    }
-
+    await supabase.auth.updateUser({ data: { name } });
     setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
   };
-
-  if (loading) {
-    return (
-      <div
-        style={{
-          background: "var(--bg-card)",
-          border: "1px solid var(--border)",
-          borderRadius: "var(--radius-md)",
-          padding: "40px",
-          maxWidth: "600px",
-          margin: "0 auto",
-        }}
-      >
-        <div
-          style={{
-            height: "24px",
-            width: "40%",
-            background: "var(--bg-elevated)",
-            borderRadius: "var(--radius-sm)",
-            marginBottom: "24px",
-          }}
-        />
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            style={{
-              height: "48px",
-              width: "100%",
-              background: "var(--bg-elevated)",
-              borderRadius: "var(--radius-sm)",
-              marginBottom: "16px",
-            }}
-          />
-        ))}
-      </div>
-    );
-  }
 
   return (
-    <div style={{ maxWidth: "600px", margin: "0 auto" }}>
-      <div style={{ marginBottom: "32px" }}>
-        <h1
-          style={{
-            fontSize: "28px",
-            fontWeight: 600,
-            color: "var(--text-primary)",
-            marginBottom: "6px",
-            letterSpacing: "-0.02em",
-          }}
-        >
-          Profile
-        </h1>
-        <p style={{ fontSize: "15px", color: "var(--text-secondary)" }}>
-          Manage your worker profile and skills
-        </p>
+    <div>
+      <div className="page-header">
+        <h1>Profile</h1>
+        <p>Manage your account settings</p>
       </div>
 
-      <div
-        style={{
-          background: "var(--bg-card)",
-          border: "1px solid var(--border)",
-          borderRadius: "var(--radius-md)",
-          padding: "32px",
-          boxShadow: "var(--shadow-sm)",
-        }}
-      >
-        <form onSubmit={handleSave}>
-          <div style={{ marginBottom: "20px" }}>
-            <label
-              style={{
-                display: "block",
-                fontSize: "13px",
-                fontWeight: 500,
-                color: "var(--text-secondary)",
-                marginBottom: "6px",
-              }}
-            >
-              Bio
-            </label>
-            <textarea
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              placeholder="Tell us about yourself..."
-              rows={4}
-              style={{
-                width: "100%",
-                padding: "10px 14px",
-                background: "var(--bg-card)",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--radius-sm)",
-                fontSize: "14px",
-                color: "var(--text-primary)",
-                resize: "vertical",
-                minHeight: "100px",
-                outline: "none",
-                transition: "border-color 150ms ease, box-shadow 150ms ease",
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = "var(--accent)";
-                e.target.style.boxShadow = "0 0 0 3px var(--accent-light)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "var(--border)";
-                e.target.style.boxShadow = "none";
-              }}
-            />
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "32px" }}>
+        {/* Avatar Card */}
+        <div className="card" style={{ padding: "40px", textAlign: "center" }}>
+          <div style={{
+            width: "96px", height: "96px", borderRadius: "50%",
+            background: "var(--accent-light)", display: "flex",
+            alignItems: "center", justifyContent: "center",
+            fontSize: "36px", fontWeight: 700, color: "var(--accent)",
+            margin: "0 auto 20px",
+          }}>
+            {name?.charAt(0)?.toUpperCase() || "?"}
           </div>
-
-          <div style={{ marginBottom: "20px" }}>
-            <label
-              style={{
-                display: "block",
-                fontSize: "13px",
-                fontWeight: 500,
-                color: "var(--text-secondary)",
-                marginBottom: "6px",
-              }}
-            >
-              Skills
-            </label>
-            <input
-              type="text"
-              value={skills}
-              onChange={(e) => setSkills(e.target.value)}
-              placeholder="e.g. React, TypeScript, Design"
-              style={{
-                width: "100%",
-                padding: "10px 14px",
-                background: "var(--bg-card)",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--radius-sm)",
-                fontSize: "14px",
-                color: "var(--text-primary)",
-                outline: "none",
-                transition: "border-color 150ms ease, box-shadow 150ms ease",
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = "var(--accent)";
-                e.target.style.boxShadow = "0 0 0 3px var(--accent-light)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "var(--border)";
-                e.target.style.boxShadow = "none";
-              }}
-            />
-            <p
-              style={{
-                fontSize: "12px",
-                color: "var(--text-secondary)",
-                marginTop: "6px",
-              }}
-            >
-              Separate skills with commas
-            </p>
-          </div>
-
-          <div style={{ marginBottom: "24px" }}>
-            <label
-              style={{
-                display: "block",
-                fontSize: "13px",
-                fontWeight: 500,
-                color: "var(--text-secondary)",
-                marginBottom: "6px",
-              }}
-            >
-              Location
-            </label>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="e.g. San Francisco, CA"
-              style={{
-                width: "100%",
-                padding: "10px 14px",
-                background: "var(--bg-card)",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--radius-sm)",
-                fontSize: "14px",
-                color: "var(--text-primary)",
-                outline: "none",
-                transition: "border-color 150ms ease, box-shadow 150ms ease",
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = "var(--accent)";
-                e.target.style.boxShadow = "0 0 0 3px var(--accent-light)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "var(--border)";
-                e.target.style.boxShadow = "none";
-              }}
-            />
-          </div>
-
-          {message && (
-            <div
-              style={{
-                padding: "10px 14px",
-                borderRadius: "8px",
-                fontSize: "13px",
-                marginBottom: "16px",
-                background: message.startsWith("Error")
-                  ? "#F8D7DA"
-                  : "var(--accent-light)",
-                color: message.startsWith("Error")
-                  ? "var(--error)"
-                  : "var(--accent)",
-              }}
-            >
-              {message}
+          <h2 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "4px" }}>{name || "User"}</h2>
+          <p style={{ fontSize: "14px", color: "var(--text-secondary)" }}>{email}</p>
+          <div className="divider" />
+          <div style={{ display: "flex", justifyContent: "center", gap: "32px" }}>
+            <div style={{ textAlign: "center" }}>
+              <p style={{ fontSize: "24px", fontWeight: 700 }}>0</p>
+              <p style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Completed</p>
             </div>
-          )}
+            <div style={{ textAlign: "center" }}>
+              <p style={{ fontSize: "24px", fontWeight: 700 }}>$0</p>
+              <p style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Earned</p>
+            </div>
+          </div>
+        </div>
 
-          <button
-            type="submit"
-            disabled={saving}
-            style={{
-              width: "100%",
-              padding: "12px",
-              background: "var(--accent)",
-              color: "white",
-              border: "1px solid var(--accent)",
-              borderRadius: "10px",
-              fontSize: "14px",
-              fontWeight: 600,
-              cursor: saving ? "not-allowed" : "pointer",
-              opacity: saving ? 0.7 : 1,
-              transition: "all 150ms ease",
-            }}
-          >
-            {saving ? "Saving..." : "Save Profile"}
+        {/* Edit Form */}
+        <div className="card" style={{ padding: "32px" }}>
+          <h3 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "24px" }}>Edit Profile</h3>
+          <div className="form-group">
+            <label className="label">Full Name</label>
+            <input className="input" value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label className="label">Email</label>
+            <input className="input" value={email} disabled style={{ opacity: 0.6 }} />
+          </div>
+          <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+            {saving ? "Saving..." : saved ? "✓ Saved" : "Save Changes"}
           </button>
-        </form>
+        </div>
       </div>
     </div>
   );

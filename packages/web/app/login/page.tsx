@@ -1,9 +1,12 @@
-'use client';
+"use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -13,223 +16,51 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       setError(error.message);
+      setLoading(false);
     } else {
-      window.location.href = "/browse";
+      router.push("/dashboard");
     }
-
-    setLoading(false);
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "var(--bg-base)",
-        padding: "24px",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "400px",
-        }}
-      >
+    <div style={{ minHeight: "100vh", background: "var(--bg-base)", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
+      <div style={{ width: "100%", maxWidth: "420px" }}>
+        {/* Logo */}
         <div style={{ textAlign: "center", marginBottom: "40px" }}>
-          <div
-            style={{
-              width: "48px",
-              height: "48px",
-              background: "var(--accent)",
-              borderRadius: "12px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "white",
-              fontWeight: 700,
-              fontSize: "24px",
-              margin: "0 auto 20px",
-            }}
-          >
-            H
-          </div>
-          <h1
-            style={{
-              fontSize: "28px",
-              fontWeight: 700,
-              color: "var(--text-primary)",
-              letterSpacing: "-0.02em",
-              marginBottom: "8px",
-            }}
-          >
-            Welcome back
-          </h1>
-          <p
-            style={{
-              fontSize: "15px",
-              color: "var(--text-secondary)",
-            }}
-          >
-            Sign in to your HireAHuman account
-          </p>
+          <div style={{
+            width: "48px", height: "48px", background: "var(--accent)",
+            borderRadius: "14px", display: "inline-flex", alignItems: "center",
+            justifyContent: "center", color: "white", fontWeight: 700, fontSize: "22px",
+            marginBottom: "16px",
+          }}>H</div>
+          <h1 style={{ fontSize: "24px", fontWeight: 700, letterSpacing: "-0.03em" }}>Welcome back</h1>
+          <p style={{ fontSize: "15px", color: "var(--text-secondary)", marginTop: "8px" }}>Sign in to your HireAHuman account</p>
         </div>
 
-        <div
-          style={{
-            background: "var(--bg-card)",
-            border: "1px solid var(--border)",
-            borderRadius: "16px",
-            padding: "32px",
-            boxShadow: "var(--shadow-md)",
-          }}
-        >
+        {/* Form Card */}
+        <div className="card" style={{ padding: "32px" }}>
           <form onSubmit={handleLogin}>
-            <div style={{ marginBottom: "20px" }}>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: "13px",
-                  fontWeight: 500,
-                  color: "var(--text-secondary)",
-                  marginBottom: "6px",
-                }}
-              >
-                Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                required
-                style={{
-                  width: "100%",
-                  padding: "10px 14px",
-                  background: "var(--bg-card)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  color: "var(--text-primary)",
-                  transition: "border-color 150ms ease, box-shadow 150ms ease",
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = "var(--accent)";
-                  e.target.style.boxShadow = "0 0 0 3px var(--accent-light)";
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = "var(--border)";
-                  e.target.style.boxShadow = "none";
-                }}
-              />
+            <div className="form-group">
+              <label className="label">Email</label>
+              <input className="input" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
-
-            <div style={{ marginBottom: "24px" }}>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: "13px",
-                  fontWeight: 500,
-                  color: "var(--text-secondary)",
-                  marginBottom: "6px",
-                }}
-              >
-                Password
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                required
-                style={{
-                  width: "100%",
-                  padding: "10px 14px",
-                  background: "var(--bg-card)",
-                  border: "1px solid var(--border)",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  color: "var(--text-primary)",
-                  transition: "border-color 150ms ease, box-shadow 150ms ease",
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = "var(--accent)";
-                  e.target.style.boxShadow = "0 0 0 3px var(--accent-light)";
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = "var(--border)";
-                  e.target.style.boxShadow = "none";
-                }}
-              />
+            <div className="form-group">
+              <label className="label">Password</label>
+              <input className="input" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
-
-            {error && (
-              <div
-                style={{
-                  padding: "10px 14px",
-                  background: "#F8D7DA",
-                  borderRadius: "8px",
-                  fontSize: "13px",
-                  color: "var(--error)",
-                  marginBottom: "16px",
-                }}
-              >
-                {error}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                width: "100%",
-                padding: "12px",
-                background: "var(--accent)",
-                color: "white",
-                border: "1px solid var(--accent)",
-                borderRadius: "10px",
-                fontSize: "14px",
-                fontWeight: 600,
-                cursor: loading ? "not-allowed" : "pointer",
-                opacity: loading ? 0.7 : 1,
-                transition: "all 150ms ease",
-              }}
-            >
-              {loading ? "Signing in..." : "Sign In"}
+            {error && <p style={{ color: "var(--error)", fontSize: "14px", marginBottom: "16px" }}>{error}</p>}
+            <button type="submit" className="btn btn-primary" style={{ width: "100%" }} disabled={loading}>
+              {loading ? "Signing in..." : "Sign in"}
             </button>
           </form>
-
-          <div
-            style={{
-              marginTop: "20px",
-              paddingTop: "20px",
-              borderTop: "1px solid var(--border)",
-              textAlign: "center",
-            }}
-          >
-            <p style={{ fontSize: "14px", color: "var(--text-secondary)" }}>
-              Don&apos;t have an account?{" "}
-              <a
-                href="/signup"
-                style={{
-                  color: "var(--accent)",
-                  fontWeight: 600,
-                  transition: "color 150ms ease",
-                }}
-              >
-                Sign up
-              </a>
-            </p>
-          </div>
+          <div className="divider" />
+          <p style={{ textAlign: "center", fontSize: "14px", color: "var(--text-secondary)" }}>
+            Don&apos;t have an account?{" "}
+            <Link href="/signup" style={{ color: "var(--accent)", fontWeight: 600 }}>Sign up</Link>
+          </p>
         </div>
       </div>
     </div>

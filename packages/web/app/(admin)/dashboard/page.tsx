@@ -5,307 +5,85 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 export default function DashboardPage() {
-  const [stats, setStats] = useState({
-    total: 0,
-    open: 0,
-    active: 0,
-    completed: 0,
-    revenue: 0,
-  });
+  const [stats, setStats] = useState({ total: 0, active: 0, completed: 0, paid: 0 });
   const [recent, setRecent] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchDashboard();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
-  const fetchDashboard = async () => {
+  const fetchData = async () => {
     setLoading(true);
-    const { data: bounties } = await supabase
-      .from("bounties")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(10);
-
-    const all = bounties || [];
-    const total = all.length;
-    const open = all.filter((b) => b.status === "open").length;
-    const active = all.filter((b) => b.status === "active").length;
-    const completed = all.filter(
-      (b) => b.status === "completed" || b.status === "closed"
-    ).length;
-    const revenue = all.reduce((sum, b) => sum + (b.reward || 0), 0);
-
-    setStats({ total, open, active, completed, revenue });
+    const [bounties, payments] = await Promise.all([
+      supabase.from("bounties").select("*").order("created_at", { ascending: false }),
+      supabase.from("payments").select("*"),
+    ]);
+    const all = bounties.data || [];
+    setStats({
+      total: all.length,
+      active: all.filter((b) => b.status === "open" || b.status === "in_progress").length,
+      completed: all.filter((b) => b.status === "completed").length,
+      paid: (payments.data || []).reduce((sum, p) => sum + (p.amount || 0), 0),
+    });
     setRecent(all.slice(0, 5));
     setLoading(false);
   };
 
-  const statCards = [
-    { label: "Total Bounties", value: stats.total },
-    { label: "Open", value: stats.open },
-    { label: "Active", value: stats.active },
-    { label: "Completed", value: stats.completed },
-    { label: "Revenue", value: `$${stats.revenue.toLocaleString()}` },
-  ];
-
-  const statusStyle = (status: string) => {
-    const map: Record<string, React.CSSProperties> = {
-      open: { background: "var(--accent-light)", color: "var(--accent)" },
-      active: { background: "#FFF3CD", color: "#856404" },
-      completed: { background: "var(--accent-light)", color: "var(--success)" },
-      closed: { background: "var(--bg-elevated)", color: "var(--text-secondary)" },
-    };
-    return map[status] || map.closed;
-  };
-
   return (
     <div>
-      <div style={{ marginBottom: "32px" }}>
-        <h1
-          style={{
-            fontSize: "28px",
-            fontWeight: 600,
-            color: "var(--text-primary)",
-            marginBottom: "6px",
-            letterSpacing: "-0.02em",
-          }}
-        >
-          Dashboard
-        </h1>
-        <p style={{ fontSize: "15px", color: "var(--text-secondary)" }}>
-          Overview of your platform
-        </p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
+        <div className="page-header" style={{ marginBottom: 0 }}>
+          <h1>Dashboard</h1>
+          <p>Overview of your bounties and payments</p>
+        </div>
+        <Link href="/bounties/new" className="btn btn-primary">+ Create Bounty</Link>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-          gap: "16px",
-          marginBottom: "32px",
-        }}
-      >
-        {statCards.map((s) => (
-          <div
-            key={s.label}
-            style={{
-              background: "var(--bg-card)",
-              border: "1px solid var(--border)",
-              borderRadius: "var(--radius-md)",
-              padding: "24px",
-              transition: "box-shadow 150ms ease",
-            }}
-          >
-            <div
-              style={{
-                fontSize: "32px",
-                fontWeight: 600,
-                color: "var(--text-primary)",
-                letterSpacing: "-0.03em",
-                marginBottom: "4px",
-              }}
-            >
-              {loading ? (
-                <div
-                  style={{
-                    height: "32px",
-                    width: "60%",
-                    background: "var(--bg-elevated)",
-                    borderRadius: "var(--radius-sm)",
-                  }}
-                />
-              ) : (
-                s.value
-              )}
+      <div className="grid-4" style={{ marginBottom: "40px" }}>
+        {[
+          { label: "Total Bounties", value: stats.total, icon: "🎯" },
+          { label: "Active", value: stats.active, icon: "⚡" },
+          { label: "Completed", value: stats.completed, icon: "✅" },
+          { label: "Total Paid", value: `$${stats.paid.toLocaleString()}`, icon: "💰" },
+        ].map((s) => (
+          <div key={s.label} className="stat-card">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
+              <p className="label">{s.label}</p>
+              <span style={{ fontSize: "24px" }}>{s.icon}</span>
             </div>
-            <div
-              style={{
-                fontSize: "13px",
-                color: "var(--text-secondary)",
-              }}
-            >
-              {s.label}
-            </div>
+            <p className="value">{s.value}</p>
           </div>
         ))}
       </div>
 
-      <div
-        style={{
-          background: "var(--bg-card)",
-          border: "1px solid var(--border)",
-          borderRadius: "var(--radius-md)",
-          overflow: "hidden",
-        }}
-      >
-        <div
-          style={{
-            padding: "20px 24px",
-            borderBottom: "1px solid var(--border)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <h2
-            style={{
-              fontSize: "16px",
-              fontWeight: 600,
-              color: "var(--text-primary)",
-              margin: 0,
-            }}
-          >
-            Recent Bounties
-          </h2>
-          <Link
-            href="/bounties"
-            style={{
-              fontSize: "13px",
-              fontWeight: 500,
-              color: "var(--accent)",
-              textDecoration: "none",
-            }}
-          >
-            View all
-          </Link>
+      <h2 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "20px" }}>Recent Bounties</h2>
+      {loading ? (
+        <div className="card" style={{ height: "200px" }}><div className="skeleton skeleton-title" /><div className="skeleton skeleton-text" /></div>
+      ) : recent.length === 0 ? (
+        <div className="empty-state">
+          <div className="icon">🎯</div>
+          <h3>No bounties yet</h3>
+          <p>Create your first bounty to get started</p>
+          <Link href="/bounties/new" className="btn btn-primary" style={{ marginTop: "16px" }}>Create Bounty</Link>
         </div>
-
-        <div style={{ overflowX: "auto" }}>
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "separate",
-              borderSpacing: 0,
-              fontSize: "14px",
-              minWidth: "500px",
-            }}
-          >
+      ) : (
+        <div className="card-flat" style={{ overflow: "hidden" }}>
+          <table className="table">
             <thead>
-              <tr>
-                {["Title", "Status", "Reward", "Created"].map((h) => (
-                  <th
-                    key={h}
-                    style={{
-                      textAlign: "left",
-                      padding: "12px 16px",
-                      fontSize: "12px",
-                      fontWeight: 600,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                      color: "var(--text-secondary)",
-                      borderBottom: "1px solid var(--border)",
-                      background: "var(--bg-elevated)",
-                    }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
+              <tr><th>Title</th><th>Status</th><th>Reward</th><th>Created</th></tr>
             </thead>
             <tbody>
-              {loading ? (
-                <tr>
-                  <td
-                    colSpan={4}
-                    style={{
-                      padding: "40px",
-                      textAlign: "center",
-                      color: "var(--text-secondary)",
-                    }}
-                  >
-                    Loading...
-                  </td>
+              {recent.map((b) => (
+                <tr key={b.id}>
+                  <td><Link href={`/bounties/${b.id}`} style={{ fontWeight: 600, color: "var(--text-primary)" }}>{b.title}</Link></td>
+                  <td><span className={`badge ${b.status === "open" ? "badge-success" : b.status === "completed" ? "badge-neutral" : "badge-warning"}`}>{b.status}</span></td>
+                  <td style={{ fontWeight: 700, color: "var(--accent)" }}>${b.reward || 0}</td>
+                  <td style={{ color: "var(--text-secondary)" }}>{new Date(b.created_at).toLocaleDateString()}</td>
                 </tr>
-              ) : recent.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={4}
-                    style={{
-                      padding: "40px",
-                      textAlign: "center",
-                      color: "var(--text-secondary)",
-                    }}
-                  >
-                    No bounties yet
-                  </td>
-                </tr>
-              ) : (
-                recent.map((b) => (
-                  <tr key={b.id}>
-                    <td
-                      style={{
-                        padding: "14px 16px",
-                        borderBottom: "1px solid var(--border)",
-                        color: "var(--text-primary)",
-                      }}
-                    >
-                      <Link
-                        href={`/bounties/${b.id}`}
-                        style={{
-                          color: "var(--text-primary)",
-                          textDecoration: "none",
-                          fontWeight: 500,
-                        }}
-                        onMouseEnter={(e) => {
-                          (e.target as HTMLAnchorElement).style.color =
-                            "var(--accent)";
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.target as HTMLAnchorElement).style.color =
-                            "var(--text-primary)";
-                        }}
-                      >
-                        {b.title}
-                      </Link>
-                    </td>
-                    <td
-                      style={{
-                        padding: "14px 16px",
-                        borderBottom: "1px solid var(--border)",
-                      }}
-                    >
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          padding: "3px 10px",
-                          borderRadius: "999px",
-                          fontSize: "12px",
-                          fontWeight: 500,
-                          ...statusStyle(b.status),
-                        }}
-                      >
-                        {b.status}
-                      </span>
-                    </td>
-                    <td
-                      style={{
-                        padding: "14px 16px",
-                        borderBottom: "1px solid var(--border)",
-                        color: "var(--text-primary)",
-                        fontWeight: 500,
-                      }}
-                    >
-                      ${b.reward}
-                    </td>
-                    <td
-                      style={{
-                        padding: "14px 16px",
-                        borderBottom: "1px solid var(--border)",
-                        color: "var(--text-secondary)",
-                        fontSize: "13px",
-                      }}
-                    >
-                      {new Date(b.created_at).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))
-              )}
+              ))}
             </tbody>
           </table>
         </div>
-      </div>
+      )}
     </div>
   );
 }
