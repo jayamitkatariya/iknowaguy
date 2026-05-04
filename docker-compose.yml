@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # ── Redis (for rate limiting & caching) ───────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: hireahuman-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ── MCP Server (HTTP mode) ────────────────────────────────────────────────
+  mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hireahuman-mcp
+    env_file:
+      - .env
+    environment:
+      PORT: 3001
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "3001:3001"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # ── Worker App (Next.js) ──────────────────────────────────────────────────
+  worker-app:
+    build:
+      context: ./packages/worker-app
+      dockerfile: ../../Dockerfile.nextjs
+    container_name: hireahuman-worker
+    env_file:
+      - .env
+    environment:
+      PORT: 3000
+      NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+    ports:
+      - "3002:3000"
+    depends_on:
+      - mcp-server
+
+  # ── Admin Dashboard (Next.js) ─────────────────────────────────────────────
+  admin-dashboard:
+    build:
+      context: ./packages/admin-dashboard
+      dockerfile: ../../Dockerfile.nextjs
+    container_name: hireahuman-admin
+    env_file:
+      - .env
+    environment:
+      PORT: 3000
+      NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+    ports:
+      - "3003:3000"
+    depends_on:
+      - mcp-server
+
+volumes:
+  redis_data:

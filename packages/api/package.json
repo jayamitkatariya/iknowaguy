@@ -1,0 +1,21 @@
+{
+  "name": "@hireahuman/api",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "npx tsc",
+    "dev": "npx tsx watch src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@hireahuman/shared": "*",
+    "@supabase/supabase-js": "^2.45.0",
+    "hono": "^4.5.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.4.5"
+  }
+}
