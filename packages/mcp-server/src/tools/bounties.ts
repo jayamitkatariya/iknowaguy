@@ -188,6 +188,14 @@ export async function handleAcceptBounty(args: any, _tenantId: string) {
     return { content: [{ type: "text" as const, text: JSON.stringify({ error: error.message }) }] };
   }
 
+  // Create bounty_assignments record
+  await supabase.from("bounty_assignments").insert({
+    bounty_id: args.id,
+    human_id: args.assigned_human_id,
+    status: "active",
+    accepted_at: new Date().toISOString(),
+  });
+
   // Notify tenant/agent asynchronously
   notifyBountyAccepted(data, args.assigned_human_id).catch((err) => {
     console.warn("[bounties:accept] Notification error:", err.message);

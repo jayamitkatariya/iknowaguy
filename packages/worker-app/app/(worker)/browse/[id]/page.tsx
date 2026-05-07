@@ -29,7 +29,7 @@ export default function BountyDetailPage() {
     if (!user) { setError("You must be logged in to accept a task."); setAccepting(false); return; }
     const { error: updateError } = await supabase.from("bounties").update({
       assigned_human_id: user.id,
-      status: "accepted",
+      status: "in_progress",
     }).eq("id", id);
     if (updateError) {
       setError(updateError.message);

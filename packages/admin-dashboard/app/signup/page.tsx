@@ -17,15 +17,23 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email, password,
       options: { data: { name, role: "admin" } },
     });
     if (error) {
       setError(error.message);
       setLoading(false);
-    } else {
+    } else if (data.user) {
+      await supabase.from("users").insert({
+        id: data.user.id,
+        email: email,
+        role: "admin",
+      });
       router.push("/dashboard");
+    } else {
+      setError("Signup succeeded but no user returned. Check your email for confirmation.");
+      setLoading(false);
     }
   };
 

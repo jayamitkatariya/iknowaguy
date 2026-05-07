@@ -17,15 +17,32 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email, password,
       options: { data: { name, role: "human" } },
     });
     if (error) {
       setError(error.message);
       setLoading(false);
-    } else {
+    } else if (data.user) {
+      // Insert human_profiles
+      await supabase.from("human_profiles").insert({
+        id: data.user.id,
+        full_name: name,
+        email: email,
+        is_available: true,
+        verification_status: "pending",
+      });
+      // Insert users
+      await supabase.from("users").insert({
+        id: data.user.id,
+        email: email,
+        role: "human",
+      });
       router.push("/browse");
+    } else {
+      setError("Signup succeeded but no user returned. Check your email for confirmation.");
+      setLoading(false);
     }
   };
 
