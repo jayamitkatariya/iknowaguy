@@ -36,6 +36,7 @@ humans.get('/humans', async (c) => {
 });
 
 humans.get('/humans/:id', async (c) => {
+  const tenantId = c.get('tenantId');
   const id = c.req.param('id');
 
   const { data, error } = await supabase
@@ -57,6 +58,7 @@ humans.get('/humans/:id', async (c) => {
       updated_at
     `)
     .eq('id', id)
+    .eq('users.tenant_id', tenantId)
     .single();
 
   if (error) {

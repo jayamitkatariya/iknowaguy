@@ -32,7 +32,7 @@ export class SmsAdapter {
     // Check if Twilio is configured
     if (!this.accountSid || !this.authToken || !this.from) {
       console.warn('[notifications:sms] Twilio credentials not configured — skipping notification');
-      return { success: true };
+      return { success: false, error: 'Adapter not configured' };
     }
 
     try {

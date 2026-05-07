@@ -8,13 +8,11 @@ export interface Env {
   };
 }
 
-export const apiKeyMiddleware: MiddlewareHandler<Env> = async (c, next): Promise<void> => {
+export const apiKeyMiddleware: MiddlewareHandler<Env> = async (c, next) => {
   const authHeader = c.req.header('Authorization');
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    c.status(401);
-    c.json({ error: 'Missing or invalid Authorization header' });
-    return;
+    return c.json({ error: 'Missing or invalid Authorization header' }, 401);
   }
 
   const apiKey = authHeader.slice(7);
@@ -26,9 +24,7 @@ export const apiKeyMiddleware: MiddlewareHandler<Env> = async (c, next): Promise
     .single();
 
   if (error || !tenant) {
-    c.status(401);
-    c.json({ error: 'Invalid API key' });
-    return;
+    return c.json({ error: 'Invalid API key' }, 401);
   }
 
   c.set('tenantId', tenant.id);

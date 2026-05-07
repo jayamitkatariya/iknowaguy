@@ -1,25 +1,22 @@
 /**
  * HireAHuman Agent SDK
- * 
- * A TypeScript SDK for AI agents to interact with HireAHuman without needing native MCP support.
- * Agents can use this SDK to list humans, create bounties, manage tasks, and more.
- * 
+ *
+ * A TypeScript SDK for AI agents to interact with HireAHuman via JSON-RPC 2.0 over MCP.
+ *
  * @example
  * ```typescript
  * import { HireAHumanClient } from '@hireahuman/sdk';
- * 
+ *
  * const client = new HireAHumanClient({
  *   apiKey: 'your-api-key',
- *   baseUrl: 'http://localhost:3000'
+ *   baseUrl: 'http://localhost:3001'
  * });
- * 
- * // List available humans
+ *
  * const humans = await client.listHumans({
  *   skills: ['delivery', 'photography'],
  *   location_city: 'New York'
  * });
- * 
- * // Create a bounty
+ *
  * const bounty = await client.createBounty({
  *   title: 'Deliver groceries',
  *   description: 'Need someone to pick up groceries',
@@ -72,18 +69,17 @@ export interface BountyFilter {
 }
 
 export interface CompleteBountyParams {
-  bounty_id: string;
-  submitted_by: string;
-  evidence_urls?: string[];
-  notes?: string;
+  id: string;
+  content: string;
+  media_urls?: string[];
   completion_code?: string;
   location_lat?: number;
   location_lng?: number;
 }
 
 export interface ReviewBountyParams {
-  bounty_id: string;
-  decision: 'approved' | 'rejected' | 'revision_requested';
+  id: string;
+  decision: 'approved' | 'rejected';
   notes?: string;
   reviewer_id: string;
 }
@@ -96,8 +92,7 @@ export interface SendMessageParams {
 
 export interface CreateDisputeParams {
   bounty_id: string;
-  raised_by: string;
-  reason: string;
+  description: string;
   evidence_urls?: string[];
 }
 
@@ -112,196 +107,179 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
-/**
- * HireAHumanClient - Main SDK class for interacting with HireAHuman
- */
+const TIMEOUT_MS = 10_000;
+const MAX_RETRIES = 1;
+
 export class HireAHumanClient {
   private apiKey: string;
   private baseUrl: string;
 
-  constructor({ apiKey, baseUrl = 'http://localhost:3000' }: { apiKey: string; baseUrl?: string }) {
+  constructor({ apiKey, baseUrl = 'http://localhost:3001' }: { apiKey: string; baseUrl?: string }) {
     this.apiKey = apiKey;
     this.baseUrl = baseUrl;
   }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
-    const url = `${this.baseUrl}${endpoint}`;
-    
+  private jsonRpcId = 0;
+
+  private async rpcrequest<T>(method: string, toolName: string, args: Record<string, unknown> | object): Promise<ApiResponse<T>> {
+    const body = {
+      jsonrpc: '2.0',
+      id: ++this.jsonRpcId,
+      method,
+      params: {
+        name: toolName,
+        arguments: args as Record<string, unknown>,
+      },
+    };
+
+    const url = `${this.baseUrl}/mcp`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${this.apiKey}`,
-      ...(options.headers as Record<string, string> || {}),
     };
 
-    try {
-      const response = await fetch(url, {
-        ...options,
-        headers,
-      });
+    let lastError: string = '';
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-      const data = await response.json();
+        const response = await fetch(url, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        });
 
-      if (!response.ok) {
-        return { error: data.error || `HTTP ${response.status}: ${response.statusText}` };
+        clearTimeout(timeout);
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          return { error: data.error || `HTTP ${response.status}: ${response.statusText}` };
+        }
+
+        if (data.error) {
+          return { error: data.error.message || JSON.stringify(data.error) };
+        }
+
+        return { data: data.result };
+      } catch (err: unknown) {
+        if (err instanceof DOMException && err.name === 'AbortError') {
+          lastError = `Request timed out after ${TIMEOUT_MS}ms`;
+        } else if (err instanceof Error) {
+          lastError = err.message;
+        } else {
+          lastError = String(err);
+        }
+        if (attempt < MAX_RETRIES) continue;
       }
-
-      return { data };
-    } catch (error) {
-      return { error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
+
+    return { error: lastError };
   }
 
   // ============ Human Workers ============
 
-  /**
-   * List available human workers with optional filters
-   */
   async listHumans(filters?: HumanFilter): Promise<ApiResponse<{ humans: unknown[]; total: number }>> {
-    const params = new URLSearchParams();
-    
-    if (filters) {
-      if (filters.skills?.length) params.append('skills', filters.skills.join(','));
-      if (filters.location_city) params.append('location_city', filters.location_city);
-      if (filters.location_lat != null) params.append('location_lat', String(filters.location_lat));
-      if (filters.location_lng != null) params.append('location_lng', String(filters.location_lng));
-      if (filters.is_available != null) params.append('is_available', String(filters.is_available));
-      if (filters.limit != null) params.append('limit', String(filters.limit));
-      if (filters.offset != null) params.append('offset', String(filters.offset));
-    }
+    return this.rpcrequest('tools/call', 'list_humans', filters || {});
+  }
 
-    const queryString = params.toString();
-    const endpoint = `/tools/call?tool=humans_list${queryString ? '&' + queryString : ''}`;
-    
-    // Use POST for tool calls
-    return this.request(endpoint, {
-      method: 'POST',
-      body: JSON.stringify(filters || {}),
-    });
+  async getHuman(humanId: string): Promise<ApiResponse<unknown>> {
+    return this.rpcrequest('tools/call', 'get_human', { human_id: humanId });
   }
 
   // ============ Bounties ============
 
-  /**
-   * Create a new bounty task
-   */
   async createBounty(params: CreateBountyParams): Promise<ApiResponse<unknown>> {
-    return this.request('/tools/call', {
-      method: 'POST',
-      body: JSON.stringify({
-        tool: 'bounties_create',
-        params,
-      }),
-    });
+    return this.rpcrequest('tools/call', 'create_bounty', params);
   }
 
-  /**
-   * List bounties with optional filters
-   */
   async listBounties(filters: BountyFilter): Promise<ApiResponse<{ bounties: unknown[]; total: number }>> {
-    return this.request('/tools/call', {
-      method: 'POST',
-      body: JSON.stringify({
-        tool: 'bounties_list',
-        params: filters,
-      }),
-    });
+    return this.rpcrequest('tools/call', 'list_bounties', filters);
   }
 
-  /**
-   * Accept a bounty and assign it to a human worker
-   */
   async acceptBounty(bountyId: string, humanId: string): Promise<ApiResponse<unknown>> {
-    return this.request('/tools/call', {
-      method: 'POST',
-      body: JSON.stringify({
-        tool: 'bounties_accept',
-        params: { bounty_id: bountyId, human_id: humanId },
-      }),
+    return this.rpcrequest('tools/call', 'accept_bounty', {
+      id: bountyId,
+      assigned_human_id: humanId,
     });
   }
 
-  /**
-   * Submit completion for a bounty with evidence
-   */
-  async completeBounty(bountyId: string, submittedBy: string, evidence?: string[], notes?: string): Promise<ApiResponse<unknown>> {
-    return this.request('/tools/call', {
-      method: 'POST',
-      body: JSON.stringify({
-        tool: 'bounties_complete',
-        params: {
-          bounty_id: bountyId,
-          submitted_by: submittedBy,
-          evidence_urls: evidence || [],
-          notes,
-        },
-      }),
+  async completeBounty(params: CompleteBountyParams): Promise<ApiResponse<unknown>> {
+    return this.rpcrequest('tools/call', 'submit_bounty', {
+      id: params.id,
+      content: params.content,
+      media_urls: params.media_urls || [],
     });
   }
 
-  /**
-   * Review a submitted bounty
-   */
   async reviewBounty(params: ReviewBountyParams): Promise<ApiResponse<unknown>> {
-    return this.request('/tools/call', {
-      method: 'POST',
-      body: JSON.stringify({
-        tool: 'bounties_review',
-        params,
-      }),
-    });
+    return this.rpcrequest('tools/call', 'review_bounty', params);
   }
 
   // ============ Messages ============
 
-  /**
-   * Send a message in a bounty thread
-   */
   async sendMessage(bountyId: string, senderId: string, content: string): Promise<ApiResponse<unknown>> {
-    return this.request('/tools/call', {
-      method: 'POST',
-      body: JSON.stringify({
-        tool: 'messages_send',
-        params: {
-          bounty_id: bountyId,
-          sender_id: senderId,
-          content,
-        },
-      }),
+    return this.rpcrequest('tools/call', 'send_message', {
+      bounty_id: bountyId,
+      sender_id: senderId,
+      content,
     });
   }
 
   // ============ Disputes ============
 
-  /**
-   * Create a dispute for a bounty
-   */
   async createDispute(params: CreateDisputeParams): Promise<ApiResponse<unknown>> {
-    return this.request('/tools/call', {
-      method: 'POST',
-      body: JSON.stringify({
-        tool: 'disputes_create',
-        params,
-      }),
+    return this.rpcrequest('tools/call', 'raise_dispute', {
+      bounty_id: params.bounty_id,
+      description: params.description,
+      evidence_urls: params.evidence_urls || [],
     });
   }
 
   // ============ Payments ============
 
-  /**
-   * Initiate payment for a bounty
-   */
   async initiatePayment(bountyId: string, amount: number, currency: 'USD' | 'EUR' | 'GBP' | 'INR' = 'USD'): Promise<ApiResponse<unknown>> {
-    return this.request('/tools/call', {
-      method: 'POST',
-      body: JSON.stringify({
-        tool: 'payments_initiate',
-        params: {
-          bounty_id: bountyId,
-          amount,
-          currency,
-        },
-      }),
+    return this.rpcrequest('tools/call', 'initiate_payment', {
+      bounty_id: bountyId,
+      amount,
+      currency,
     });
+  }
+
+  // ============ Additional Methods ============
+
+  async requestHuman(filters?: HumanFilter): Promise<ApiResponse<unknown>> {
+    return this.rpcrequest('tools/call', 'request_human', filters || {});
+  }
+
+  async getBounty(id: string): Promise<ApiResponse<unknown>> {
+    return this.rpcrequest('tools/call', 'get_bounty', { id });
+  }
+
+  async listCategories(): Promise<ApiResponse<unknown>> {
+    return this.rpcrequest('tools/call', 'list_categories', {});
+  }
+
+  async getCategory(id: string): Promise<ApiResponse<unknown>> {
+    return this.rpcrequest('tools/call', 'get_category', { id });
+  }
+
+  async listMessages(bountyId: string): Promise<ApiResponse<unknown>> {
+    return this.rpcrequest('tools/call', 'list_messages', { bounty_id: bountyId });
+  }
+
+  async getPaymentStatus(bountyId: string): Promise<ApiResponse<unknown>> {
+    return this.rpcrequest('tools/call', 'get_payment_status', { bounty_id: bountyId });
+  }
+
+  async releasePayment(bountyId: string): Promise<ApiResponse<unknown>> {
+    return this.rpcrequest('tools/call', 'release_payment', { bounty_id: bountyId });
+  }
+
+  async refundPayment(bountyId: string): Promise<ApiResponse<unknown>> {
+    return this.rpcrequest('tools/call', 'refund_payment', { bounty_id: bountyId });
   }
 }
 

@@ -8,21 +8,21 @@ import {
   getPaymentIntentStatus,
 } from "../lib/stripe.js";
 
-const PaymentInitiateSchema = z.object({
+export const PaymentInitiateSchema = z.object({
   bounty_id: z.string().describe("ID of the bounty"),
   amount: z.number().positive().describe("Payment amount"),
   currency: z.enum(["USD", "EUR", "GBP", "INR"]).optional().default("USD"),
 });
 
-const PaymentStatusSchema = z.object({
+export const PaymentStatusSchema = z.object({
   bounty_id: z.string().describe("ID of the bounty"),
 });
 
-const PaymentReleaseSchema = z.object({
+export const PaymentReleaseSchema = z.object({
   bounty_id: z.string().describe("ID of the bounty"),
 });
 
-const PaymentRefundSchema = z.object({
+export const PaymentRefundSchema = z.object({
   bounty_id: z.string().describe("ID of the bounty"),
   reason: z.string().optional().describe("Reason for refund"),
 });
@@ -32,7 +32,7 @@ export async function handleInitiatePayment(args: any, tenantId: string) {
 
   const { data: bounty, error: bountyError } = await supabase
     .from("bounties")
-    .select("id, price, payment_status")
+    .select("id, reward_amount, payment_status")
     .eq("id", args.bounty_id)
     .single();
 
@@ -54,17 +54,17 @@ export async function handleInitiatePayment(args: any, tenantId: string) {
   const stripePaymentIntentId = paymentIntent.id;
 
   // Insert payment transaction record
-  const { error: txError } = await (supabase as any)
-    .from("payment_transactions")
-    .insert({
-      bounty_id: args.bounty_id,
-      tenant_id: tenantId,
-      stripe_payment_intent_id: stripePaymentIntentId,
-      amount: args.amount,
-      currency: args.currency,
-      status: "pending",
-      created_at: new Date().toISOString(),
-    });
+const { error: txError } = await supabase
+      .from("payment_transactions")
+      .insert({
+        bounty_id: args.bounty_id,
+        tenant_id: tenantId,
+        stripe_payment_intent_id: stripePaymentIntentId,
+        amount: args.amount,
+        currency: args.currency,
+        status: "pending",
+        created_at: new Date().toISOString(),
+      });
 
   if (txError) {
     return {
@@ -113,7 +113,7 @@ export async function handleGetPaymentStatus(args: any, _tenantId: string) {
 
   const { data: bounty, error: bountyError } = await supabase
     .from("bounties")
-    .select("id, payment_status, price, currency")
+    .select("id, payment_status, reward_amount, currency")
     .eq("id", args.bounty_id)
     .single();
 
@@ -124,11 +124,11 @@ export async function handleGetPaymentStatus(args: any, _tenantId: string) {
   }
 
   // Query payment_transactions for this bounty
-  const { data: tx, error: txError } = await (supabase as any)
-    .from("payment_transactions")
-    .select("stripe_payment_intent_id, status")
-    .eq("bounty_id", args.bounty_id)
-    .maybeSingle();
+const { data: tx, error: txError } = await supabase
+      .from("payment_transactions")
+      .select("stripe_payment_intent_id, status")
+      .eq("bounty_id", args.bounty_id)
+      .maybeSingle();
 
   let stripeStatus = null;
   if (tx && tx.stripe_payment_intent_id) {
@@ -146,7 +146,7 @@ export async function handleGetPaymentStatus(args: any, _tenantId: string) {
             payment_status: bounty.payment_status,
             transaction_status: tx?.status ?? null,
             stripe_status: stripeStatus,
-            amount: bounty.price,
+            amount: bounty.reward_amount,
             currency: bounty.currency,
           },
           null,
@@ -173,11 +173,11 @@ export async function handleReleasePayment(args: any, _tenantId: string) {
   }
 
   // Get the payment transaction for this bounty
-  const { data: tx, error: txError } = await (supabase as any)
-    .from("payment_transactions")
-    .select("stripe_payment_intent_id")
-    .eq("bounty_id", args.bounty_id)
-    .maybeSingle();
+const { data: tx, error: txError } = await supabase
+      .from("payment_transactions")
+      .select("stripe_payment_intent_id")
+      .eq("bounty_id", args.bounty_id)
+      .maybeSingle();
 
   if (txError) {
     return {
@@ -197,7 +197,7 @@ export async function handleReleasePayment(args: any, _tenantId: string) {
   await capturePayment(tx.stripe_payment_intent_id);
 
   // Update payment_transactions status to captured
-  const { error: txUpdateError } = await (supabase as any)
+  const { error: txUpdateError } = await supabase
     .from("payment_transactions")
     .update({
       status: "captured",
@@ -261,11 +261,11 @@ export async function handleRefundPayment(args: any, _tenantId: string) {
   }
 
   // Get the payment transaction for this bounty
-  const { data: tx, error: txError } = await (supabase as any)
-    .from("payment_transactions")
-    .select("stripe_payment_intent_id")
-    .eq("bounty_id", args.bounty_id)
-    .maybeSingle();
+const { data: tx, error: txError } = await supabase
+      .from("payment_transactions")
+      .select("stripe_payment_intent_id")
+      .eq("bounty_id", args.bounty_id)
+      .maybeSingle();
 
   if (txError) {
     return {
@@ -285,13 +285,13 @@ export async function handleRefundPayment(args: any, _tenantId: string) {
   await refundPayment(tx.stripe_payment_intent_id);
 
   // Update payment_transactions status to refunded
-  const { error: txUpdateError } = await (supabase as any)
-    .from("payment_transactions")
-    .update({
-      status: "refunded",
-      updated_at: new Date().toISOString(),
-    })
-    .eq("bounty_id", args.bounty_id);
+  const { error: txUpdateError } = await supabase
+      .from("payment_transactions")
+      .update({
+        status: "refunded",
+        updated_at: new Date().toISOString(),
+      })
+      .eq("bounty_id", args.bounty_id);
 
   if (txUpdateError) {
     return {

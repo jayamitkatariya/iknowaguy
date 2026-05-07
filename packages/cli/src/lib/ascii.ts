@@ -3,13 +3,12 @@
  * High contrast white on black, clean and sharp
  */
 
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 
-// Voxe style: white dominant, black bg feel via bold
 const WHITE = chalk.white.bold;
 const WHITE_DIM = chalk.white;
 const GRAY = chalk.gray;
-const ACCENT = chalk.white; // single accent — white itself
+const ACCENT = chalk.white;
 
 // Main banner — big HIREAHUMAN logo in white
 export function printBanner(): void {

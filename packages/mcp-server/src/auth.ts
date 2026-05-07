@@ -8,16 +8,31 @@ export function hashApiKey(key: string): string {
 
 export async function validateApiKey(key: string): Promise<{ id: string; name: string; slug: string } | null> {
   const supabase = getSupabaseClient();
+  const hashedKey = hashApiKey(key);
 
   const { data, error } = await supabase
     .from("tenants")
-    .select("id, name, slug, api_key")
-    .eq("api_key", key)
+    .select("id, name, slug, api_key_prefix")
+    .eq("api_key_hash", hashedKey)
     .single();
 
   if (error || !data) {
-    console.log(`[auth] API key validation failed: ${error?.message || "not found"}`);
-    return null;
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from("tenants")
+      .select("id, name, slug")
+      .eq("api_key", key)
+      .single();
+
+    if (fallbackError || !fallbackData) {
+      console.log(`[auth] API key validation failed: ${error?.message || "not found"}`);
+      return null;
+    }
+
+    return {
+      id: fallbackData.id,
+      name: fallbackData.name,
+      slug: fallbackData.slug,
+    };
   }
 
   return {
@@ -30,11 +45,6 @@ export async function validateApiKey(key: string): Promise<{ id: string; name: s
 export function extractApiKey(authHeader: string): string | null {
   const match = authHeader.match(/^Bearer\s+(.+)$/i);
   return match ? match[1] : null;
-}
-
-export function maskApiKey(key: string): string {
-  if (key.length <= 8) return "****";
-  return key.slice(0, 8) + "****";
 }
 
 export async function setTenantContext(supabaseClient: ReturnType<typeof getSupabaseClient>, tenantId: string): Promise<void> {
@@ -62,7 +72,7 @@ export async function authMiddleware(req: Request, res: Response, next: NextFunc
     return res.status(401).json({ error: "Invalid API key" });
   }
 
-  (req as any).tenant = tenant;
+  req.tenant = tenant;
 
   const supabase = getSupabaseClient();
   await setTenantContext(supabase, tenant.id);

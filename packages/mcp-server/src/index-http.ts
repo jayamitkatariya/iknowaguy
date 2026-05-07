@@ -1,16 +1,17 @@
 import "dotenv/config";
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response } from "express";
 import cors from "cors";
 import { createServer } from "http";
+import { z } from "zod";
 import { rateLimitMiddleware } from "./middleware/rate-limit.js";
 import { requestIdMiddleware } from "./middleware/request-id.js";
 import { loggerMiddleware } from "./middleware/logger.js";
-import { validateApiKey, extractApiKey, setTenantContext } from "./auth.js";
+import { authMiddleware } from "./auth.js";
 import { getSupabaseClient } from "./lib/supabase.js";
 import { constructWebhookEvent } from "./lib/stripe.js";
 
-import { handleListCategories, handleGetCategory } from "./tools/categories.js";
-import { handleListHumans, handleGetHuman, handleRequestHuman } from "./tools/humans.js";
+import { handleListCategories, handleGetCategory, CategoryListSchema, CategoryGetSchema } from "./tools/categories.js";
+import { handleListHumans, handleGetHuman, handleRequestHuman, HumanListSchema, HumanGetSchema, HumanRequestSchema } from "./tools/humans.js";
 import {
   handleCreateBounty,
   handleListBounties,
@@ -18,21 +19,31 @@ import {
   handleAcceptBounty,
   handleSubmitBounty,
   handleReviewBounty,
+  BountyCreateSchema,
+  BountyListSchema,
+  BountyGetSchema,
+  BountyAcceptSchema,
+  BountySubmitSchema,
+  BountyReviewSchema,
 } from "./tools/bounties.js";
-import { handleSendMessage, handleListMessages } from "./tools/messages.js";
-import { handleRaiseDispute } from "./tools/disputes.js";
+import { handleSendMessage, handleListMessages, MessageSendSchema, MessageListSchema } from "./tools/messages.js";
+import { handleRaiseDispute, DisputeRaiseSchema } from "./tools/disputes.js";
 import {
   handleInitiatePayment,
   handleGetPaymentStatus,
   handleReleasePayment,
   handleRefundPayment,
+  PaymentInitiateSchema,
+  PaymentStatusSchema,
+  PaymentReleaseSchema,
+  PaymentRefundSchema,
 } from "./tools/payments.js";
 
 const PORT = parseInt(process.env.PORT || "3001");
 const ALLOWED_ORIGINS = process.env.CORS_ORIGINS?.split(",").map((o) => o.trim()) || [
+  "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:3002",
-  "http://localhost:3003",
 ];
 
 interface Tenant {
@@ -89,7 +100,7 @@ app.post("/webhooks/stripe", express.raw({ type: "application/json" }), async (r
       console.log("[webhook] PaymentIntent succeeded:", paymentIntent.id);
 
       const supabase = getSupabaseClient();
-      await (supabase as any)
+      await supabase
         .from("payment_transactions")
         .update({ status: "succeeded", updated_at: new Date().toISOString() })
         .eq("stripe_payment_intent_id", paymentIntent.id);
@@ -100,7 +111,7 @@ app.post("/webhooks/stripe", express.raw({ type: "application/json" }), async (r
       console.log("[webhook] PaymentIntent failed:", paymentIntent.id);
 
       const supabase = getSupabaseClient();
-      await (supabase as any)
+      await supabase
         .from("payment_transactions")
         .update({ status: "failed", updated_at: new Date().toISOString() })
         .eq("stripe_payment_intent_id", paymentIntent.id);
@@ -119,32 +130,6 @@ app.use(express.json());
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", version: "0.1.0" });
 });
-
-// ── Auth middleware ──────────────────────────────────────────────────────────
-async function authMiddleware(req: Request, res: Response, next: NextFunction) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).json({ error: "Missing Authorization header" });
-  }
-
-  const key = extractApiKey(authHeader);
-  if (!key) {
-    return res.status(401).json({ error: "Invalid Authorization header format" });
-  }
-
-  const tenant = await validateApiKey(key);
-  if (!tenant) {
-    return res.status(401).json({ error: "Invalid API key" });
-  }
-
-  req.tenant = tenant;
-
-  // Set RLS tenant context
-  const supabase = getSupabaseClient();
-  await setTenantContext(supabase, tenant.id);
-
-  next();
-}
 
 // ── Tool routing map ─────────────────────────────────────────────────────────
 const toolHandlers: Record<string, (args: any, tenantId: string) => Promise<any>> = {
@@ -411,6 +396,28 @@ const toolDefinitions = [
   },
 ];
 
+// ── Tool schema map for Zod validation ──────────────────────────────────────────
+const toolSchemas: Record<string, z.ZodTypeAny> = {
+  list_categories: CategoryListSchema,
+  get_category: CategoryGetSchema,
+  list_humans: HumanListSchema,
+  get_human: HumanGetSchema,
+  request_human: HumanRequestSchema,
+  create_bounty: BountyCreateSchema,
+  list_bounties: BountyListSchema,
+  get_bounty: BountyGetSchema,
+  accept_bounty: BountyAcceptSchema,
+  submit_bounty: BountySubmitSchema,
+  review_bounty: BountyReviewSchema,
+  send_message: MessageSendSchema,
+  list_messages: MessageListSchema,
+  raise_dispute: DisputeRaiseSchema,
+  initiate_payment: PaymentInitiateSchema,
+  get_payment_status: PaymentStatusSchema,
+  release_payment: PaymentReleaseSchema,
+  refund_payment: PaymentRefundSchema,
+};
+
 // ── JSON-RPC helpers ─────────────────────────────────────────────────────────
 function jsonRpcSuccess(id: string | number | null, result: any) {
   return { jsonrpc: "2.0", id, result };
@@ -430,6 +437,15 @@ app.post("/mcp", authMiddleware, async (req: Request, res: Response) => {
       return res.status(400).json(jsonRpcError(id ?? null, -32600, "Invalid Request: missing method"));
     }
 
+    // Per JSON-RPC spec, requests with null/undefined id are notifications — no response
+    if (id === null || id === undefined) {
+      if (method === "notifications/initialized") {
+        return res.status(204).end();
+      }
+      // For any other notification, process silently and return 200 with empty body
+      return res.status(200).end();
+    }
+
     // ── initialize ───────────────────────────────────────────────────────────
     if (method === "initialize") {
       return res.json(
@@ -444,6 +460,11 @@ app.post("/mcp", authMiddleware, async (req: Request, res: Response) => {
           },
         })
       );
+    }
+
+    // ── ping ─────────────────────────────────────────────────────────────────
+    if (method === "ping") {
+      return res.json(jsonRpcSuccess(id, {}));
     }
 
     // ── tools/list ───────────────────────────────────────────────────────────
@@ -466,7 +487,19 @@ app.post("/mcp", authMiddleware, async (req: Request, res: Response) => {
       }
 
       const tenantId = req.tenant!.id;
-      const result = await handler(toolArgs, tenantId);
+
+      let validatedArgs = toolArgs;
+      const schema = toolSchemas[toolName];
+      if (schema) {
+        const parsed = schema.safeParse(toolArgs);
+        if (!parsed.success) {
+          const errors = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ");
+          return res.status(400).json(jsonRpcError(id ?? null, -32602, `Invalid params: ${errors}`));
+        }
+        validatedArgs = parsed.data;
+      }
+
+      const result = await handler(validatedArgs, tenantId);
 
       // Convert MCP result format to JSON-RPC result
       return res.json(jsonRpcSuccess(id, result));

@@ -1,0 +1,150 @@
+
+> hireahuman@0.1.0 dev
+> turbo run dev
+
+• turbo 2.9.8
+
+   • Packages in scope: @hireahuman/admin-dashboard, @hireahuman/api, @hireahuman/cli, @hireahuman/mcp-server, @hireahuman/sdk, @hireahuman/shared, @hireahuman/worker-app
+   • Running dev in 7 packages
+   • Remote caching disabled
+
+@hireahuman/admin-dashboard:dev: cache bypass, force executing 618d4c8ebdd3aa53
+@hireahuman/api:dev: cache bypass, force executing bed9f73b2408af5b
+@hireahuman/mcp-server:dev: cache bypass, force executing 99bb20da4ce085bc
+@hireahuman/worker-app:dev: cache bypass, force executing 04afba9dfe9a022c
+@hireahuman/cli:dev: cache bypass, force executing 91424abed5378049
+@hireahuman/mcp-server:dev: 
+@hireahuman/mcp-server:dev: > @hireahuman/mcp-server@0.1.0 dev
+@hireahuman/mcp-server:dev: > npx tsx watch src/index.ts
+@hireahuman/mcp-server:dev: 
+@hireahuman/api:dev: 
+@hireahuman/api:dev: > @hireahuman/api@0.1.0 dev
+@hireahuman/api:dev: > npx tsx watch src/index.ts
+@hireahuman/api:dev: 
+@hireahuman/admin-dashboard:dev: 
+@hireahuman/admin-dashboard:dev: > @hireahuman/admin-dashboard@0.1.0 dev
+@hireahuman/admin-dashboard:dev: > next dev -p 3003
+@hireahuman/admin-dashboard:dev: 
+@hireahuman/worker-app:dev: 
+@hireahuman/worker-app:dev: > @hireahuman/worker-app@0.1.0 dev
+@hireahuman/worker-app:dev: > next dev -p 3002
+@hireahuman/worker-app:dev: 
+@hireahuman/cli:dev: 
+@hireahuman/cli:dev: > @hireahuman/cli@0.1.0 dev
+@hireahuman/cli:dev: > npx tsc && node bin/run
+@hireahuman/cli:dev: 
+@hireahuman/admin-dashboard:dev:   ▲ Next.js 14.2.5
+@hireahuman/admin-dashboard:dev:   - Local:        http://localhost:3003
+@hireahuman/admin-dashboard:dev:   - Environments: .env.local
+@hireahuman/admin-dashboard:dev: 
+@hireahuman/admin-dashboard:dev:  ✓ Starting...
+@hireahuman/worker-app:dev:   ▲ Next.js 14.2.5
+@hireahuman/worker-app:dev:   - Local:        http://localhost:3002
+@hireahuman/worker-app:dev:   - Environments: .env.local
+@hireahuman/worker-app:dev: 
+@hireahuman/worker-app:dev:  ✓ Starting...
+@hireahuman/api:dev: node:events:485
+@hireahuman/api:dev:       throw er; // Unhandled 'error' event
+@hireahuman/api:dev:       ^
+@hireahuman/api:dev: 
+@hireahuman/api:dev: Error: listen EADDRINUSE: address already in use :::3001
+@hireahuman/api:dev:     at Server.setupListenHandle [as _listen2] (node:net:1939:16)
+@hireahuman/api:dev:     at listenInCluster (node:net:1996:12)
+@hireahuman/api:dev:     at Server.listen (node:net:2101:7)
+@hireahuman/api:dev:     at serve (file:///Users/jaykatariya/Desktop/hireahuman/node_modules/@hono/node-server/dist/index.mjs:651:10)
+@hireahuman/api:dev:     at <anonymous> (/Users/jaykatariya/Desktop/hireahuman/packages/api/src/index.ts:141:1)
+@hireahuman/api:dev:     at ModuleJob.run (node:internal/modules/esm/module_job:327:25)
+@hireahuman/api:dev:     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:663:26)
+@hireahuman/api:dev:     at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:99:5)
+@hireahuman/api:dev: Emitted 'error' event on Server instance at:
+@hireahuman/api:dev:     at emitErrorNT (node:net:1975:8)
+@hireahuman/api:dev:     at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+@hireahuman/api:dev:   code: 'EADDRINUSE',
+@hireahuman/api:dev:   errno: -48,
+@hireahuman/api:dev:   syscall: 'listen',
+@hireahuman/api:dev:   address: '::',
+@hireahuman/api:dev:   port: 3001
+@hireahuman/api:dev: }
+@hireahuman/api:dev: 
+@hireahuman/api:dev: Node.js v24.1.0
+@hireahuman/mcp-server:dev: HireAHuman MCP server running on stdio
+@hireahuman/cli:dev: 
+@hireahuman/cli:dev: ████████╗██████╗ ██╗██╗  ██╗ █████╗ ██╗    ██╗ ██████╗ ███╗   ██╗
+@hireahuman/cli:dev: ╚══██╔══╝██╔══██╗██║██║ ██╔╝██╔══██╗██║    ██║██╔═══██╗████╗  ██║
+@hireahuman/cli:dev:    ██║   ██████╔╝██║█████╔╝ ███████║██║ █╗ ██║██║   ██║██╔██╗ ██║
+@hireahuman/cli:dev:    ██║   ██╔══██╗██║██╔═██╗ ██╔══██║██║███╗██║██║   ██║██║╚██╗██║
+@hireahuman/cli:dev:    ██║   ██║  ██║██║██║  ██╗██║  ██║╚███╔███╔╝╚██████╔╝██║ ╚████║
+@hireahuman/cli:dev:    ╚═╝   ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚═══╝  ╚═════╝ ╚═╝  ╚═══╝
+@hireahuman/cli:dev: 
+@hireahuman/cli:dev: ─────────────────────────────────────────────────────────────────────
+@hireahuman/cli:dev:            AI agents bring humans into the loop
+@hireahuman/cli:dev: ─────────────────────────────────────────────────────────────────────
+@hireahuman/cli:dev: 
+@hireahuman/cli:dev: Usage: hireahuman <command> [options]
+@hireahuman/cli:dev: 
+@hireahuman/cli:dev: Commands:
+@hireahuman/cli:dev: 
+@hireahuman/cli:dev:   init             Initialize HireAHuman in your project
+@hireahuman/cli:dev:   dev              Start local development server
+@hireahuman/cli:dev:   setup:agent      Link your AI agent (OpenClaw/Hermes/Claude)
+@hireahuman/cli:dev:   setup:notify     Configure notification channels
+@hireahuman/cli:dev:   setup:payments   Configure payment provider
+@hireahuman/cli:dev:   config           Show current configuration
+@hireahuman/cli:dev:   doctor           Diagnose setup issues
+@hireahuman/cli:dev: 
+@hireahuman/cli:dev: Run "hireahuman <command> --help" for more info.
+@hireahuman/cli:dev: 
+@hireahuman/admin-dashboard:dev:  ✓ Ready in 1192ms
+@hireahuman/worker-app:dev:  ✓ Ready in 1308ms
+@hireahuman/worker-app:dev:  ✓ Compiled /middleware in 146ms (126 modules)
+@hireahuman/worker-app:dev:  ○ Compiling /browse ...
+@hireahuman/worker-app:dev:  ✓ Compiled /browse in 1455ms (618 modules)
+@hireahuman/worker-app:dev:  ✓ Compiled /my-tasks in 178ms (610 modules)
+@hireahuman/worker-app:dev:  ✓ Compiled /earnings in 87ms (616 modules)
+@hireahuman/worker-app:dev:  ✓ Compiled /notifications in 89ms (622 modules)
+@hireahuman/worker-app:dev:  ✓ Compiled /profile in 93ms (628 modules)
+@hireahuman/worker-app:dev:  ✓ Compiled /login in 300ms (611 modules)
+@hireahuman/worker-app:dev:  GET /login 200 in 382ms
+@hireahuman/worker-app:dev:  ✓ Compiled in 246ms (328 modules)
+@hireahuman/worker-app:dev:  ✓ Compiled in 140ms (328 Shutting down Turborepo tasks...
+@hireahuman/api:dev: npm error Lifecycle script `@hireahuman/mcp-server:dev: npm error Lifecycle script `dev` failed with error:
+@hireahuman/mcp-server:dev: npm error code 15
+@hireahuman/mcp-server:dev: npm error path /Users/jaykatariya/Desktop/hireahuman/packages/mcp-server
+@hireahuman/mcp-server:dev: npm error workspace @hireahuman/mcp-server@0.1.0
+@hireahuman/mcp-server:dev: npm error location /Users/jaykatariya/Desktop/hireahuman/packages/mcp-server
+@hireahuman/m@hireahuman/mcp-server:dev: npm error Lifecycle script `dev` failed with error:
+@hireahuman/mcp-server:dev: npm error code 15
+@hireahuman/mcp-server:dev: npm error path /Users/jaykatariya/Desktop/hireahuman/packages/mcp-server
+@hireahuman/mcp-server:dev: npm error workspace @hireahuman/mcp-server@0.1.0
+@hireahuman/mcp-server:dev: npm error location /Users/jaykatariya/Desktop/hireahuman/packages/mcp-server
+@hireahuman/mcp-server:dev: npm error command failed
+@hireahuman/mcp-server:dev: npm error command sh -c npx tsx watch src/index.ts
+
+ Tasks:    3 successful, 5 total
+Cached:    0 cached, 5 total
+  Time:    16h48m50.1
+ Tasks:    1 successful, 5 total
+Cached:    0 cached, 5 total
+  Time:    16h47m3.523s 
+
+x] Previous process hasn't exited yet. Force killing...
+@hireahuman/api:dev: 7:14:55 PM [tsx] Previous process hasn't exited yet. Force killing...
+@hireahuman/mcp-server:dev: npm error Lifecycle script `dev` failed with error:
+@hireahuman/mcp-server:dev: npm error code 15
+@hireahuman/mcp-server:dev: npm error path /Users/jaykatariya/Desktop/hireahuman/packages/mcp-server
+@hireahuman/mcp-server:dev: npm error workspace @hireahuman/mcp-server@0.1.0
+@hireahuman/mcp-server:dev: npm error location /Users/jaykatariya/Desktop/hireahuman/packages/mcp-server
+@hireahuman/mcp-server:dev: npm error command failed
+@hireahuman/mcp-server:dev: npm error command sh -c npx tsx watch src/index.ts
+@hireahuman/api:dev: npm error Lifecycle script `dev` failed with error:
+@hireahuman/api:dev: npm error code 143
+@hireahuman/api:dev: npm error path /Users/jaykatariya/Desktop/hireahuman/packages/api
+@hireahuman/api:dev: npm error workspace @hireahuman/api@0.1.0
+@hireahuman/api:dev: npm error location /Users/jaykatariya/Desktop/hireahuman/packages/api
+@hireahuman/api:dev: npm error command failed
+@hireahuman/api:dev: npm error command sh -c npx tsx watch src/index.ts
+
+ Tasks:    3 successful, 5 total
+Cached:    0 cached, 5 total
+  Time:    16h52m43.613s 
+

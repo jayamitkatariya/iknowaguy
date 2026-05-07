@@ -2,12 +2,12 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getSupabaseClient } from "../lib/supabase.js";
 
-const CategoryListSchema = z.object({
+export const CategoryListSchema = z.object({
   limit: z.number().optional().default(50).describe("Max results"),
   offset: z.number().optional().default(0).describe("Offset for pagination"),
 });
 
-const CategoryGetSchema = z.object({
+export const CategoryGetSchema = z.object({
   category_id: z.string().describe("Category UUID or slug"),
 });
 

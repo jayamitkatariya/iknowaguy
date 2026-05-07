@@ -3,10 +3,17 @@ import { Currency } from "../types.js";
 
 const isStubMode = !process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === "dummy" || process.env.PAYMENT_PROVIDER === "none";
 
-/**
- * Create a Stripe PaymentIntent for a bounty payment
- * Falls back to stub mode if STRIPE_SECRET_KEY is not configured
- */
+let _stripe: Stripe | null = null;
+
+function getStripe(): Stripe {
+  if (!_stripe) {
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+      apiVersion: "2025-02-24.acacia",
+    });
+  }
+  return _stripe;
+}
+
 export async function createPaymentIntent(
   amount: number,
   currency: Currency,
@@ -21,27 +28,21 @@ export async function createPaymentIntent(
     };
   }
 
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-    apiVersion: "2025-02-24.acacia",
-  });
+  const stripe = getStripe();
 
   const paymentIntent = await stripe.paymentIntents.create({
-    amount: Math.round(amount * 100), // Convert to cents
+    amount: Math.round(amount * 100),
     currency: currency.toLowerCase(),
     metadata,
     automatic_payment_methods: {
       enabled: true,
     },
-    capture_method: "manual", // Hold payment until explicitly captured
+    capture_method: "manual",
   });
 
   return paymentIntent;
 }
 
-/**
- * Capture a held PaymentIntent to release payment to the worker
- * Falls back to stub mode if Stripe is not configured
- */
 export async function capturePayment(
   paymentIntentId: string
 ): Promise<Stripe.PaymentIntent | { id: string; status: string }> {
@@ -53,18 +54,12 @@ export async function capturePayment(
     };
   }
 
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-    apiVersion: "2025-02-24.acacia",
-  });
+  const stripe = getStripe();
 
   const paymentIntent = await stripe.paymentIntents.capture(paymentIntentId);
   return paymentIntent;
 }
 
-/**
- * Issue a partial or full refund for a payment
- * Falls back to stub mode if Stripe is not configured
- */
 export async function refundPayment(
   transactionId: string,
   amount?: number
@@ -77,42 +72,52 @@ export async function refundPayment(
     };
   }
 
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-    apiVersion: "2025-02-24.acacia",
-  });
+  const stripe = getStripe();
 
   const refundParams: Stripe.RefundCreateParams = {
     payment_intent: transactionId,
   };
 
   if (amount != null) {
-    refundParams.amount = Math.round(amount * 100); // Convert to cents
+    refundParams.amount = Math.round(amount * 100);
   }
 
   const refund = await stripe.refunds.create(refundParams);
   return refund;
 }
 
-/**
- * Construct and validate a Stripe webhook event
- */
 export function constructWebhookEvent(
   body: string | Buffer,
   signature: string,
   secret: string
 ): Stripe.Event {
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-    apiVersion: "2025-02-24.acacia",
-  });
+  if (isStubMode) {
+    console.log("[stripe:stub] constructWebhookEvent called in stub mode");
+    return {
+      id: `evt_stub_${Date.now().toString(36)}`,
+      object: "event",
+      api_version: "2025-02-24.acacia",
+      created: Math.floor(Date.now() / 1000),
+      type: "payment_intent.succeeded",
+      data: {
+        object: {
+          id: `pi_stub_${Date.now().toString(36)}`,
+          object: "payment_intent",
+          amount: 0,
+          status: "succeeded",
+        } as any,
+      },
+      pending_webhooks: 0,
+      request: { id: null, idempotency_key: null },
+      livemode: false,
+    } as Stripe.Event;
+  }
 
+  const stripe = getStripe();
   const event = stripe.webhooks.constructEvent(body, signature, secret);
   return event;
 }
 
-/**
- * Get the status of a PaymentIntent
- * Falls back to stub status if Stripe is not configured
- */
 export async function getPaymentIntentStatus(
   paymentIntentId: string
 ): Promise<Stripe.PaymentIntent | { id: string; status: string }> {
@@ -124,16 +129,10 @@ export async function getPaymentIntentStatus(
     };
   }
 
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-    apiVersion: "2025-02-24.acacia",
-  });
-
+  const stripe = getStripe();
   return stripe.paymentIntents.retrieve(paymentIntentId);
 }
 
-/**
- * Get payment status string (for compatibility with stub mode)
- */
 export function getPaymentStatus(paymentIntentId: string): string {
   if (isStubMode) {
     return "stub";

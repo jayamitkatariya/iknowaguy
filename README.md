@@ -245,7 +245,7 @@ HireAHuman works with any MCP-compatible client:
 | Layer | Technology |
 |---|---|
 | Protocol | Model Context Protocol (MCP) 2024-11-05 |
-| Server | Node.js 20+, Express, TypeScript |
+| Server | Node.js 18+, Express, TypeScript |
 | Validation | Zod |
 | Database | Supabase (PostgreSQL + Realtime) |
 | Auth | Bearer tokens + Row-Level Security |

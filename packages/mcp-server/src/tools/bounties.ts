@@ -10,10 +10,10 @@ import {
   notifyBountyRejected,
 } from "../lib/notifications.js";
 
-const BountyCreateSchema = z.object({
+export const BountyCreateSchema = z.object({
   title: z.string().max(200).describe("Title of the bounty"),
   description: z.string().max(5000).describe("Detailed description"),
-  tenant_id: z.string().describe("Tenant ID for multi-tenant isolation"),
+  tenant_id: z.string().optional().describe("Tenant ID for multi-tenant isolation"),
   instructions: z.string().optional().describe("Step-by-step instructions for the human"),
   category_id: z.string().optional().describe("Category UUID"),
   template_id: z.string().optional().describe("Template UUID"),
@@ -25,7 +25,7 @@ const BountyCreateSchema = z.object({
   deadline: z.string().optional().describe("ISO 8601 deadline"),
 });
 
-const BountyListSchema = z.object({
+export const BountyListSchema = z.object({
   status: z.enum(["open", "accepted", "in_progress", "submitted", "reviewing", "completed", "disputed", "cancelled", "refunded"]).optional().describe("Filter by status"),
   category_id: z.string().optional().describe("Filter by category UUID"),
   assigned_human_id: z.string().optional().describe("Filter by assigned human"),
@@ -33,22 +33,22 @@ const BountyListSchema = z.object({
   offset: z.number().optional().default(0).describe("Offset for pagination"),
 });
 
-const BountyGetSchema = z.object({
+export const BountyGetSchema = z.object({
   id: z.string().describe("ID of the bounty"),
 });
 
-const BountyAcceptSchema = z.object({
+export const BountyAcceptSchema = z.object({
   id: z.string().describe("ID of the bounty to accept"),
   assigned_human_id: z.string().describe("ID of the human accepting"),
 });
 
-const BountySubmitSchema = z.object({
+export const BountySubmitSchema = z.object({
   id: z.string().describe("ID of the bounty to submit"),
   content: z.string().max(5000).optional().describe("Submission notes/description"),
   media_urls: z.array(z.string()).optional().default([]).describe("Array of photo/video URL strings"),
 });
 
-const BountyReviewSchema = z.object({
+export const BountyReviewSchema = z.object({
   id: z.string().describe("ID of the bounty to review"),
   decision: z.enum(["approved", "rejected"]).describe("Review decision"),
   notes: z.string().max(5000).optional().describe("Review notes"),
@@ -60,7 +60,7 @@ export async function handleCreateBounty(args: any, tenantId: string) {
   const { data, error } = await supabase
     .from("bounties")
     .insert({
-      tenant_id: tenantId || args.tenant_id,
+      tenant_id: tenantId,
       title: sanitizeInput(args.title, 200),
       description: sanitizeInput(args.description, 5000),
       instructions: args.instructions ? sanitizeInput(args.instructions, 5000) : null,
@@ -318,7 +318,7 @@ export async function handleReviewBounty(args: any, _tenantId: string) {
   }
 
   // Update bounty status
-  const newStatus = args.decision === "approved" ? "completed" : "open";
+  const newStatus = args.decision === "approved" ? "completed" : "revision_requested";
 
   const { data: bounty, error: bountyError } = await supabase
     .from("bounties")

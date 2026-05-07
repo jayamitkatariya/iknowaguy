@@ -2,13 +2,13 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getSupabaseClient } from "../lib/supabase.js";
 
-const MessageSendSchema = z.object({
+export const MessageSendSchema = z.object({
   bounty_id: z.string().describe("ID of the bounty thread"),
   sender_id: z.string().describe("ID of the message sender"),
   content: z.string().max(2000).describe("Message content"),
 });
 
-const MessageListSchema = z.object({
+export const MessageListSchema = z.object({
   bounty_id: z.string().describe("ID of the bounty thread"),
   limit: z.number().optional().default(50).describe("Number of results"),
   offset: z.number().optional().default(0).describe("Offset for pagination"),

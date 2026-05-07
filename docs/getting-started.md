@@ -2,14 +2,14 @@
 
 ## Prerequisites
 
-- Node.js 20+
+- Node.js 18+
 - Supabase account
 - A deployed MCP server URL
 
 ## Step 1: Set Up Supabase
 
 1. Create a project at supabase.com
-2. Run `supabase/migrations/001_initial.sql`
+2. Run `supabase/migrations/001_complete.sql`
 3. Run `supabase/seed.sql` (optional)
 4. Copy your project URL and keys
 

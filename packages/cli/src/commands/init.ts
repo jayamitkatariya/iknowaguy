@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { nanoid } from 'nanoid';
 import { existsSync, writeFileSync } from 'fs';
 import { join } from 'path';
@@ -85,15 +85,13 @@ export class Init implements Command {
     const envContent = TEMPLATE_ENV
       .replace('https://your-project.supabase.co', supabaseUrl)
       .replace('your-service-role-key', supabaseKey)
-      .replace('hak_live_your-key', apiKey);
+      .replace('***', apiKey);
 
     const envPath = join(projectDir, '.env');
     writeFileSync(envPath, envContent);
     console.log(W(`✅ Created .env`));
 
-    const configContent = `import type { HireAHumanConfig } from 'hireahuman';
-
-const config: HireAHumanConfig = {
+    const configContent = `const config = {
   supabase: {
     url: process.env.SUPABASE_URL || '',
     serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',

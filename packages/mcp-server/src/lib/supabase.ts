@@ -29,11 +29,13 @@ export interface Database {
           name: string;
           slug: string;
           api_key: string;
+          api_key_hash: string;
           api_key_prefix: string;
           contact_email: string;
           is_active: boolean;
           payment_enabled: boolean;
           payment_provider: string | null;
+          settings: Record<string, unknown> | null;
           created_at: string;
         };
         Insert: {
@@ -41,22 +43,26 @@ export interface Database {
           name: string;
           slug: string;
           api_key: string;
+          api_key_hash?: string;
           api_key_prefix?: string;
           contact_email?: string;
           is_active?: boolean;
           payment_enabled?: boolean;
           payment_provider?: string | null;
+          settings?: Record<string, unknown> | null;
           created_at?: string;
         };
         Update: {
           name?: string;
           slug?: string;
           api_key?: string;
+          api_key_hash?: string;
           api_key_prefix?: string;
           contact_email?: string;
           is_active?: boolean;
           payment_enabled?: boolean;
           payment_provider?: string | null;
+          settings?: Record<string, unknown> | null;
         };
       };
       users: {
@@ -66,7 +72,7 @@ export interface Database {
           email: string;
           name: string;
           avatar_url: string | null;
-          user_type: "agent" | "human";
+          role: "agent" | "human" | "admin";
           is_active: boolean;
           created_at: string;
         };
@@ -76,7 +82,7 @@ export interface Database {
           email: string;
           name: string;
           avatar_url?: string | null;
-          user_type: "agent" | "human";
+          role?: "agent" | "human" | "admin";
           is_active?: boolean;
           created_at?: string;
         };
@@ -84,7 +90,7 @@ export interface Database {
           email?: string;
           name?: string;
           avatar_url?: string | null;
-          user_type?: "agent" | "human";
+          role?: "agent" | "human" | "admin";
           is_active?: boolean;
         };
       };
@@ -159,18 +165,20 @@ export interface Database {
           title: string;
           description: string;
           requirements: string[];
-          category: string | null;
+          category_id: string | null;
+          template_id: string | null;
+          instructions: string | null;
           location_city: string | null;
           location_country: string | null;
           location_lat: number | null;
           location_lng: number | null;
           location_address: string | null;
-          location_instructions: string | null;
           is_remote: boolean;
           deadline: string | null;
           estimated_hours: number | null;
           price_type: string;
           price: number | null;
+          reward_amount: number | null;
           currency: string;
           status: string;
           payment_status: string;
@@ -178,6 +186,7 @@ export interface Database {
           task_template: string | null;
           steps: string[];
           completion_code: string | null;
+          metadata: Record<string, unknown> | null;
           created_at: string;
           updated_at: string;
         };
@@ -189,18 +198,20 @@ export interface Database {
           title: string;
           description: string;
           requirements?: string[];
-          category?: string | null;
+          category_id?: string | null;
+          template_id?: string | null;
+          instructions?: string | null;
           location_city?: string | null;
           location_country?: string | null;
           location_lat?: number | null;
           location_lng?: number | null;
           location_address?: string | null;
-          location_instructions?: string | null;
           is_remote?: boolean;
           deadline?: string | null;
           estimated_hours?: number | null;
           price_type?: string;
           price?: number | null;
+          reward_amount?: number | null;
           currency?: string;
           status?: string;
           payment_status?: string;
@@ -208,6 +219,7 @@ export interface Database {
           task_template?: string | null;
           steps?: string[];
           completion_code?: string | null;
+          metadata?: Record<string, unknown> | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -216,18 +228,20 @@ export interface Database {
           title?: string;
           description?: string;
           requirements?: string[];
-          category?: string | null;
+          category_id?: string | null;
+          template_id?: string | null;
+          instructions?: string | null;
           location_city?: string | null;
           location_country?: string | null;
           location_lat?: number | null;
           location_lng?: number | null;
           location_address?: string | null;
-          location_instructions?: string | null;
           is_remote?: boolean;
           deadline?: string | null;
           estimated_hours?: number | null;
           price_type?: string;
           price?: number | null;
+          reward_amount?: number | null;
           currency?: string;
           status?: string;
           payment_status?: string;
@@ -235,6 +249,7 @@ export interface Database {
           task_template?: string | null;
           steps?: string[];
           completion_code?: string | null;
+          metadata?: Record<string, unknown> | null;
           updated_at?: string;
         };
       };
@@ -338,6 +353,59 @@ export interface Database {
           slug?: string;
           description?: string | null;
           icon?: string | null;
+        };
+      };
+      payment_transactions: {
+        Row: {
+          id: string;
+          bounty_id: string;
+          tenant_id: string;
+          stripe_payment_intent_id: string;
+          amount: number;
+          currency: string;
+          status: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          bounty_id: string;
+          tenant_id: string;
+          stripe_payment_intent_id: string;
+          amount: number;
+          currency: string;
+          status: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          status?: string;
+          updated_at?: string;
+        };
+      };
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          tenant_id: string;
+          type: string;
+          title: string;
+          content: string;
+          is_read: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          tenant_id?: string;
+          type: string;
+          title: string;
+          content: string;
+          is_read?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          is_read?: boolean;
         };
       };
     };

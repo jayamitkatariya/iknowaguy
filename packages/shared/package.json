@@ -9,18 +9,26 @@
     "./pricing": "./dist/pricing.js",
     "./utils": "./dist/utils.js",
     "./types": "./dist/types.js",
-    "./constants": "./dist/constants.js"
+    "./constants": "./dist/constants.js",
+    "./errors": "./dist/errors.js",
+    "./payments": "./dist/payments/index.js",
+    "./notifications": "./dist/notifications/index.js"
   },
   "scripts": {
     "build": "tsc",
-    "watch": "tsc --watch"
+    "watch": "tsc --watch",
+    "test": "vitest run"
   },
   "dependencies": {
     "stripe": "^17.7.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "nodemailer": "^6.9.14",
+    "axios": "^1.7.4"
   },
   "devDependencies": {
+    "@types/nodemailer": "^6.4.15",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^3.1.1"
   }
 }

@@ -1,21 +1,31 @@
-import type { Metadata } from "next"
-import "./globals.css"
+import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "HireAHuman - Worker",
-  description: "Earn money completing tasks for AI agents",
-}
+  title: "HireAHuman — Worker",
+  description: "Browse tasks and earn as a human worker on HireAHuman.",
+  icons: { icon: "/favicon.ico" },
+};
 
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode
-}) {
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="en">
-      <body style={{ fontFamily: 'system-ui', margin: 0, padding: 0, background: '#0a0f1e', color: '#fff', minHeight: '100vh' }}>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
+      <body style={{
+        fontFamily: "var(--oc-font)",
+        background: "var(--oc-bg)",
+        color: "var(--oc-text)",
+        lineHeight: 1.6,
+        minHeight: "100vh",
+      }}>
         {children}
       </body>
     </html>
-  )
+  );
 }

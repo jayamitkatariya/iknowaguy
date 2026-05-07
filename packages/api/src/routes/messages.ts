@@ -12,7 +12,19 @@ const sendMessageSchema = z.object({
 });
 
 messages.get('/messages/:bounty_id', async (c) => {
+  const tenantId = c.get('tenantId');
   const bountyId = c.req.param('bounty_id');
+
+  const { data: bountyCheck } = await supabase
+    .from('bounties')
+    .select('id')
+    .eq('id', bountyId)
+    .eq('tenant_id', tenantId)
+    .single();
+
+  if (!bountyCheck) {
+    return c.json({ error: 'Bounty not found or not accessible' }, 404);
+  }
 
   const { data, error } = await supabase
     .from('messages')

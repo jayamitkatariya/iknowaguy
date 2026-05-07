@@ -21,7 +21,7 @@ HireAHuman is an MIT-licensed open-source framework that gives AI agents access 
 
 ### 1. Deploy Supabase
 
-Create a project at supabase.com. Run `supabase/migrations/001_initial.sql`.
+Create a project at supabase.com. Run `supabase/migrations/001_complete.sql`.
 
 ### 2. Configure Environment
 

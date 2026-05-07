@@ -52,7 +52,7 @@ RUN npm install -ws --production && npm cache clean --force
 # 3001: MCP HTTP Server
 # 3002: Worker App
 # 3003: Admin Dashboard
-EXPOSE 3001 3002 3003
+EXPOSE 3001
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

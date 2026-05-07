@@ -56,16 +56,22 @@ bounties.get('/bounties', async (c) => {
     return c.json({ error: error.message }, 500);
   }
 
-  const { count } = await supabase
+  let countQuery = supabase
     .from('bounties')
     .select('*', { count: 'exact', head: true })
     .eq('tenant_id', tenantId);
+
+  if (status) countQuery = countQuery.eq('status', status);
+  if (category_id) countQuery = countQuery.eq('category_id', category_id);
+
+  const { count } = await countQuery;
 
   return c.json({ data, meta: { page, limit, total: count ?? 0 } });
 });
 
 bounties.get('/bounties/:id', async (c) => {
   const id = c.req.param('id');
+  const tenantId = c.get('tenantId');
 
   const { data, error } = await supabase
     .from('bounties')
@@ -76,6 +82,7 @@ bounties.get('/bounties/:id', async (c) => {
       submissions:task_submissions(id, status, created_at, content, media_urls)
     `)
     .eq('id', id)
+    .eq('tenant_id', tenantId)
     .single();
 
   if (error) {
@@ -107,19 +114,27 @@ bounties.post('/bounties', async (c) => {
   return c.json({ data }, 201);
 });
 
+const acceptBountySchema = z.object({
+  human_id: z.string().uuid(),
+});
+
 bounties.post('/bounties/:id/accept', async (c) => {
   const id = c.req.param('id');
+  const tenantId = c.get('tenantId');
   const body = await c.req.json();
-  const { human_id } = body;
 
-  if (!human_id) {
-    return c.json({ error: 'human_id is required' }, 400);
+  const parsed = acceptBountySchema.safeParse(body);
+  if (!parsed.success) {
+    return c.json({ error: 'Validation failed', details: parsed.error.flatten() }, 400);
   }
+
+  const { human_id } = parsed.data;
 
   const { data, error } = await supabase
     .from('bounties')
     .update({ assigned_human_id: human_id, status: 'accepted', updated_at: new Date().toISOString() })
     .eq('id', id)
+    .eq('tenant_id', tenantId)
     .eq('status', 'open')
     .select()
     .single();
@@ -135,15 +150,28 @@ bounties.post('/bounties/:id/accept', async (c) => {
   return c.json({ data });
 });
 
+const completeBountySchema = z.object({
+  content: z.string().max(5000).optional(),
+  media_urls: z.array(z.string()).optional(),
+});
+
 bounties.post('/bounties/:id/complete', async (c) => {
   const id = c.req.param('id');
+  const tenantId = c.get('tenantId');
   const body = await c.req.json();
-  const { content, media_urls } = body;
+
+  const parsed = completeBountySchema.safeParse(body);
+  if (!parsed.success) {
+    return c.json({ error: 'Validation failed', details: parsed.error.flatten() }, 400);
+  }
+
+  const { content, media_urls } = parsed.data;
 
   const bounty = await supabase
     .from('bounties')
     .select('assigned_human_id')
     .eq('id', id)
+    .eq('tenant_id', tenantId)
     .single();
 
   if (!bounty.data?.assigned_human_id) {
@@ -179,17 +207,25 @@ bounties.post('/bounties/:id/complete', async (c) => {
   return c.json({ data, submission });
 });
 
+const reviewBountySchema = z.object({
+  decision: z.enum(['approved', 'rejected']),
+  notes: z.string().max(5000).optional(),
+});
+
 bounties.post('/bounties/:id/review', async (c) => {
   const id = c.req.param('id');
+  const tenantId = c.get('tenantId');
   const body = await c.req.json();
-  const { action, notes } = body;
 
-  if (!['approve', 'reject'].includes(action)) {
-    return c.json({ error: 'action must be "approve" or "reject"' }, 400);
+  const parsed = reviewBountySchema.safeParse(body);
+  if (!parsed.success) {
+    return c.json({ error: 'Validation failed', details: parsed.error.flatten() }, 400);
   }
 
-  const newStatus = action === 'approve' ? 'completed' : 'open';
-  const submissionStatus = action === 'approve' ? 'approved' : 'rejected';
+  const { decision, notes } = parsed.data;
+
+  const newStatus = decision === 'approved' ? 'completed' : 'open';
+  const submissionStatus = decision === 'approved' ? 'approved' : 'rejected';
 
   const { error: subError } = await supabase
     .from('task_submissions')
@@ -205,6 +241,7 @@ bounties.post('/bounties/:id/review', async (c) => {
     .from('bounties')
     .update({ status: newStatus, updated_at: new Date().toISOString() })
     .eq('id', id)
+    .eq('tenant_id', tenantId)
     .select()
     .single();
 

@@ -132,12 +132,4 @@ export async function getPaymentIntentStatus(
   return stripe.paymentIntents.retrieve(paymentIntentId);
 }
 
-/**
- * Get payment status string (for compatibility with stub mode)
- */
-export function getPaymentStatus(paymentIntentId: string): string {
-  if (isStubMode) {
-    return "stub";
-  }
-  return "active";
-}
+

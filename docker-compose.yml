@@ -38,6 +38,21 @@ services:
       timeout: 5s
       retries: 3
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: hireahuman-api
+    env_file:
+      - .env
+    environment:
+      API_PORT: 3000
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mcp-server
+
   # ── Worker App (Next.js) ──────────────────────────────────────────────────
   worker-app:
     build:

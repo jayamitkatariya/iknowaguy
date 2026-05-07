@@ -1,25 +1,25 @@
 import type { MiddlewareHandler } from 'hono';
 
-interface RateLimitStore {
-  [key: string]: { count: number; resetAt: number };
+interface RateLimitEntry {
+  count: number;
+  resetAt: number;
 }
 
-const store: RateLimitStore = {};
 const WINDOW_MS = 60_000;
 const MAX_REQUESTS = 1000;
 
-function cleanup(): void {
+const store: Record<string, RateLimitEntry> = {};
+
+setInterval(() => {
   const now = Date.now();
   for (const key of Object.keys(store)) {
     if (store[key].resetAt < now) {
       delete store[key];
     }
   }
-}
+}, WINDOW_MS * 2);
 
-setInterval(cleanup, WINDOW_MS * 2);
-
-export const rateLimitMiddleware: MiddlewareHandler = async (c, next): Promise<void> => {
+export const rateLimitMiddleware: MiddlewareHandler = async (c, next) => {
   const tenantId = c.req.header('X-Tenant-ID') ?? c.req.header('X-Forwarded-For') ?? 'unknown';
   const now = Date.now();
 
@@ -37,10 +37,9 @@ export const rateLimitMiddleware: MiddlewareHandler = async (c, next): Promise<v
   c.header('X-RateLimit-Reset', String(Math.ceil(resetAt / 1000)));
 
   if (count > MAX_REQUESTS) {
-    c.status(429);
-    c.json({ error: 'Rate limit exceeded. Try again later.' });
-    return;
+    return c.json({ error: 'Rate limit exceeded. Try again later.' }, 429);
   }
 
   await next();
+  return;
 };

@@ -46,15 +46,20 @@ disputes.post('/disputes', async (c) => {
     return c.json({ error: error.message }, 500);
   }
 
-  await supabase
+  const { error: updateError } = await supabase
     .from('bounties')
     .update({ status: 'disputed', updated_at: new Date().toISOString() })
     .eq('id', parsed.data.bounty_id);
+
+  if (updateError) {
+    console.error('[disputes:create] Failed to update bounty status:', updateError);
+  }
 
   return c.json({ data }, 201);
 });
 
 disputes.get('/disputes/:id', async (c) => {
+  const tenantId = c.get('tenantId');
   const id = c.req.param('id');
 
   const { data, error } = await supabase
@@ -65,6 +70,7 @@ disputes.get('/disputes/:id', async (c) => {
       raised_by_user:users(email, role)
     `)
     .eq('id', id)
+    .eq('raised_by', tenantId)
     .single();
 
   if (error) {

@@ -3,22 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getSupabaseClient } from "../lib/supabase.js";
 import { notifyBountyCreated, notificationManager } from "../lib/notifications.js";
 
-function calculateDistanceKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
-function toRad(deg: number): number {
-  return (deg * Math.PI) / 180;
-}
-
-const HumanListSchema = z.object({
+export const HumanListSchema = z.object({
   skills: z.array(z.string()).optional().describe("Filter by skills (array overlap)"),
   location_city: z.string().optional().describe("Filter by city"),
   location_country: z.string().optional().describe("Filter by country"),
@@ -27,11 +12,11 @@ const HumanListSchema = z.object({
   offset: z.number().optional().default(0).describe("Offset for pagination"),
 });
 
-const HumanGetSchema = z.object({
+export const HumanGetSchema = z.object({
   human_id: z.string().describe("ID of the human worker (human_profiles.id)"),
 });
 
-const HumanRequestSchema = z.object({
+export const HumanRequestSchema = z.object({
   title: z.string().describe("Title of the task request"),
   description: z.string().describe("Description of the task"),
   instructions: z.string().optional().describe("Step-by-step instructions for the human"),

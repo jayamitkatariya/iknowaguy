@@ -86,13 +86,6 @@ export {
 } from './pricing';
 
 // Payment Adapters
-export {
-  createPaymentIntent,
-  capturePayment,
-  refundPayment,
-  constructWebhookEvent,
-  getPaymentIntentStatus,
-} from './payments/stripe';
 export * from './payments/index';
 
 // Notification Adapters

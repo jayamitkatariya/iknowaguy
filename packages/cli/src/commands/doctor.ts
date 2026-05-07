@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { Command } from './command';
 import { existsSync, readFileSync } from 'fs';
 import { createClient } from '@supabase/supabase-js';

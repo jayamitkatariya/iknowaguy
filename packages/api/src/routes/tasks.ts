@@ -5,6 +5,7 @@ import type { Env } from '../middleware/api-key.js';
 const tasks = new Hono<Env>();
 
 tasks.get('/tasks/:bounty_id', async (c) => {
+  const tenantId = c.get('tenantId');
   const bountyId = c.req.param('bounty_id');
 
   const { data: bounty, error: bountyError } = await supabase
@@ -15,6 +16,7 @@ tasks.get('/tasks/:bounty_id', async (c) => {
       assigned_human:human_profiles(full_name, avatar_url, rating, bio)
     `)
     .eq('id', bountyId)
+    .eq('tenant_id', tenantId)
     .single();
 
   if (bountyError || !bounty) {

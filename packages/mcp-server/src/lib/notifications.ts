@@ -531,3 +531,46 @@ export async function notifyBountyRejected(bounty: any, workerId: string, notes?
     bounty_id: bounty.id,
   });
 }
+
+export async function notifyDisputeRaised(dispute: any, bounty: any) {
+  const supabase = getSupabaseClient();
+
+  const { data: tenant } = await supabase
+    .from("tenants")
+    .select("contact_email, name")
+    .eq("id", bounty.tenant_id)
+    .single();
+
+  const payload: NotificationPayload = {
+    bountyId: bounty.id,
+    title: "Dispute Raised",
+    body: `A dispute has been raised on bounty "${bounty.title}".\nReason: ${dispute.reason}`,
+    urgency: "high",
+  };
+
+  if (tenant?.contact_email) {
+    await notificationManager.send("email", { email: tenant.contact_email }, payload);
+  }
+
+  const { data: agentUsers } = await supabase
+    .from("users")
+    .select("id")
+    .eq("tenant_id", bounty.tenant_id)
+    .eq("role", "agent");
+
+  if (agentUsers) {
+    for (const agent of agentUsers) {
+      await createInAppNotification(agent.id, "dispute_raised", payload.title, payload.body, {
+        bounty_id: bounty.id,
+        dispute_id: dispute.id,
+      });
+    }
+  }
+
+  if (bounty.assigned_human_id) {
+    await createInAppNotification(bounty.assigned_human_id, "dispute_raised", payload.title, payload.body, {
+      bounty_id: bounty.id,
+      dispute_id: dispute.id,
+    });
+  }
+}

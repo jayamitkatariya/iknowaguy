@@ -1,8 +1,9 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getSupabaseClient } from "../lib/supabase.js";
+import { notifyDisputeRaised } from "../lib/notifications.js";
 
-const DisputeRaiseSchema = z.object({
+export const DisputeRaiseSchema = z.object({
   bounty_id: z.string().describe("ID of the bounty"),
   raised_by: z.string().describe("ID of the user raising the dispute"),
   reason: z.string().describe("Reason for the dispute"),
@@ -14,7 +15,7 @@ export async function handleRaiseDispute(args: any, _tenantId: string) {
 
   const { data: bounty, error: bountyError } = await supabase
     .from("bounties")
-    .select("id, status")
+    .select("id, status, tenant_id, assigned_human_id, title")
     .eq("id", args.bounty_id)
     .single();
 
@@ -61,6 +62,10 @@ export async function handleRaiseDispute(args: any, _tenantId: string) {
       content: [{ type: "text" as const, text: JSON.stringify({ error: updateError.message }) }],
     };
   }
+
+  notifyDisputeRaised(dispute, bounty).catch((err) => {
+    console.warn("[disputes:raise] Notification error:", err.message);
+  });
 
   return {
     content: [

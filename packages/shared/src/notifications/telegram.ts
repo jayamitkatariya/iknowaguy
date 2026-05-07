@@ -14,7 +14,7 @@ export class TelegramAdapter {
   ): Promise<{ success: boolean; error?: string }> {
     if (!this.botToken) {
       console.warn('[notifications:telegram] Telegram bot token not configured — skipping notification');
-      return { success: true };
+      return { success: false, error: 'Adapter not configured' };
     }
 
     const urgencyEmoji = payload.urgency === 'high' ? '🚨' : payload.urgency === 'medium' ? '⚡' : '💬';

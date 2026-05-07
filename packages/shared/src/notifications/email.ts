@@ -25,7 +25,7 @@ export class EmailAdapter {
     // Check if email is configured
     if (!this.user || !this.pass) {
       console.warn('[notifications:email] Email credentials not configured — skipping notification');
-      return { success: true };
+      return { success: false, error: 'Adapter not configured' };
     }
 
     const transporter = createTransport({

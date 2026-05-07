@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { Command } from './command';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';

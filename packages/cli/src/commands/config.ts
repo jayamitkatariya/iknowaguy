@@ -1,4 +1,4 @@
-import * as chalk from 'chalk';
+import chalk from 'chalk';
 import { Command } from './command';
 import { readFileSync, existsSync } from 'fs';
 import { printMiniBanner } from '../lib/ascii';
@@ -26,8 +26,11 @@ export class Config implements Command {
 
     const config: Record<string, string> = {};
     for (const line of lines) {
-      const [key, ...vals] = line.split('=');
-      config[key.trim()] = vals.join('=').trim();
+      const eqIndex = line.indexOf('=');
+      if (eqIndex === -1) continue;
+      const key = line.slice(0, eqIndex).trim();
+      const val = line.slice(eqIndex + 1).trim();
+      config[key] = val;
     }
 
     const sensitive = ['SUPABASE_SERVICE_ROLE_KEY', 'STRIPE_SECRET_KEY', 'PAYPAL_SECRET', 'NOTIFY_EMAIL_PASS', 'NOTIFY_SMS_AUTH_TOKEN'];

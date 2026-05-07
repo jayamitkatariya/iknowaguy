@@ -8,16 +8,18 @@
   ],
   "scripts": {
     "build": "turbo build",
-    "dev": "npx tsx packages/cli/bin/dev.ts",
+    "dev": "turbo run dev",
     "lint": "turbo lint",
     "clean": "turbo clean && rm -rf node_modules .turbo",
     "setup": "npm install && turbo build",
     "db:migrate": "psql $DATABASE_URL -f supabase/migrations/001_complete.sql",
-    "db:seed": "psql $DATABASE_URL -f supabase/seed.sql"
+    "db:seed": "psql $DATABASE_URL -f supabase/seed.sql",
+    "test": "turbo test"
   },
   "devDependencies": {
     "turbo": "^2.3.0",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "vitest": "^3.1.1"
   },
   "packageManager": "npm@10.9.0",
   "keywords": [

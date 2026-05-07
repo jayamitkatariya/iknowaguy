@@ -59,74 +59,74 @@ Worker App    Admin Dashboard
 ## Phase Plan
 
 ### Phase 1: Foundation
-- [ ] Delete index-http.ts monolith, consolidate on modular tools/*.ts
-- [ ] Make modular MCP server the HTTP entry point (add Express HTTP transport to index.ts)
-- [ ] Fix auth middleware to set `app.current_tenant_id` for RLS
-- [ ] Add Zod validation to all tool handlers
-- [ ] Clean up dead code (orphaned types.ts schemas, unused components)
+- [x] Delete index-http.ts monolith, consolidate on modular tools/*.ts
+- [x] Make modular MCP server the HTTP entry point (add Express HTTP transport to index.ts)
+- [x] Fix auth middleware to set `app.current_tenant_id` for RLS
+- [x] Add Zod validation to all tool handlers
+- [x] Clean up dead code (orphaned types.ts schemas, unused components)
 
 ### Phase 2: Payments
-- [ ] Wire Stripe adapter from shared/payments into MCP tools
-- [ ] Implement escrow flow: create_intent → capture on approval → refund on rejection
-- [ ] Wire Stripe into API payment routes
-- [ ] Worker payout via Stripe Connect or Transfer
-- [ ] Payment status tracking in payment_transactions table
+- [x] Wire Stripe adapter from shared/payments into MCP tools
+- [x] Implement escrow flow: create_intent → capture on approval → refund on rejection
+- [x] Wire Stripe into API payment routes
+- [x] Worker payout via Stripe Connect or Transfer
+- [x] Payment status tracking in payment_transactions table
 
 ### Phase 3: File Storage
-- [ ] Configure Supabase Storage bucket for evidence
-- [ ] Create upload API endpoint (signed URLs)
-- [ ] Worker app: real photo upload to Supabase Storage
-- [ ] Evidence display in admin dashboard review flow
-- [ ] Media URL validation in MCP tools
+- [x] Configure Supabase Storage bucket for evidence
+- [x] Create upload API endpoint (signed URLs)
+- [x] Worker app: real photo upload to Supabase Storage
+- [x] Evidence display in admin dashboard review flow
+- [x] Media URL validation in MCP tools
 
 ### Phase 4: MCP Server Completion
-- [ ] All 16 tools production-grade with proper error handling
-- [ ] Webhook/notification callbacks on status changes
-- [ ] Real-time subscriptions for bounty updates
-- [ ] Pagination with cursors (not just offset)
-- [ ] Request ID tracking
-- [ ] Structured logging
+- [x] All 16 tools production-grade with proper error handling
+- [x] Webhook/notification callbacks on status changes
+- [x] Real-time subscriptions for bounty updates
+- [x] Pagination with cursors (not just offset)
+- [x] Request ID tracking
+- [x] Structured logging
 
 ### Phase 5: Worker App
-- [ ] Complete auth flow (signup, login, session management)
-- [ ] Real stats computation (earnings, tasks completed, rating)
-- [ ] Responsive/mobile-first CSS
-- [ ] Real-time bounty updates (Supabase subscriptions)
-- [ ] Evidence upload with preview
-- [ ] Worker profile with skills, location, availability
-- [ ] Notification preferences
-- [ ] Earnings/payment history page
+- [x] Complete auth flow (signup, login, session management)
+- [x] Real stats computation (earnings, tasks completed, rating)
+- [x] Responsive/mobile-first CSS
+- [x] Real-time bounty updates (Supabase subscriptions)
+- [x] Evidence upload with preview
+- [x] Worker profile with skills, location, availability
+- [x] Notification preferences
+- [x] Earnings/payment history page
 
 ### Phase 6: Admin Dashboard
-- [ ] Settings persistence to Supabase
-- [ ] Real team invite flow (email invitation)
-- [ ] Bounty review with evidence viewer
-- [ ] Analytics dashboard (bounties by status, category, worker performance)
-- [ ] Worker management (verify, suspend, rate)
-- [ ] Payment management (view transactions, refunds)
+- [x] Settings persistence to Supabase
+- [x] Real team invite flow (email invitation)
+- [x] Bounty review with evidence viewer
+- [x] Analytics dashboard (bounties by status, category, worker performance)
+- [x] Worker management (verify, suspend, rate)
+- [x] Payment management (view transactions, refunds)
 
 ### Phase 7: Security
-- [ ] Hash API keys (SHA-256)
-- [ ] CSRF protection
-- [ ] Redis rate limiter (replace in-memory)
-- [ ] Input sanitization in all handlers
-- [ ] crypto.randomBytes for completion codes
-- [ ] Environment validation at startup
-- [ ] CORS configuration for production domains
+- [x] Hash API keys (SHA-256)
+- [x] CSRF protection
+- [x] Redis rate limiter (replace in-memory)
+- [x] Input sanitization in all handlers
+- [x] crypto.randomBytes for completion codes
+- [x] Environment validation at startup
+- [x] CORS configuration for production domains
 
 ### Phase 8: Landing Page
-- [ ] Marketing homepage (what it is, how it works, pricing)
-- [ ] Documentation site (MCP tool reference, getting started, examples)
-- [ ] Open source page (GitHub link, contributing guide)
+- [x] Marketing homepage (what it is, how it works, pricing)
+- [x] Documentation site (MCP tool reference, getting started, examples)
+- [x] Open source page (GitHub link, contributing guide)
 
 ### Phase 9: Testing
-- [ ] Integration tests for MCP tool lifecycle
-- [ ] API route tests
-- [ ] E2E bounty flow test
-- [ ] Build verification (turbo build passes)
+- [x] Integration tests for MCP tool lifecycle
+- [x] API route tests
+- [x] E2E bounty flow test
+- [x] Build verification (turbo build passes)
 
 ### Phase 10: Final Review
-- [ ] Code audit
-- [ ] Documentation completeness
-- [ ] Ship checklist
-- [ ] Gap analysis
+- [x] Code audit
+- [x] Documentation completeness
+- [x] Ship checklist
+- [x] Gap analysis

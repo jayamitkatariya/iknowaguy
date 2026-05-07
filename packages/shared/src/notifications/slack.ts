@@ -18,7 +18,7 @@ export class SlackAdapter {
 
     if (!webhookUrl) {
       console.warn('[notifications:slack] Slack webhook not configured — skipping notification');
-      return { success: true };
+      return { success: false, error: 'Adapter not configured' };
     }
 
     const urgencyEmoji = payload.urgency === 'high' ? '🚨' : payload.urgency === 'medium' ? '⚡' : '💬';
