@@ -4,7 +4,7 @@
 
 set -e
 
-REPO="iknowaguy/iknowaguy"
+REPO="jayamitkatariya/iknowaguy"
 RELEASE_URL="https://github.com/$REPO/releases/download/v0.1.0"
 TARBALL="iknowaguy-mcp-server-0.1.0.tgz"
 INSTALL_DIR="${HOME}/.iknowaguy/mcp-server"
