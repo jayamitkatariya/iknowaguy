@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/@iknowaguy/mcp-server"><img src="https://img.shields.io/npm/v/@iknowaguy/mcp-server?style=flat-square&color=blue" alt="npm version"></a>
+  <a href="https://github.com/jayamitkatariya/iknowaguy/releases"><img src="https://img.shields.io/github/v/release/jayamitkatariya/iknowaguy?style=flat-square&color=blue" alt="GitHub release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License"></a>
   <img src="https://img.shields.io/badge/MCP-2024--11--05-purple?style=flat-square" alt="MCP Protocol">
   <a href="https://worker-app-six.vercel.app"><img src="https://img.shields.io/badge/demo-live-green?style=flat-square" alt="Live Demo"></a>
@@ -26,16 +26,13 @@ AI agents are incredible at code, analysis, and automation, but they're helpless
 ### For AI Agent Developers
 
 ```bash
-# 1. Clone and install
+# Install via curl (one-liner)
+curl -sL https://raw.githubusercontent.com/jayamitkatariya/iknowaguy/main/scripts/install.sh | bash
+
+# Or clone + install manually
 git clone https://github.com/jayamitkatariya/iknowaguy.git
 cd iknowaguy
 pnpm install
-
-# 2. Configure
-cp .env.example .env
-# Add your Supabase URL + keys
-
-# 3. Start the MCP server locally
 cd packages/mcp-server && pnpm dev
 ```
 
