@@ -1,7 +1,7 @@
 {
-  "name": "@hireahuman/sdk",
+  "name": "@iknowaguy/sdk",
   "version": "0.1.0",
-  "description": "Agent SDK for HireAHuman - Interact with human workers without native MCP support",
+  "description": "Agent SDK for iknowaguy - Interact with human workers without native MCP support",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,7 +17,7 @@
     "typecheck": "npx tsc --noEmit"
   },
   "keywords": [
-    "hireahuman",
+    "iknowaguy",
     "mcp",
     "agent",
     "sdk",
@@ -25,7 +25,7 @@
     "bounty",
     "tasks"
   ],
-  "author": "HireAHuman",
+  "author": "iknowaguy",
   "license": "MIT",
   "devDependencies": {
     "tsx": "^4.21.0",

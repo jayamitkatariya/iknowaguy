@@ -18,23 +18,33 @@ function LoginForm() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      setError(error.message);
+    // Use the API's /auth/login endpoint to get an API key
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    const res = await fetch(`${apiUrl}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      setError(json.error || "Login failed");
       setLoading(false);
-    } else if (data.user) {
-      // Check user role and redirect
-      const { data: profile } = await supabase
-        .from("human_profiles")
-        .select("role")
-        .eq("id", data.user.id)
-        .single();
-      
-      if (profile?.role === "agent") {
-        router.push("/dashboard/bounties");
-      } else {
-        router.push("/worker/browse");
-      }
+      return;
+    }
+    const { data } = json;
+    // Store API key in localStorage for apiFetch to use
+    localStorage.setItem("api_key", data.api_key);
+    // Also sign in with Supabase for user session
+    const { error: sbError } = await supabase.auth.signInWithPassword({ email, password });
+    if (sbError) {
+      // API login succeeded, Supabase session is optional
+      console.warn("Supabase session login failed:", sbError.message);
+    }
+    // Check user role and redirect
+    if (data.user?.role === "agent" || data.user?.role === "admin") {
+      router.push("/dashboard/bounties");
+    } else {
+      router.push("/worker/browse");
     }
   };
 
@@ -149,7 +159,7 @@ export default function LoginPage() {
               fontSize: "15px",
               fontWeight: 600,
               letterSpacing: "-0.02em",
-            }}>HireAHuman</span>
+            }}>iknowaguy</span>
           </Link>
         </nav>
       </header>

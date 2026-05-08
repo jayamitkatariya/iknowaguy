@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# HireAHuman Publish Script
+# iknowaguy Publish Script
 # Publishes the CLI package to npm and tags the release
 #
 
@@ -86,7 +86,7 @@ else
 fi
 
 # ── Publish CLI to npm ───────────────────────────────────────────────────────
-step "Publishing @hireahuman/cli to npm"
+step "Publishing @iknowaguy/cli to npm"
 cd "$CLI_PACKAGE"
 
 # Determine tag: pre-release gets 'next', stable gets 'latest'
@@ -99,7 +99,7 @@ else
 fi
 
 npm publish --access public --tag "$TAG"
-success "Published @hireahuman/cli@$VERSION with tag '$TAG'"
+success "Published @iknowaguy/cli@$VERSION with tag '$TAG'"
 
 # ── Tag the release ──────────────────────────────────────────────────────────
 step "Tagging release"
@@ -110,7 +110,7 @@ success "Created git tag v$VERSION"
 echo ""
 echo -e "${GREEN}${BOLD}Publish complete!${RESET}"
 echo ""
-echo -e "  Package: ${CYAN}@hireahuman/cli@$VERSION${RESET}"
+echo -e "  Package: ${CYAN}@iknowaguy/cli@$VERSION${RESET}"
 echo -e "  Tag:     ${CYAN}$TAG${RESET}"
 echo -e "  Git tag: ${CYAN}v$VERSION${RESET}"
 echo ""

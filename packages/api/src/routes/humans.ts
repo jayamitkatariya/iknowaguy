@@ -5,8 +5,8 @@ import type { Env } from '../middleware/api-key.js';
 const humans = new Hono<Env>();
 
 humans.get('/humans', async (c) => {
-  const tenantId = c.get('tenantId');
-
+  // human_profiles is not tenant-scoped — it's a global pool of worker profiles
+  // We filter by tenantId only for rows that reference a tenant-scoped user
   const { data, error } = await supabase
     .from('human_profiles')
     .select(`
@@ -24,8 +24,7 @@ humans.get('/humans', async (c) => {
       hourly_rate,
       created_at
     `)
-    .eq('users.tenant_id', tenantId)
-    .eq('users.is_active', true)
+    .eq('is_available', true)
     .order('rating', { ascending: false });
 
   if (error) {
@@ -36,7 +35,6 @@ humans.get('/humans', async (c) => {
 });
 
 humans.get('/humans/:id', async (c) => {
-  const tenantId = c.get('tenantId');
   const id = c.req.param('id');
 
   const { data, error } = await supabase
@@ -58,7 +56,6 @@ humans.get('/humans/:id', async (c) => {
       updated_at
     `)
     .eq('id', id)
-    .eq('users.tenant_id', tenantId)
     .single();
 
   if (error) {

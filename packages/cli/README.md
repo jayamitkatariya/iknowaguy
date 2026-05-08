@@ -1,6 +1,6 @@
-# HireAHuman CLI
+# iknowaguy CLI
 
-One-command setup for HireAHuman — bring humans into the loop for your AI agent.
+One-command setup for iknowaguy — bring humans into the loop for your AI agent.
 
 ```
 ███╗   ███╗ █████╗ ███╗   ██╗██╗███████╗
@@ -13,49 +13,43 @@ One-command setup for HireAHuman — bring humans into the loop for your AI agen
 
 **AI agents bring humans into the loop**
 
-## Install
+> **Note:** Not yet published to npm. Run from source.
+
+## Run from source
 
 ```bash
-npm install -g hireahuman
+cd packages/cli
+pnpm build
+node bin/run init
 ```
 
 ## Commands
 
 ```bash
-hireahuman init             #  INITIALIZE — create project config
-hireahuman dev              #  START DEV — run everything locally
-hireahuman setup:agent      #  LINK AGENT — connect Hermes/OpenClaw/Claude
-hireahuman setup:notify     #  NOTIFICATIONS — Slack, Telegram, Email, SMS
-hireahuman setup:payments   #  PAYMENTS — Stripe, PayPal, Manual
-hireahuman config           #  SHOW CONFIG — view current settings
-hireahuman doctor           #  DIAGNOSE — check setup health
+iknowaguy init             # Initialize — create project config
+iknowaguy dev              # Start dev — run everything locally
+iknowaguy setup:agent      # Link agent — connect Hermes/OpenClaw/Claude
+iknowaguy setup:notify     # Notifications — Slack, Telegram, Email, SMS
+iknowaguy setup:payments   # Payments — Stripe, PayPal, Manual
+iknowaguy config           # Show config — view current settings
+iknowaguy doctor           # Diagnose — check setup health
 ```
 
 ## Quick Start
 
 ```bash
-# 1. Initialize your project
-cd my-ai-agent-project
-hireahuman init
-
-# 2. Paste the SQL in Supabase SQL Editor
-# → supabase/migrations/001_complete.sql
-
-# 3. Start everything locally
-hireahuman dev
-
-# 4. Link your AI agent
-hireahuman setup:agent
-
-# 5. Check health
-hireahuman doctor
+cd packages/cli
+pnpm build
+node bin/run init
+node bin/run dev
+node bin/run doctor
 ```
 
 ## Development
 
 ```bash
-npm run build   # Build CLI
-npm run dev     # Build and run
+pnpm build   # Build CLI
+pnpm dev     # Build and run
 ```
 
 ## Features

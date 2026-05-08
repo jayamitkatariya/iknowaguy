@@ -9,10 +9,10 @@ const D = chalk.white.dim;
 
 export class Doctor implements Command {
   name = 'doctor';
-  description = 'Diagnose HireAHuman setup issues';
+  description = 'Diagnose iknowaguy setup issues';
 
   async run(args: string[]): Promise<void> {
-    console.log(W('\n🩺 HireAHuman Doctor\n'));
+    console.log(W('\n🩺 iknowaguy Doctor\n'));
     printMiniBanner('doctor');
 
     let passed = 0;
@@ -24,26 +24,26 @@ export class Doctor implements Command {
       console.log(W('✅ .env file exists'));
       passed++;
     } else {
-      console.log(W('❌ .env file missing. Run "hireahuman init"'));
+      console.log(W('❌ .env file missing. Run "iknowaguy init"'));
       failed++;
     }
 
-    // Check hireahuman.config.ts
-    const configOk = existsSync('hireahuman.config.ts');
+    // Check iknowaguy.config.ts
+    const configOk = existsSync('iknowaguy.config.ts');
     if (configOk) {
-      console.log(W('✅ hireahuman.config.ts exists'));
+      console.log(W('✅ iknowaguy.config.ts exists'));
       passed++;
     } else {
-      console.log(D('⚠️  hireahuman.config.ts missing. Optional but recommended.'));
+      console.log(D('⚠️  iknowaguy.config.ts missing. Optional but recommended.'));
     }
 
-    // Check hireahuman-mcp.json
-    const mcpOk = existsSync('hireahuman-mcp.json');
+    // Check iknowaguy-mcp.json
+    const mcpOk = existsSync('iknowaguy-mcp.json');
     if (mcpOk) {
-      console.log(W('✅ hireahuman-mcp.json exists'));
+      console.log(W('✅ iknowaguy-mcp.json exists'));
       passed++;
     } else {
-      console.log(D('⚠️  hireahuman-mcp.json missing. Run "hireahuman setup:agent"'));
+      console.log(D('⚠️  iknowaguy-mcp.json missing. Run "iknowaguy setup:agent"'));
     }
 
     // Check Supabase connection
@@ -83,7 +83,7 @@ export class Doctor implements Command {
     console.log(W(`\n${W(`✅ ${passed} passed`)}${failed > 0 ? `, ${W(`${failed} failed`)}` : ''}\n`));
 
     if (failed > 0) {
-      console.log(W('Run "hireahuman init" to fix most issues.\n'));
+      console.log(W('Run "iknowaguy init" to fix most issues.\n'));
     }
   }
 }

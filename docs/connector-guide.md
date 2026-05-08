@@ -1,8 +1,8 @@
 # Connector Guide
 
-A **connector** is any MCP-compatible AI agent or platform that integrates with HireAHuman to call human workers for physical and digital tasks.
+A **connector** is any MCP-compatible AI agent or platform that integrates with iknowaguy to call human workers for physical and digital tasks.
 
-HireAHuman exposes a full [MCP](https://modelcontextprotocol.io) server with 17 tools covering the entire bounty lifecycle — from creating tasks and discovering human workers, to handling payments and disputes.
+iknowaguy exposes a full [MCP](https://modelcontextprotocol.io) server with 17 tools covering the entire bounty lifecycle — from creating tasks and discovering human workers, to handling payments and disputes.
 
 This guide covers:
 
@@ -26,7 +26,7 @@ This guide covers:
          │  MCP JSON-RPC 2.0 (HTTP POST or stdio)
          ▼
 ┌─────────────────────────────────────┐
-│   HireAHuman MCP Server (port 3001)  │
+│   iknowaguy MCP Server (port 3001)  │
 │                                      │
 │  Auth · Rate Limiting · Tenant RLS  │
 │  17 MCP Tools · Stripe Webhooks     │
@@ -67,7 +67,7 @@ curl $MCP_SERVER_URL/health
 
 # Tools list
 curl -X POST $MCP_SERVER_URL/mcp \
-  -H "Authorization: Bearer $HIREAHUMAN_API_KEY" \
+  -H "Authorization: Bearer $IKNOWAGUY_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
 ```
@@ -78,11 +78,11 @@ curl -X POST $MCP_SERVER_URL/mcp \
 // claude_desktop_config.json (or your agent's MCP config)
 {
   "mcpServers": {
-    "hireahuman": {
+    "iknowaguy": {
       "command": "npx",
-      "args": ["-y", "@hireahuman/mcp-server", "--stdio"],
+      "args": ["-y", "@iknowaguy/mcp-server", "--stdio"],
       "env": {
-        "HIREAHUMAN_API_KEY": "hak_live_your-key",
+        "IKNOWAGUY_API_KEY": "ikg_live_your-key",
         "SUPABASE_URL": "https://your-project.supabase.co",
         "SUPABASE_SERVICE_ROLE_KEY": "your-service-role-key"
       }
@@ -97,8 +97,8 @@ curl -X POST $MCP_SERVER_URL/mcp \
 docker run -p 3001:3001 \
   -e SUPABASE_URL=https://your-project.supabase.co \
   -e SUPABASE_SERVICE_ROLE_KEY=your-key \
-  -e HIREAHUMAN_API_KEY=hak_live_xxx \
-  hireahuman/mcp-server
+  -e IKNOWAGUY_API_KEY=ikg_live_xxx \
+  iknowaguy/mcp-server
 ```
 
 ---
@@ -358,7 +358,7 @@ async function callTool(name, args, retries = 3) {
     const res = await fetch(MCP_SERVER_URL + "/mcp", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.HIREAHUMAN_API_KEY}`,
+        "Authorization": `Bearer ${process.env.IKNOWAGUY_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -434,11 +434,11 @@ def agent_task(photo_url: str) -> str:
 ```json
 {
   "mcpServers": {
-    "hireahuman": {
+    "iknowaguy": {
       "command": "npx",
-      "args": ["-y", "@hireahuman/mcp-server"],
+      "args": ["-y", "@iknowaguy/mcp-server"],
       "env": {
-        "HIREAHUMAN_API_KEY": "hak_live_your-key",
+        "IKNOWAGUY_API_KEY": "ikg_live_your-key",
         "SUPABASE_URL": "https://your-project.supabase.co",
         "SUPABASE_SERVICE_ROLE_KEY": "your-service-role-key"
       }
@@ -452,59 +452,63 @@ def agent_task(photo_url: str) -> str:
 ```json
 {
   "mcpServers": {
-    "hireahuman": {
-      "url": "https://your-mcp-server.com/mcp",
-      "api_key": "hak_live_your-key"
+    "iknowaguy": {
+      "command": "pnpm",
+      "args": ["--prefix", "/path/to/iknowaguy/packages/mcp-server", "dev"],
+      "env": {
+        "IKNOWAGUY_API_KEY": "ikg_live_your-key",
+        "SUPABASE_URL": "https://your-project.supabase.co",
+        "SUPABASE_SERVICE_ROLE_KEY": "your-service-role-key"
+      }
     }
   }
 }
 ```
 
-### Node.js Connector SDK
+Or with stdio:
 
-```bash
-npm install @hireahuman/agent-sdk
+```json
+{
+  "mcpServers": {
+    "iknowaguy": {
+      "command": "npx",
+      "args": ["@iknowaguy/mcp-server", "--stdio"],
+      "env": {
+        "IKNOWAGUY_API_KEY": "ikg_live_your-key",
+        "SUPABASE_URL": "https://your-project.supabase.co",
+        "SUPABASE_SERVICE_ROLE_KEY": "your-service-role-key"
+      }
+    }
+  }
+}
 ```
 
-```typescript
-import { HireAHuman } from "@hireahuman/agent-sdk";
+### Direct MCP / curl
 
-const client = new HireAHuman({
-  apiKey: process.env.HIREAHUMAN_API_KEY,
-  tenantId: "tenant_abc123",
-});
+For agents that speak MCP JSON-RPC directly:
 
-// Create a bounty
-const bounty = await client.bounties.create({
-  title: "Verify product quality",
-  description: "Check if item matches listing photos",
-  rewardAmount: 25.00,
-});
-
-// Subscribe to events
-client.events.on("bounty.submitted", ({ data }) => {
-  console.log("Work submitted:", data.bounty_id);
-  client.bounties.review({ id: data.bounty_id, decision: "approved" });
-});
-
-// Initiate payment
-await client.payments.initiate({ bountyId: bounty.id, amount: 25.00 });
+```bash
+curl -X POST http://localhost:3001/mcp \
+  -H "Authorization: Bearer $IKNOWAGUY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"create_bounty","arguments":{...}}}'
 ```
 
 ---
 
 ## Rate Limits
 
-| Plan | Requests/minute | Burst |
-|---|---|---|
-| Free | 60 | 10 |
-| Pro | 300 | 50 |
-| Enterprise | Custom | Custom |
+The MCP server uses a sliding window rate limiter with Redis (falling back to in-memory for local dev):
+
+| Limit | Value |
+|---|---|
+| Requests per minute | 100 |
+| Window | 60 seconds |
 
 Rate limit headers returned on every response:
 
 ```
-X-RateLimit-Limit: 60
+X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 45
 X-RateLimit-Reset: 1717245600
 ```
@@ -514,7 +518,3 @@ X-RateLimit-Reset: 1717245600
 ## SDK Reference
 
 For the full MCP tool reference, see [mcp-tool-reference.md](./mcp-tool-reference.md).
-
-For the Agent SDK (Node.js / TypeScript), see the [`@hireahuman/agent-sdk`](https://www.npmjs.com/package/@hireahuman/agent-sdk) package.
-
-For the LangChain integration, see [`packages/langchain-sdk`](https://github.com/hireahuman/hireahuman/tree/main/packages/langchain-sdk).

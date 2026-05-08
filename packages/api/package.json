@@ -1,5 +1,5 @@
 {
-  "name": "@hireahuman/api",
+  "name": "@iknowaguy/api",
   "version": "0.1.0",
   "type": "module",
   "scripts": {
@@ -9,7 +9,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@hireahuman/shared": "workspace:*",
+    "@iknowaguy/shared": "workspace:*",
     "@hono/node-server": "^1.19.9",
     "@supabase/supabase-js": "^2.45.0",
     "dotenv": "^16.4.5",

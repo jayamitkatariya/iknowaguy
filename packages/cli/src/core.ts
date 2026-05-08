@@ -22,7 +22,7 @@ export async function runWithArgs(args: string[]): Promise<void> {
   const cmd = commands[cmdName];
   if (!cmd) {
     console.error(`Unknown command: ${cmdName}`);
-    console.error('Run "hireahuman" to see available commands.');
+    console.error('Run "iknowaguy" to see available commands.');
     process.exit(1);
   }
   await cmd.run(rest);

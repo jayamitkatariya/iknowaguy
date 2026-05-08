@@ -28,54 +28,50 @@ function SignupForm() {
     setLoading(true);
     setError("");
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { name, role } },
+    // Use the API's /auth/register endpoint to create tenant + user + API key
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    const res = await fetch(`${apiUrl}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password, slug: email.split("@")[0].replace(/[^a-z0-9]/g, "-").toLowerCase() }),
     });
-
-    if (error) {
-      setError(error.message);
+    const json = await res.json();
+    if (!res.ok) {
+      setError(json.error || "Signup failed");
       setLoading(false);
       return;
     }
 
-    if (data.user) {
-      if (role === "worker") {
-        // Insert human_profiles for worker
-        await supabase.from("human_profiles").insert({
-          id: data.user.id,
-          full_name: name,
-          email: email,
-          is_available: true,
-          verification_status: "pending",
-          role: "worker",
-        });
-        await supabase.from("users").insert({
-          id: data.user.id,
-          email: email,
-          role: "worker",
-        });
-        router.push("/worker/browse");
-      } else {
-        // For agent, insert into organizations + users
-        // The agent would typically create an org, but for simplicity we'll just set role
-        await supabase.from("human_profiles").insert({
-          id: data.user.id,
-          full_name: name,
-          email: email,
-          role: "agent",
-        });
-        await supabase.from("users").insert({
-          id: data.user.id,
-          email: email,
-          role: "agent",
-        });
-        router.push("/dashboard/bounties");
-      }
+    const { data: apiData } = json;
+    // Store API key in localStorage
+    localStorage.setItem("api_key", apiData.api_key);
+
+    // Also create a Supabase session for the user
+    const { error: sbError } = await supabase.auth.signUp({ email, password });
+    if (sbError) {
+      console.warn("Supabase signup warning:", sbError.message);
+    }
+
+    // Insert human_profiles for the user
+    await supabase.from("human_profiles").upsert({
+      id: apiData.user.id,
+      full_name: name,
+      email: email,
+      is_available: true,
+      verification_status: "pending",
+      role: role,
+    });
+    await supabase.from("users").upsert({
+      id: apiData.user.id,
+      email: email,
+      role: role,
+      tenant_id: apiData.tenant.id,
+    });
+
+    if (role === "worker") {
+      router.push("/worker/browse");
     } else {
-      setError("Signup succeeded but no user returned. Check your email for confirmation.");
-      setLoading(false);
+      router.push("/dashboard/bounties");
     }
   };
 
@@ -84,7 +80,7 @@ function SignupForm() {
       <div className="oc-card" style={{ padding: "40px" }}>
         <div style={{ textAlign: "center", marginBottom: "32px" }}>
           <h1 className="oc-page-title" style={{ marginBottom: "12px" }}>What do you want to do?</h1>
-          <p className="oc-page-subtitle">Choose how you want to use HireAHuman</p>
+          <p className="oc-page-subtitle">Choose how you want to use iknowaguy</p>
         </div>
         
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -377,7 +373,7 @@ export default function SignupPage() {
               fontSize: "15px",
               fontWeight: 600,
               letterSpacing: "-0.02em",
-            }}>HireAHuman</span>
+            }}>iknowaguy</span>
           </Link>
         </nav>
       </header>

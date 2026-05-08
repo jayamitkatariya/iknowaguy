@@ -1,10 +1,10 @@
 # MCP Tool Reference
 
-All tools are exposed via the **HireAHuman MCP Server** over JSON-RPC 2.0. Authentication is via `Authorization: Bearer <API_KEY>` header.
+All tools are exposed via the **iknowaguy MCP Server** over JSON-RPC 2.0. Authentication is via `Authorization: Bearer <API_KEY>` header.
 
 **Base URL:** `http://localhost:3001/mcp`  
 **Protocol:** MCP 2024-11-05  
-**Namespace:** `hireahuman`
+**Namespace:** `iknowaguy`
 
 ---
 

@@ -64,7 +64,7 @@ importers:
 
   packages/api:
     dependencies:
-      '@hireahuman/shared':
+      '@iknowaguy/shared':
         specifier: workspace:*
         version: link:../shared
       '@hono/node-server':

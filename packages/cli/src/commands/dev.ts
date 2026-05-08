@@ -22,11 +22,11 @@ export class Dev implements Command {
   description = 'Start local development servers (MCP + API + Worker App)';
 
   async run(args: string[]): Promise<void> {
-    console.log(W('\n🔧 HireAHuman Dev\n'));
+    console.log(W('\n🔧 iknowaguy Dev\n'));
     printMiniBanner('dev');
 
     if (!existsSync('.env') && !existsSync('.env.local')) {
-      console.log(W('❌ .env or .env.local not found. Run "hireahuman init" first.\n'));
+      console.log(W('❌ .env or .env.local not found. Run "iknowaguy init" first.\n'));
       process.exit(1);
     }
 
@@ -37,7 +37,7 @@ export class Dev implements Command {
 
     console.log(W('✅ Starting all servers...\n'));
     console.log(W('  ┌──────────────────────────────────────────────┐'));
-    console.log(W('  │  HireAHuman Development Environment           │'));
+    console.log(W('  │  iknowaguy Development Environment           │'));
     console.log(W('  └──────────────────────────────────────────────┘'));
     console.log('');
     console.log(D('  MCP Server:   http://localhost:' + MCP_PORT));
@@ -53,7 +53,7 @@ export class Dev implements Command {
     console.log(W('  🧪 Test MCP:'));
     console.log(D('    curl -X POST http://localhost:' + MCP_PORT + '/mcp \\'));
     console.log(D('      -H "Content-Type: application/json" \\'));
-    console.log(D('      -H "Authorization: Bearer ' + (process.env.HIREAHUMAN_API_KEY || 'YOUR_API_KEY') + '" \\'));
+    console.log(D('      -H "Authorization: Bearer ' + (process.env.IKNOWAGUY_API_KEY || 'YOUR_API_KEY') + '" \\'));
     console.log(D('      -d \'{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"humans_list","arguments":{}}}\''));
     console.log('');
 

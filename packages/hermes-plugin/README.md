@@ -1,74 +1,32 @@
-# @hireahuman/hermes-plugin
+# @iknowaguy/hermes-plugin
 
-A connector plugin for integrating with Hermes - the human-in-the-loop orchestration layer.
+Native Hermes Agent integration for iknowaguy.
 
-## Installation
-
-```bash
-npm install @hireahuman/hermes-plugin
-# or
-pnpm add @hireahuman/hermes-plugin
-# or
-yarn add @hireahuman/hermes-plugin
-```
+> **Note:** Not yet published to npm. For now, add iknowaguy directly to your Hermes MCP config.
 
 ## Usage
 
-```typescript
-import { HermesPlugin } from '@hireahuman/hermes-plugin';
+Add to your Hermes agent config:
 
-const hermes = new HermesPlugin({
-  apiKey: 'your-api-key',
-  endpoint: 'https://api.hireahuman.io',
-});
-
-// Submit a task for human processing
-const task = await hermes.submitTask({
-  id: 'task-123',
-  type: 'image-review',
-  payload: { imageUrl: 'https://...' },
-  priority: 'high',
-});
-
-// Check task status
-const status = await hermes.getTaskStatus('task-123');
-
-// Cancel a task
-await hermes.cancelTask('task-123');
+```json
+{
+  "mcpServers": {
+    "iknowaguy": {
+      "command": "pnpm",
+      "args": ["--prefix", "/path/to/iknowaguy/packages/mcp-server", "dev"],
+      "env": {
+        "IKNOWAGUY_API_KEY": "ikg_live_your-key",
+        "SUPABASE_URL": "https://your-project.supabase.co",
+        "SUPABASE_SERVICE_ROLE_KEY": "your-service-role-key"
+      }
+    }
+  }
+}
 ```
 
-## API
+## Build
 
-### HermesPlugin
-
-#### Constructor
-
-```typescript
-new HermesPlugin(config?: HermesPluginConfig)
+```bash
+cd packages/hermes-plugin
+pnpm build
 ```
-
-##### HermesPluginConfig
-
-| Property | Type | Description | Default |
-|----------|------|-------------|---------|
-| `apiKey` | `string` | Your API key for authentication | - |
-| `endpoint` | `string` | API endpoint URL | `https://api.hireahuman.io` |
-| `timeout` | `number` | Request timeout in milliseconds | `30000` |
-
-#### Methods
-
-##### `submitTask(task: Task): Promise<TaskResult>`
-
-Submit a task to Hermes for human processing.
-
-##### `getTaskStatus(taskId: string): Promise<TaskResult>`
-
-Get the current status of a submitted task.
-
-##### `cancelTask(taskId: string): Promise<TaskResult>`
-
-Cancel a pending task.
-
-## License
-
-MIT

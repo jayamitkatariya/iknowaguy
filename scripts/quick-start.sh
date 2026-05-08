@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# HireAHuman Quick Start Script
+# iknowaguy Quick Start Script
 # One-command setup: install → init → start → open
 #
 
@@ -25,7 +25,7 @@ step()    { echo ""; echo -e "${BOLD}${MAGENTA}▶ $1${RESET}"; }
 
 # ── Config ───────────────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-INSTALL_DIR="${HOME}/.hireahuman"
+INSTALL_DIR="${HOME}/.iknowaguy"
 BIN_PATH="${INSTALL_DIR}/packages/cli/bin"
 
 # ── Banner ───────────────────────────────────────────────────────────────────
@@ -34,7 +34,7 @@ print_banner() {
   echo -e "${CYAN}${BOLD}"
   echo '  ╔═══════════════════════════════════════════════════════════════╗'
   echo '  ║                                                               ║'
-  echo '  ║           ⚡  HIREAHUMAN QUICK START  ⚡                      ║'
+  echo '  ║           ⚡  iknowaguy QUICK START  ⚡                      ║'
   echo '  ║                                                               ║'
   echo '  ║   Install → Initialize → Start → Open in browser              ║'
   echo '  ║                                                               ║'
@@ -53,20 +53,20 @@ open_url() {
   esac
 }
 
-# ── Ensure hireahuman binary is available ────────────────────────────────────
-ensure_hireahuman() {
-  if command -v hireahuman >/dev/null 2>&1; then
-    HIREAHUMAN="hireahuman"
+# ── Ensure iknowaguy binary is available ────────────────────────────────────
+ensure_iknowaguy() {
+  if command -v iknowaguy >/dev/null 2>&1; then
+    IKNOWAGUY="iknowaguy"
     return
   fi
 
   if [ -x "${BIN_PATH}/run" ]; then
-    HIREAHUMAN="${BIN_PATH}/run"
-    info "Using hireahuman from ${BIN_PATH}"
+    IKNOWAGUY="${BIN_PATH}/run"
+    info "Using iknowaguy from ${BIN_PATH}"
     return
   fi
 
-  error "hireahuman command not found after install"
+  error "iknowaguy command not found after install"
   echo ""
   echo -e "   Please add ${CYAN}${BIN_PATH}${RESET} to your PATH and try again:"
   echo -e "   ${CYAN}export PATH=\"${BIN_PATH}:\$PATH\"${RESET}"
@@ -79,7 +79,7 @@ main() {
   print_banner
 
   # Step 1: Install
-  step "Step 1/4: Installing HireAHuman"
+  step "Step 1/4: Installing iknowaguy"
   if [ -x "${SCRIPT_DIR}/install.sh" ]; then
     bash "${SCRIPT_DIR}/install.sh"
   else
@@ -88,18 +88,18 @@ main() {
   fi
 
   # Make sure we can find the binary
-  ensure_hireahuman
+  ensure_iknowaguy
 
   # Step 2: Initialize
   step "Step 2/4: Initializing project"
-  info "Running: hireahuman init"
+  info "Running: iknowaguy init"
   echo ""
   cd "$INSTALL_DIR"
-  $HIREAHUMAN init
+  $IKNOWAGUY init
 
   # Step 3: Start all servers
   step "Step 3/4: Starting all servers"
-  info "Running: hireahuman dev"
+  info "Running: iknowaguy dev"
   echo ""
   echo -e "   ${DIM}Services will start on:${RESET}"
   echo -e "   ${CYAN}MCP HTTP Server${RESET}  → http://localhost:3001/mcp"
@@ -119,7 +119,7 @@ main() {
   fi
 
   # Start dev servers (this blocks until Ctrl+C)
-  $HIREAHUMAN dev
+  $IKNOWAGUY dev
 
   # Step 4: Cleanup (runs after Ctrl+C)
   step "Step 4/4: Shutdown"

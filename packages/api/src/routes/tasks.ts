@@ -12,8 +12,7 @@ tasks.get('/tasks/:bounty_id', async (c) => {
     .from('bounties')
     .select(`
       *,
-      category:categories(name, slug, icon),
-      assigned_human:human_profiles(full_name, avatar_url, rating, bio)
+      category:categories(name, slug, icon)
     `)
     .eq('id', bountyId)
     .eq('tenant_id', tenantId)
@@ -33,7 +32,7 @@ tasks.get('/tasks/:bounty_id', async (c) => {
       reviewer_notes,
       created_at,
       updated_at,
-      human:human_profiles(full_name, avatar_url)
+      human:users!human_id(email)
     `)
     .eq('bounty_id', bountyId)
     .order('created_at', { ascending: false });

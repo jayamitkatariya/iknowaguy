@@ -1,4 +1,4 @@
-# ── Multi-stage Dockerfile for HireAHuman MCP Server ─────────────────────────
+# ── Multi-stage Dockerfile for iknowaguy MCP Server ─────────────────────────
 # Stage 1: Build
 # Stage 2: Production runtime
 
@@ -26,8 +26,8 @@ COPY packages/shared/ ./packages/shared/
 COPY turbo.json tsconfig.json ./
 
 # Build shared first, then mcp-server
-RUN pnpm build --filter=@hireahuman/shared
-RUN pnpm build --filter=@hireahuman/mcp-server
+RUN pnpm build --filter=@iknowaguy/shared
+RUN pnpm build --filter=@jkatariya/mcp-server
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # STAGE 2: RUNTIME

@@ -30,13 +30,7 @@ export default function NewBountyPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const getOrg = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-      const res = await supabase.from("users").select("org_id").eq("id", session.user.id).single();
-      setOrgId(res.data?.org_id || null);
-    };
-    getOrg();
+    // API uses tenant_id from API key middleware - no org lookup needed
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,23 +39,16 @@ export default function NewBountyPage() {
     setError("");
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { setError("Not authenticated"); setLoading(false); return; }
-
-      if (!orgId) { setError("No organization found"); setLoading(false); return; }
+      const apiKey = localStorage.getItem("api_key");
+      if (!apiKey) { setError("Not authenticated"); setLoading(false); return; }
 
       const payload = {
         title: form.title,
         description: form.description,
-        instructions: form.instructions,
+        instructions: form.instructions || undefined,
         reward_amount: parseFloat(form.reward_amount),
-        currency: form.currency,
-        category: form.category,
-        max_assignments: parseInt(form.max_assignments),
-        deadline: form.deadline || null,
-        visibility: form.visibility,
-        org_id: orgId,
-        status: "open",
+        category_id: undefined, // category_id must be a UUID from the categories table
+        deadline: form.deadline ? new Date(form.deadline).toISOString() : undefined,
       };
 
       const res = await apiFetch("/bounties", {

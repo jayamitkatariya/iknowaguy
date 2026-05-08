@@ -68,7 +68,7 @@ import {
 
 // ── Shared MCP server instance ─────────────────────────────────────────────────
 const server = new McpServer({
-  name: "hireahuman",
+  name: "iknowaguy",
   version: "0.1.0",
 });
 
@@ -574,7 +574,7 @@ app.post("/mcp", authMiddleware, async (req: Request, res: Response) => {
             tools: { listChanged: false },
           },
           serverInfo: {
-            name: "hireahuman",
+            name: "iknowaguy",
             version: "0.1.0",
           },
         })
@@ -646,7 +646,7 @@ function validateEnv(): void {
 async function runStdio() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("HireAHuman MCP server running on stdio");
+  console.error("iknowaguy MCP server running on stdio");
 }
 
 // ── HTTP mode ─────────────────────────────────────────────────────────────────
@@ -654,7 +654,7 @@ async function runHttp() {
   validateEnv();
   const httpServer = createServer(app);
   httpServer.listen(PORT, () => {
-    console.log(`HireAHuman MCP HTTP server running on port ${PORT}`);
+    console.log(`iknowaguy MCP HTTP server running on port ${PORT}`);
     console.log(`MCP endpoint: http://localhost:${PORT}/mcp`);
     console.log(`Health check: http://localhost:${PORT}/health`);
   });

@@ -1,61 +1,38 @@
-# @hireahuman/langchain-sdk
+# @iknowaguy/langchain-sdk
 
-A LangChain SDK integration for building AI agents with human-in-the-loop capabilities.
+LangChain integration for iknowaguy human-in-the-loop.
 
-## Installation
+> **Note:** Not yet published to npm. For now, use the [MCP server](../mcp-server) directly.
+
+## Usage (from source)
 
 ```bash
-npm install @hireahuman/langchain-sdk
-# or
-pnpm add @hireahuman/langchain-sdk
-# or
-yarn add @hireahuman/langchain-sdk
+cd packages/langchain-sdk
+pnpm build
 ```
 
-## Usage
-
 ```typescript
-import { HireAHumanChain, createChain } from '@hireahuman/langchain-sdk';
+import { iknowaguyChain, createChain } from '@iknowaguy/langchain-sdk';
 
-// Create a chain instance
-const chain = new HireAHumanChain({
-  apiKey: 'your-api-key',
-  model: 'gpt-4',
-  temperature: 0.7,
-});
-
-// Or use the factory function
-const chain2 = createChain({
+const chain = new iknowaguyChain({
   apiKey: 'your-api-key',
 });
 
-// Process a task with human-in-the-loop support
 const response = await chain.invoke({
   task: 'Review this image for policy compliance',
   context: { imageUrl: 'https://...' },
   humanFallback: true,
 });
-
-// Process with explicit human review
-const reviewed = await chain.processWithHuman({
-  task: 'Handle this customer dispute',
-  context: { ticketId: '12345' },
-});
-
-// Stream responses
-for await (const chunk of chain.stream({ task: 'Explain this code' })) {
-  process.stdout.write(chunk);
-}
 ```
 
 ## API
 
-### HireAHumanChain
+### iknowaguyChain
 
 #### Constructor
 
 ```typescript
-new HireAHumanChain(config?: LangChainSDKConfig)
+new iknowaguyChain(config?: LangChainSDKConfig)
 ```
 
 ##### LangChainSDKConfig
@@ -83,9 +60,9 @@ Stream responses from the LLM.
 
 ### Factory Function
 
-##### `createChain(config?: LangChainSDKConfig): HireAHumanChain`
+##### `createChain(config?: LangChainSDKConfig): iknowaguyChain`
 
-Create a new HireAHumanChain instance.
+Create a new iknowaguyChain instance.
 
 ## License
 

@@ -14,7 +14,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Protected routes — check HireAHuman API auth
+  // Protected routes — check iknowaguy API auth
   const apiKey = request.cookies.get("hah_api_key")?.value
     || request.cookies.get("hah_token")?.value;
 

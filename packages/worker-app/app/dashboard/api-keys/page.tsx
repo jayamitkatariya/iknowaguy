@@ -87,7 +87,7 @@ export default function ApiKeysPage() {
     <div style={{ padding: "2rem", maxWidth: "1200px", margin: "0 auto" }}>
       <header style={{ marginBottom: "2rem" }}>
         <h1 style={{ fontSize: "1.875rem", fontWeight: "bold", marginBottom: "0.5rem" }}>API Keys</h1>
-        <p style={{ color: "var(--oc-text-muted)" }}>Your API key for programmatic access to HireAHuman</p>
+        <p style={{ color: "var(--oc-text-muted)" }}>Your API key for programmatic access to iknowaguy</p>
       </header>
 
       <div className="oc-card" style={{ marginBottom: "2rem" }}>
@@ -132,11 +132,11 @@ export default function ApiKeysPage() {
         </p>
         <div className="oc-api-key-box" style={{ marginBottom: "0.75rem" }}>
           <code style={{ fontSize: "0.8rem", whiteSpace: "pre-wrap" }}>
-            {`{"command":"npx","args":["@hireahuman/mcp-server"],"env":{"HIREAHUMAN_API_KEY":"${apiKeyPlaintext || "YOUR_API_KEY"}"}}`}
+            {`{"command":"npx","args":["@iknowaguy/mcp-server"],"env":{"IKNOWAGUY_API_KEY":"${apiKeyPlaintext || "YOUR_API_KEY"}"}}`}
           </code>
         </div>
         <p style={{ fontSize: "0.75rem", color: "var(--oc-text-muted)" }}>
-          Or run directly: <code style={{ background: "var(--oc-bg-tertiary)", padding: "2px 6px", borderRadius: "4px" }}>npx @hireahuman/mcp-server</code>
+          Or run directly: <code style={{ background: "var(--oc-bg-tertiary)", padding: "2px 6px", borderRadius: "4px" }}>npx @iknowaguy/mcp-server</code>
         </p>
       </div>
     </div>

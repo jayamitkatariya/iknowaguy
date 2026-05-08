@@ -16,7 +16,7 @@ const OPENCLAW_CONFIG_PATHS = [
 
 export class SetupAgent implements Command {
   name = 'setup:agent';
-  description = 'Link HireAHuman to your AI agent (Hermes Agent, OpenClaw, etc.)';
+  description = 'Link iknowaguy to your AI agent (Hermes Agent, OpenClaw, etc.)';
 
   async run(args: string[]): Promise<void> {
     console.log(W('\n🔗 AI Agent Setup\n'));
@@ -26,12 +26,12 @@ export class SetupAgent implements Command {
     console.log(D(`Detected: ${agentType || 'Unknown agent'}`));
 
     let mcpConfig: any = {};
-    const mcpConfigPath = 'hireahuman-mcp.json';
+    const mcpConfigPath = 'iknowaguy-mcp.json';
     if (existsSync(mcpConfigPath)) {
       mcpConfig = JSON.parse(readFileSync(mcpConfigPath, 'utf-8'));
     }
 
-    const apiKey = process.env.HIREAHUMAN_API_KEY || mcpConfig.api_key || '';
+    const apiKey = process.env.IKNOWAGUY_API_KEY || mcpConfig.api_key || '';
 
     const answers = await inquirer.prompt([
       {
@@ -49,7 +49,7 @@ export class SetupAgent implements Command {
     ]);
 
     if (!apiKey) {
-      console.log(W('\n❌ No API key found. Run "hireahuman init" first or set HIREAHUMAN_API_KEY.\n'));
+      console.log(W('\n❌ No API key found. Run "iknowaguy init" first or set IKNOWAGUY_API_KEY.\n'));
       return;
     }
 
@@ -87,15 +87,15 @@ export class SetupAgent implements Command {
 
     if (existsSync(mcpConfigPath)) {
       const current = JSON.parse(readFileSync(mcpConfigPath, 'utf-8'));
-      const hireahumanEntry = {
-        name: 'hireahuman',
+      const iknowaguyEntry = {
+        name: 'iknowaguy',
         url: 'http://localhost:3001/mcp',
         api_key: apiKey,
       };
 
       const servers = current.mcp_servers || current || [];
-      const filtered = servers.filter((s: any) => s.name !== 'hireahuman');
-      filtered.push(hireahumanEntry);
+      const filtered = servers.filter((s: any) => s.name !== 'iknowaguy');
+      filtered.push(iknowaguyEntry);
 
       writeFileSync(mcpConfigPath, JSON.stringify({ mcp_servers: filtered }, null, 2));
       console.log(W(`✅ Updated ${mcpConfigPath}`));
@@ -103,7 +103,7 @@ export class SetupAgent implements Command {
       const config = {
         mcp_servers: [
           {
-            name: 'hireahuman',
+            name: 'iknowaguy',
             url: 'http://localhost:3001/mcp',
             api_key: apiKey,
           },
@@ -119,7 +119,7 @@ export class SetupAgent implements Command {
     } catch {}
 
     console.log(W('\n✅ Hermes Agent configured!\n'));
-    console.log(W('Your Hermes Agent can now call humans via HireAHuman.\n'));
+    console.log(W('Your Hermes Agent can now call humans via iknowaguy.\n'));
     console.log(D('Restart Hermes Agent to load the new MCP server.\n'));
   }
 
@@ -146,7 +146,7 @@ export class SetupAgent implements Command {
     }
 
     config.mcpServers = config.mcpServers || {};
-    config.mcpServers.hireahuman = {
+    config.mcpServers.iknowaguy = {
       url: 'http://localhost:3001/mcp',
       apiKey,
     };
@@ -171,7 +171,7 @@ export class SetupAgent implements Command {
     }
 
     config.mcpServers = config.mcpServers || {};
-    config.mcpServers.hireahuman = {
+    config.mcpServers.iknowaguy = {
       type: 'http',
       url: 'http://localhost:3001/mcp',
       headers: { Authorization: `Bearer ${apiKey}` },
@@ -188,7 +188,7 @@ export class SetupAgent implements Command {
     console.log(W('\n📋 Manual Setup Instructions\n'));
     console.log('Add this to your agent\'s MCP configuration:\n');
     console.log(W(JSON.stringify({
-      name: 'hireahuman',
+      name: 'iknowaguy',
       url: 'http://localhost:3001/mcp',
       api_key: apiKey,
     }, null, 2)));

@@ -8,7 +8,7 @@ import { printMiniBanner } from '../lib/ascii';
 const W = chalk.white.bold;
 const D = chalk.white.dim;
 
-const TEMPLATE_ENV = `# HireAHuman Environment
+const TEMPLATE_ENV = `# iknowaguy Environment
 # Copy this to .env and fill in your values
 
 # Supabase Project URL (from supabase.com dashboard)
@@ -17,8 +17,8 @@ SUPABASE_URL=https://your-project.supabase.co
 # Supabase Service Role Key (from supabase.com > Settings > API)
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
-# HireAHuman API Key (generate with: hireahuman api-key:generate)
-HIREAHUMAN_API_KEY=***
+# iknowaguy API Key (generate with: iknowaguy api-key:generate)
+IKNOWAGUY_API_KEY=***
 
 # MCP Server Port
 PORT=3001
@@ -35,10 +35,10 @@ AGENT_PORTAL_URL=http://localhost:3003
 
 export class Init implements Command {
   name = 'init';
-  description = 'Initialize HireAHuman in your project';
+  description = 'Initialize iknowaguy in your project';
 
   async run(args: string[]): Promise<void> {
-    console.log(W('\n🚀 HireAHuman Init\n'));
+    console.log(W('\n🚀 iknowaguy Init\n'));
     printMiniBanner('init');
 
     const nodeVersion = process.version;
@@ -79,7 +79,7 @@ export class Init implements Command {
     ]);
 
     const { supabaseUrl, supabaseKey, tenantName } = answers;
-    const apiKey = `hak_live_${nanoid(24)}`;
+    const apiKey = `ikg_live_${nanoid(24)}`;
     const apiKeyPrefix = apiKey.slice(0, 12);
 
     const envContent = TEMPLATE_ENV
@@ -109,9 +109,9 @@ export class Init implements Command {
 
 export default config;
 `;
-    const configPath = join(projectDir, 'hireahuman.config.ts');
+    const configPath = join(projectDir, 'iknowaguy.config.ts');
     writeFileSync(configPath, configContent);
-    console.log(W(`✅ Created hireahuman.config.ts`));
+    console.log(W(`✅ Created iknowaguy.config.ts`));
 
     console.log(D('\n📡 Creating tenant in Supabase...'));
     try {
@@ -144,24 +144,24 @@ export default config;
     const mcpConfig = {
       mcp_servers: [
         {
-          name: 'hireahuman',
+          name: 'iknowaguy',
           url: 'http://localhost:3001/mcp',
           api_key: apiKey,
         },
       ],
     };
 
-    const mcpConfigPath = join(projectDir, 'hireahuman-mcp.json');
+    const mcpConfigPath = join(projectDir, 'iknowaguy-mcp.json');
     writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2));
-    console.log(W(`\n✅ Created hireahuman-mcp.json`));
+    console.log(W(`\n✅ Created iknowaguy-mcp.json`));
 
     console.log(W('\n📋 Next Steps:\n'));
     console.log(`  1. ${W('Run the SQL schema')} in Supabase SQL Editor`);
     console.log(`     → supabase/migrations/001_initial.sql`);
     console.log(`  2. ${W('Start development:')}`);
-    console.log(`     → hireahuman dev`);
+    console.log(`     → iknowaguy dev`);
     console.log(`  3. ${W('Link your AI agent:')}`);
-    console.log(`     → hireahuman setup:agent`);
+    console.log(`     → iknowaguy setup:agent`);
     console.log(`\n${W('✅ Init complete!')}\n`);
   }
 }

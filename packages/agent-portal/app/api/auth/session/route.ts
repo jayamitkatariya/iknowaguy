@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
       ? { name, slug, email, password }
       : { email, password };
 
-    // Call the external HireAHuman API
+    // Call the external iknowaguy API
     const res = await fetch(`${apiUrl}${endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

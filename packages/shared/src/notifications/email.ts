@@ -15,7 +15,7 @@ export class EmailAdapter {
     this.secure = process.env.NOTIFY_EMAIL_PORT === '465';
     this.user = process.env.NOTIFY_EMAIL_USER;
     this.pass = process.env.NOTIFY_EMAIL_PASS;
-    this.from = process.env.NOTIFY_EMAIL_FROM || 'HireAHuman <noreply@hireahuman-app.vercel.app>';
+    this.from = process.env.NOTIFY_EMAIL_FROM || 'iknowaguy <noreply@iknowaguy-app.vercel.app>';
   }
 
   async send(
@@ -41,7 +41,7 @@ export class EmailAdapter {
     const html = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: #6366f1; padding: 20px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 20px;">HireAHuman</h1>
+          <h1 style="color: white; margin: 0; font-size: 20px;">iknowaguy</h1>
         </div>
         <div style="padding: 30px; background: #f9fafb;">
           <h2 style="color: #111827; margin-top: 0;">${payload.title}</h2>
@@ -55,7 +55,7 @@ export class EmailAdapter {
       await transporter.sendMail({
         from: this.from,
         to,
-        subject: `[HireAHuman] ${payload.title}`,
+        subject: `[iknowaguy] ${payload.title}`,
         html,
       });
       return { success: true };

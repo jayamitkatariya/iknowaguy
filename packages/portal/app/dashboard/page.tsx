@@ -24,33 +24,25 @@ export default function DashboardPage() {
 
   const fetchData = async () => {
     setLoading(true);
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+    // Check for stored API key
+    const apiKey = localStorage.getItem("api_key");
+    if (!apiKey) { setLoading(false); return; }
 
     try {
-      const orgRes = await supabase
-        .from("users")
-        .select("org_id")
-        .eq("id", session.user.id)
-        .single();
+      // API uses tenant_id from API key middleware - no need to pass org_id
+      const bountyRes = await apiFetch(`/bounties?limit=5`);
+      const bountyData = bountyRes.data || [];
+      setBounties(bountyData);
 
-      const orgId = orgRes.data?.org_id;
+      const active = bountyData.filter((b: Bounty) => b.status === "open" || b.status === "in_progress").length;
+      const pending = bountyData.filter((b: Bounty) => b.status === "submitted" || b.status === "pending_review").length;
 
-      if (orgId) {
-        const bountyRes = await apiFetch(`/bounties?org_id=${orgId}&limit=5`);
-        const bountyData = bountyRes.data || [];
-        setBounties(bountyData);
-
-        const active = bountyData.filter((b: Bounty) => b.status === "open" || b.status === "in_progress").length;
-        const pending = bountyData.filter((b: Bounty) => b.status === "submitted" || b.status === "pending_review").length;
-
-        setStats({
-          active,
-          total_earned: 0,
-          workers: active,
-          pending_approval: pending,
-        });
-      }
+      setStats({
+        active,
+        total_earned: 0,
+        workers: active,
+        pending_approval: pending,
+      });
     } catch (err) {
       console.error("Dashboard fetch error:", err);
     }

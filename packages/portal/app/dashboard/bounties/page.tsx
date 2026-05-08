@@ -25,20 +25,12 @@ export default function BountiesPage() {
 
   const fetchBounties = async () => {
     setLoading(true);
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) return;
+    const apiKey = localStorage.getItem("api_key");
+    if (!apiKey) { setLoading(false); return; }
 
     try {
-      const orgRes = await supabase
-        .from("users")
-        .select("org_id")
-        .eq("id", session.user.id)
-        .single();
-
-      const orgId = orgRes.data?.org_id;
-      if (!orgId) { setLoading(false); return; }
-
-      let url = `/bounties?org_id=${orgId}&limit=50`;
+      // API uses tenant_id from API key middleware - no need to pass org_id
+      let url = `/bounties?limit=50`;
       if (filter !== "all") url += `&status=${filter}`;
 
       const res = await apiFetch(url);

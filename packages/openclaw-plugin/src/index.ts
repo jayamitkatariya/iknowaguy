@@ -1,5 +1,5 @@
 /**
- * @hireahuman/openclaw-plugin
+ * @iknowaguy/openclaw-plugin
  * 
  * A connector plugin for integrating with OpenClaw - browser automation for physical world tasks.
  */

@@ -4,7 +4,7 @@ services:
   # ── Redis (for rate limiting & caching) ───────────────────────────────────
   redis:
     image: redis:7-alpine
-    container_name: hireahuman-redis
+    container_name: iknowaguy-redis
     ports:
       - "6379:6379"
     volumes:
@@ -21,7 +21,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: hireahuman-mcp
+    container_name: iknowaguy-mcp
     env_file:
       - .env
     environment:
@@ -43,7 +43,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.api
-    container_name: hireahuman-api
+    container_name: iknowaguy-api
     env_file:
       - .env
     environment:
@@ -60,7 +60,7 @@ services:
       context: .
       dockerfile: Dockerfile.nextjs
       target: runner
-    container_name: hireahuman-worker
+    container_name: iknowaguy-worker
     env_file:
       - .env
     environment:
@@ -79,7 +79,7 @@ services:
       context: .
       dockerfile: Dockerfile.nextjs
       target: runner
-    container_name: hireahuman-agent-portal
+    container_name: iknowaguy-agent-portal
     env_file:
       - .env
     environment:

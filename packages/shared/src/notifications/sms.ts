@@ -41,7 +41,7 @@ export class SmsAdapter {
         new URLSearchParams({
           To: to,
           From: this.from!,
-          Body: `[HireAHuman] ${payload.title}: ${payload.body}`.slice(0, 160),
+          Body: `[iknowaguy] ${payload.title}: ${payload.body}`.slice(0, 160),
         }),
         {
           auth: { username: this.accountSid, password: this.authToken },

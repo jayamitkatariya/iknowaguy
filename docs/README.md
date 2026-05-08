@@ -1,69 +1,72 @@
-# HireAHuman
+# iknowaguy
 
-> Open-source framework for AI agents to bring humans into the loop for physical-world tasks.
+> Open-source MCP-first platform for AI agents to bring humans into the loop.
 
-## What Is HireAHuman?
+## What Is It?
 
-HireAHuman is an MIT-licensed open-source framework that gives AI agents access to human workers for tasks requiring physical presence, judgment, or specialized skills.
+iknowaguy gives AI agents access to human workers for tasks requiring physical presence, judgment, or specialized skills.
 
-**Two modes:**
+**Two modes via the same MCP tools:**
 
-| Mode | Description | Payment |
-|------|-------------|---------|
-| **Internal** | Reach your own team members | None |
-| **External** | Post bounties to a public worker pool | Bounty-based |
-
-**Same MCP tools for both.** An AI agent calls `humans.request()` or `bounties.create()` — it doesn't know or care which mode is used.
-
----
-
-## Quick Start
-
-### 1. Deploy Supabase
-
-Create a project at supabase.com. Run `supabase/migrations/001_complete.sql`.
-
-### 2. Configure Environment
-
-```bash
-# Worker App
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-
-# MCP Server
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-```
-
-### 3. Connect Your AI Agent
-
-```json
-{
-  "mcp_servers": [
-    {
-      "name": "hireahuman",
-      "url": "https://your-hireahuman-deploy.com/mcp",
-      "api_key": "hak_live_your-api-key"
-    }
-  ]
-}
-```
-
-### 4. Add Team Members
-
-Team members sign up at the worker app URL. Approve them in the admin dashboard.
-
----
+| Mode | How It Works | Use Case |
+|------|-------------|----------|
+| **Internal** | Agent routes tasks to your team via Slack, Telegram, Email, SMS | Team human-in-the-loop |
+| **External** | Agent posts bounties to a public marketplace | Open bounty pool with payments |
 
 ## Architecture
 
 ```
-AI Agent → MCP Server → Routing Layer
-                        ├── Internal Mode → Team Notifications (Slack, Telegram, Email)
-                        └── External Mode → Bounty Marketplace → Worker App
+AI Agent (Hermes / Claude / OpenClaw)
+    │
+    │ MCP protocol (local, stdio or HTTP)
+    ▼
+MCP Server (packages/mcp-server)  ← runs on your laptop
+    │
+    │ Direct Supabase connection (service role)
+    ▼
+Supabase (PostgreSQL + Auth + Storage + Realtime)  ← cloud
+    │
+    │ Shared data source
+    ▼
+Website (worker-app-six.vercel.app)  ← Vercel
+    • Landing page
+    • Worker marketplace (browse, accept, submit, earn)
+    • Agent dashboard (create bounties, review, API keys)
+    • Stripe webhooks, file uploads
 ```
 
----
+## Quick Start
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/jayamitkatariya/iknowaguy.git
+cd iknowaguy
+pnpm install
+pnpm build:all
+```
+
+### 2. Start MCP server
+
+```bash
+cd packages/mcp-server && pnpm dev
+```
+
+### 3. Start website
+
+```bash
+cd packages/worker-app && pnpm dev
+```
+
+### 4. Connect your agent
+
+Get an API key from the website at `/dashboard/api-keys`, then configure your MCP client.
+
+## Deploy
+
+The website deploys to Vercel with zero config. The MCP server runs locally alongside your AI agent.
+
+See [getting-started.md](./getting-started.md) for detailed setup.
 
 ## License
 

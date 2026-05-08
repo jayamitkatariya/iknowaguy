@@ -41,7 +41,7 @@ export default function ApiKeysPage() {
             API Keys
           </h1>
           <p style={{ color: "var(--oc-text-muted)" }}>
-            Your API key for programmatic access to the HireAHuman API
+            Your API key for programmatic access to the iknowaguy API
           </p>
         </div>
       </header>

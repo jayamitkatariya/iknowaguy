@@ -84,7 +84,7 @@ export default function HomePage() {
       </main>
 
       <footer style={{ marginTop: "4rem", textAlign: "center", opacity: 0.6, fontSize: "0.875rem" }}>
-        <p>© {new Date().getFullYear()} HireAHuman. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} iknowaguy. All rights reserved.</p>
       </footer>
     </div>
   );

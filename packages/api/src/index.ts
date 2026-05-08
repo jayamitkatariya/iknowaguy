@@ -12,9 +12,10 @@ import messages from './routes/messages.js';
 import disputes from './routes/disputes.js';
 import categories from './routes/categories.js';
 import payments from './routes/payments.js';
-import { constructWebhookEvent, getAccountStatus } from '@hireahuman/shared/payments';
+import { constructWebhookEvent, getAccountStatus } from '@iknowaguy/shared/payments';
 import { supabase } from './lib/supabase.js';
 import { rateLimitMiddleware } from './middleware/rate-limit.js';
+import { apiKeyMiddleware } from './middleware/api-key.js';
 
 const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'] as const;
 const missingEnvVars = requiredEnvVars.filter((key) => !process.env[key]);
@@ -69,10 +70,14 @@ app.use('*', logger());
 app.use('*', rateLimitMiddleware);
 app.use('/api/*', csrfMiddleware);
 
-app.get('/', (c) => c.json({ name: 'HireAHuman API', version: '0.1.0' }));
+app.get('/', (c) => c.json({ name: 'iknowaguy API', version: '0.1.0' }));
 
-app.route('/api', health);
-app.route('/auth', auth); // Public auth endpoints (no API key required)
+// Public routes — mounted BEFORE apiKeyMiddleware so they bypass auth
+app.route('/api/health', health);        // /api/health — public health check
+app.route('/api/categories', categories); // /api/categories — public, no auth required
+app.route('/auth', auth);                 // /auth/* — login/register, no API key required
+
+app.use('/api/*', apiKeyMiddleware);     // All other /api/* routes require API key
 
 app.get('/connect/account-status', async (c) => {
   const stripeAccountId = c.req.query('stripeAccountId');
@@ -96,14 +101,12 @@ app.get('/connect/account-status', async (c) => {
   }
 });
 
-app.use('/api/*', csrfMiddleware);
-
+// Protected API routes
 app.route('/api', humans);
 app.route('/api', bounties);
 app.route('/api', tasks);
 app.route('/api', messages);
 app.route('/api', disputes);
-app.route('/api/categories', categories);
 app.route('/api', payments);
 
 app.post('/webhooks/stripe', async (c) => {
@@ -164,5 +167,5 @@ app.onError((err, c) => {
 const port = parseInt(process.env.API_PORT || process.env.PORT || '3000') || 3000;
 
 serve({ fetch: app.fetch, port }, (info) => {
-  console.log(`HireAHuman API server running on port ${info.port}`);
+  console.log(`iknowaguy API server running on port ${info.port}`);
 });

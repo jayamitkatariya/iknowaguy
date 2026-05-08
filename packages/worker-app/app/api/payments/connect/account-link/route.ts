@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
     const stripeKey = process.env.STRIPE_SECRET_KEY || "";
     if (!stripeKey || !stripeKey.startsWith("sk_")) {
-      return NextResponse.json({ url: return_url || "https://hireahuman.vercel.app/earnings?connected=stub" });
+      return NextResponse.json({ url: return_url || "https://iknowaguy.vercel.app/earnings?connected=stub" });
     }
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -36,8 +36,8 @@ export async function POST(req: NextRequest) {
     const stripe = getStripeClient(stripeKey);
     const link = await stripe.accountLinks.create({
       account: accountId,
-      refresh_url: refresh_url || "https://hireahuman.vercel.app/earnings",
-      return_url: return_url || "https://hireahuman.vercel.app/earnings?connected=true",
+      refresh_url: refresh_url || "https://iknowaguy.vercel.app/earnings",
+      return_url: return_url || "https://iknowaguy.vercel.app/earnings?connected=true",
       type: "account_onboarding",
     });
 

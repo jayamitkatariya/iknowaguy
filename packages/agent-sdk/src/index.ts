@@ -1,13 +1,13 @@
 /**
- * HireAHuman Agent SDK
+ * iknowaguy Agent SDK
  *
- * A TypeScript SDK for AI agents to interact with HireAHuman via JSON-RPC 2.0 over MCP.
+ * A TypeScript SDK for AI agents to interact with iknowaguy via JSON-RPC 2.0 over MCP.
  *
  * @example
  * ```typescript
- * import { HireAHumanClient } from '@hireahuman/sdk';
+ * import { iknowaguyClient } from '@iknowaguy/sdk';
  *
- * const client = new HireAHumanClient({
+ * const client = new iknowaguyClient({
  *   apiKey: 'your-api-key',
  *   baseUrl: 'http://localhost:3001'
  * });
@@ -110,7 +110,7 @@ export interface ApiResponse<T> {
 const TIMEOUT_MS = 10_000;
 const MAX_RETRIES = 1;
 
-export class HireAHumanClient {
+export class iknowaguyClient {
   private apiKey: string;
   private baseUrl: string;
 
@@ -283,4 +283,4 @@ export class HireAHumanClient {
   }
 }
 
-export default HireAHumanClient;
+export default iknowaguyClient;

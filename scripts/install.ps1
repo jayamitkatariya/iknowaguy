@@ -1,5 +1,5 @@
-# HireAHuman Install Script for Windows (PowerShell)
-# Usage: iwr -useb https://install.hireahuman.ai/install.ps1 | iex
+# iknowaguy Install Script for Windows (PowerShell)
+# Usage: iwr -useb https://install.iknowaguy.ai/install.ps1 | iex
 
 #Requires -Version 5.1
 
@@ -19,8 +19,8 @@ function Error($msg)   { Write-Color "✖  $msg" "Red" }
 function Step($msg)    { Write-Host ""; Write-Color "▶ $msg" "Magenta" }
 
 # ── Config ───────────────────────────────────────────────────────────────────
-$RepoUrl = "https://github.com/hireahuman/hireahuman.git"
-$InstallDir = Join-Path $env:USERPROFILE ".hireahuman"
+$RepoUrl = "https://github.com/jayamitkatariya/iknowaguy.git"
+$InstallDir = Join-Path $env:USERPROFILE ".iknowaguy"
 $MinNodeVersion = 18
 
 # ── Banner ───────────────────────────────────────────────────────────────────
@@ -65,7 +65,7 @@ function Check-Node {
     if ($nodeMajor -lt $MinNodeVersion) {
         Error "Node.js $nodeVersion is too old."
         Write-Host ""
-        Write-Host "   HireAHuman requires Node.js >= $MinNodeVersion."
+        Write-Host "   iknowaguy requires Node.js >= $MinNodeVersion."
         Write-Color "   https://nodejs.org/" "Cyan"
         Write-Host ""
         exit 1
@@ -88,7 +88,7 @@ function Check-Node {
 
 # ── Clone or Update ──────────────────────────────────────────────────────────
 function Clone-OrPull {
-    Step "Installing HireAHuman to $InstallDir"
+    Step "Installing iknowaguy to $InstallDir"
 
     if (Test-Path (Join-Path $InstallDir ".git")) {
         Info "Existing installation found. Updating..."
@@ -138,7 +138,7 @@ function Setup-Path {
     }
 
     Write-Host ""
-    Write-Host "   To use the hireahuman command, add this directory to your PATH:"
+    Write-Host "   To use the iknowaguy command, add this directory to your PATH:"
     Write-Color "   $binPath" "Cyan"
     Write-Host ""
 
@@ -147,7 +147,7 @@ function Setup-Path {
         $newPath = "$currentPath;$binPath"
         [Environment]::SetEnvironmentVariable("Path", $newPath, "User")
         Success "Added to user PATH"
-        Warn "Open a new PowerShell window to use hireahuman"
+        Warn "Open a new PowerShell window to use iknowaguy"
     } else {
         Info "Skipping PATH modification. Add the directory above to your PATH manually."
     }
@@ -165,16 +165,16 @@ function Print-Success {
     Write-Host "  Next Steps:"
     Write-Host ""
     Write-Host "  1. Initialize your project:"
-    Write-Color "     hireahuman init" "Cyan"
+    Write-Color "     iknowaguy init" "Cyan"
     Write-Host ""
     Write-Host "  2. Start all servers:"
-    Write-Color "     hireahuman dev" "Cyan"
+    Write-Color "     iknowaguy dev" "Cyan"
     Write-Host ""
     Write-Host "  3. Run the setup wizard:"
-    Write-Color "     hireahuman setup:agent" "Cyan"
+    Write-Color "     iknowaguy setup:agent" "Cyan"
     Write-Host ""
-    Write-Color "  Docs:    https://docs.hireahuman.ai" "Gray"
-    Write-Color "  GitHub:  https://github.com/hireahuman/hireahuman" "Gray"
+    Write-Color "  Docs:    https://docs.iknowaguy.ai" "Gray"
+    Write-Color "  GitHub:  https://github.com/jayamitkatariya/iknowaguy" "Gray"
     Write-Host ""
 }
 

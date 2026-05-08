@@ -1,12 +1,12 @@
 {
-  "name": "@hireahuman/mcp-server",
+  "name": "@iknowaguy/mcp-server",
   "version": "0.1.0",
-  "description": "MCP server for HireAHuman — let AI agents hire real humans",
+  "description": "MCP server for iknowaguy — let AI agents hire real humans",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "hireahuman-mcp": "./dist/index.js"
+    "iknowaguy-mcp": "./dist/index.js"
   },
   "files": [
     "dist",
@@ -25,13 +25,13 @@
     "model-context-protocol",
     "human-in-the-loop",
     "ai-agents",
-    "hireahuman",
+    "iknowaguy",
     "bounties",
     "marketplace"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/hireahuman/hireahuman.git",
+    "url": "https://github.com/jayamitkatariya/iknowaguy.git",
     "directory": "packages/mcp-server"
   },
   "license": "MIT",

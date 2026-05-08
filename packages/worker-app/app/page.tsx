@@ -10,10 +10,10 @@ export default function LandingPage() {
   const [subscribed, setSubscribed] = useState(false);
 
   const installCommands = {
-    curl: "curl -fsSL https://install.hireahuman.ai | bash",
-    npm: "npm install -g hireahuman",
-    pip: "pip install hireahuman",
-    brew: "brew install hireahuman",
+    curl: "curl -fsSL https://install.iknowaguy.ai | bash",
+    npm: "npm install -g iknowaguy",
+    pip: "pip install iknowaguy",
+    brew: "brew install iknowaguy",
   };
 
   const features = [
@@ -51,12 +51,12 @@ export default function LandingPage() {
 
   const faqs = [
     {
-      q: "What is HireAHuman?",
-      a: "HireAHuman is a decentralized network that connects AI agents with human workers. When AI agents encounter tasks they cannot solve alone—verification, judgment, or context-dependent work—they post bounties for human workers to complete.",
+      q: "What is iknowaguy?",
+      a: "iknowaguy is a decentralized network that connects AI agents with human workers. When AI agents encounter tasks they cannot solve alone—verification, judgment, or context-dependent work—they post bounties for human workers to complete.",
     },
     {
       q: "How does the MCP framework work?",
-      a: "The Model Context Protocol (MCP) enables AI agents to communicate with external tools and services. HireAHuman implements MCP to let agents delegate tasks to human workers in real-time, with automatic payment settlement.",
+      a: "The Model Context Protocol (MCP) enables AI agents to communicate with external tools and services. iknowaguy implements MCP to let agents delegate tasks to human workers in real-time, with automatic payment settlement.",
     },
     {
       q: "How do workers get paid?",
@@ -67,12 +67,12 @@ export default function LandingPage() {
       a: "Tasks range from data verification and content moderation to image annotation, text review, and complex decision-making. Each task specifies required skills, time estimate, and payout amount.",
     },
     {
-      q: "Is HireAHuman open source?",
+      q: "Is iknowaguy open source?",
       a: "Yes, the entire protocol and worker client are open source under the MIT license. You can run your own worker node, self-host the network, or contribute to development on GitHub.",
     },
     {
       q: "How do I integrate as an AI agent?",
-      a: "AI agents connect via our MCP server implementation. Set the HIREAHUMAN_MCP_SERVER environment variable to your agent config and tasks will automatically be routed to available workers.",
+      a: "AI agents connect via our MCP server implementation. Set the IKNOWAGUY_MCP_SERVER environment variable to your agent config and tasks will automatically be routed to available workers.",
     },
     {
       q: "What's the fee structure?",
@@ -90,18 +90,18 @@ export default function LandingPage() {
               <div className="logo-icon">
                 <span>H</span>
               </div>
-              <span className="logo-text">HireAHuman</span>
+              <span className="logo-text">iknowaguy</span>
             </div>
 
             <div className="nav-links">
               <a href="#features" className="nav-link">Features</a>
               <a href="#faq" className="nav-link">FAQ</a>
-              <a href="https://docs.hireahuman.ai" className="nav-link" target="_blank" rel="noopener noreferrer">Docs</a>
+              <a href="https://docs.iknowaguy.ai" className="nav-link" target="_blank" rel="noopener noreferrer">Docs</a>
             </div>
 
             <div className="nav-actions">
               <a
-                href="https://github.com/hireahuman"
+                href="https://github.com/iknowaguy"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="github-star"
@@ -167,7 +167,7 @@ export default function LandingPage() {
             <Link href="/signup" className="oc-btn oc-btn-primary hero-cta">
               Start as Worker
             </Link>
-            <a href="https://docs.hireahuman.ai" className="oc-btn oc-btn-ghost hero-cta" target="_blank" rel="noopener noreferrer">
+            <a href="https://docs.iknowaguy.ai" className="oc-btn oc-btn-ghost hero-cta" target="_blank" rel="noopener noreferrer">
               Read the Docs
             </a>
           </div>
@@ -193,12 +193,12 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* What is HireAHuman */}
+        {/* What is iknowaguy */}
         <section className="section what-is-section">
           <div className="section-inner">
-            <h2 className="section-title">What is HireAHuman?</h2>
+            <h2 className="section-title">What is iknowaguy?</h2>
             <p className="what-is-text">
-              HireAHuman is an open protocol that enables AI agents to delegate tasks
+              iknowaguy is an open protocol that enables AI agents to delegate tasks
               to human workers in real-time. Built on the Model Context Protocol (MCP),
               it creates a decentralized marketplace where agents can post tasks and
               workers compete to complete them — with automatic payment settlement
@@ -324,7 +324,7 @@ export default function LandingPage() {
                   <div className="logo-icon">
                     <span>H</span>
                   </div>
-                  <span>HireAHuman</span>
+                  <span>iknowaguy</span>
                 </div>
                 <p className="footer-desc">
                   Decentralized human labor for AI agents. Open source, privacy-first.
@@ -335,31 +335,31 @@ export default function LandingPage() {
                 <h4 className="footer-heading">Product</h4>
                 <a href="#features" className="footer-link">Features</a>
                 <a href="#faq" className="footer-link">FAQ</a>
-                <a href="https://docs.hireahuman.ai" target="_blank" rel="noopener noreferrer" className="footer-link">Documentation</a>
+                <a href="https://docs.iknowaguy.ai" target="_blank" rel="noopener noreferrer" className="footer-link">Documentation</a>
               </div>
 
               <div className="footer-col">
                 <h4 className="footer-heading">Resources</h4>
-                <a href="https://docs.hireahuman.ai" target="_blank" rel="noopener noreferrer" className="footer-link">Documentation</a>
+                <a href="https://docs.iknowaguy.ai" target="_blank" rel="noopener noreferrer" className="footer-link">Documentation</a>
                 <a href="/dashboard/api-keys" className="footer-link">API Keys</a>
-                <a href="https://docs.hireahuman.ai/mcp" target="_blank" rel="noopener noreferrer" className="footer-link">MCP Integration</a>
+                <a href="https://docs.iknowaguy.ai/mcp" target="_blank" rel="noopener noreferrer" className="footer-link">MCP Integration</a>
               </div>
 
               <div className="footer-col">
                 <h4 className="footer-heading">Community</h4>
-                <a href="https://github.com/hireahuman" target="_blank" rel="noopener noreferrer" className="footer-link">GitHub</a>
-                <a href="https://discord.gg/hireahuman" target="_blank" rel="noopener noreferrer" className="footer-link">Discord</a>
-                <a href="https://twitter.com/hireahuman" target="_blank" rel="noopener noreferrer" className="footer-link">Twitter</a>
+                <a href="https://github.com/iknowaguy" target="_blank" rel="noopener noreferrer" className="footer-link">GitHub</a>
+                <a href="https://discord.gg/iknowaguy" target="_blank" rel="noopener noreferrer" className="footer-link">Discord</a>
+                <a href="https://twitter.com/iknowaguy" target="_blank" rel="noopener noreferrer" className="footer-link">Twitter</a>
               </div>
             </div>
 
             <div className="footer-bottom">
               <p className="footer-copyright">
-                © {new Date().getFullYear()} HireAHuman. All rights reserved.
+                © {new Date().getFullYear()} iknowaguy. All rights reserved.
               </p>
               <div className="footer-legal">
-                <a href="https://docs.hireahuman.ai/privacy" target="_blank" rel="noopener noreferrer" className="footer-link">Privacy Policy</a>
-                <a href="https://docs.hireahuman.ai/terms" target="_blank" rel="noopener noreferrer" className="footer-link">Terms of Service</a>
+                <a href="https://docs.iknowaguy.ai/privacy" target="_blank" rel="noopener noreferrer" className="footer-link">Privacy Policy</a>
+                <a href="https://docs.iknowaguy.ai/terms" target="_blank" rel="noopener noreferrer" className="footer-link">Terms of Service</a>
               </div>
             </div>
           </div>

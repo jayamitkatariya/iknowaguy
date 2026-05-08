@@ -14,8 +14,8 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 
-RUN pnpm build --filter=@hireahuman/shared
-RUN pnpm build --filter=@hireahuman/api
+RUN pnpm build --filter=@iknowaguy/shared
+RUN pnpm build --filter=@iknowaguy/api
 
 EXPOSE 3000
 

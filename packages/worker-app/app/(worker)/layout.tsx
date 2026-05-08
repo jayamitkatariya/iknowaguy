@@ -31,26 +31,25 @@ export default function WorkerLayout({ children }: { children: React.ReactNode }
   useEffect(() => {
     let cancelled = false;
     const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session) {
-        router.push("/login?redirect=" + encodeURIComponent(pathname));
-        return;
-      }
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!data.session) {
+          router.push("/login?redirect=" + encodeURIComponent(pathname));
+          return;
+        }
 
-      const { data: profile } = await supabase
-        .from("users")
-        .select("role")
-        .eq("id", data.session.user.id)
-        .single();
+        if (cancelled) return;
 
-      if (cancelled) return;
+        const role = data.session.user?.user_metadata?.role || "human";
+        if (role !== "human") {
+          router.push("/login");
+          return;
+        }
 
-      if (profile?.role !== "human") {
+        setChecking(false);
+      } catch {
         router.push("/login");
-        return;
       }
-
-      setChecking(false);
     };
     checkSession();
     return () => { cancelled = true; };
@@ -92,7 +91,7 @@ export default function WorkerLayout({ children }: { children: React.ReactNode }
               borderRadius: "6px", display: "flex", alignItems: "center",
               justifyContent: "center", color: "var(--oc-bg)", fontWeight: 700, fontSize: "14px",
             }}>H</div>
-            <span style={{ fontSize: "14px", fontWeight: 600, letterSpacing: "0.02em", color: "var(--oc-text)" }}>HireAHuman</span>
+            <span style={{ fontSize: "14px", fontWeight: 600, letterSpacing: "0.02em", color: "var(--oc-text)" }}>iknowaguy</span>
           </Link>
           {!isMobile && navLinks.map((link) => (
             <Link key={link.href} href={link.href} style={{

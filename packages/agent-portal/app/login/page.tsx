@@ -124,7 +124,7 @@ export default function LoginPage() {
                     title="Lowercase letters, numbers, and hyphens only"
                     required
                   />
-                  <p className="text-xs text-muted mt-1">your-org.hireahuman.io</p>
+                  <p className="text-xs text-muted mt-1">your-org.iknowaguy.io</p>
                 </div>
               </>
             )}

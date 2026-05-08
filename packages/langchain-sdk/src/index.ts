@@ -1,5 +1,5 @@
 /**
- * @hireahuman/langchain-sdk
+ * @iknowaguy/langchain-sdk
  * 
  * A LangChain SDK integration for building AI agents with human-in-the-loop capabilities.
  */
@@ -25,9 +25,9 @@ export interface ChainResponse {
 }
 
 /**
- * HireAHumanChain - LangChain integration for human-in-the-loop AI workflows
+ * iknowaguyChain - LangChain integration for human-in-the-loop AI workflows
  */
-export class HireAHumanChain {
+export class iknowaguyChain {
   private config: LangChainSDKConfig;
 
   constructor(config: LangChainSDKConfig = {}) {
@@ -42,13 +42,13 @@ export class HireAHumanChain {
    * Invoke the chain with human-in-the-loop support
    */
   async invoke(input: HumanInTheLoopInput): Promise<ChainResponse> {
-    console.log(`[HireAHumanChain] Processing task: ${input.task}`);
+    console.log(`[iknowaguyChain] Processing task: ${input.task}`);
 
     // Placeholder implementation
     return {
       success: true,
       result: {
-        answer: 'This is a placeholder response from HireAHumanChain',
+        answer: 'This is a placeholder response from iknowaguyChain',
         requiresHumanReview: false,
       },
     };
@@ -58,7 +58,7 @@ export class HireAHumanChain {
    * Process a task that requires human input
    */
   async processWithHuman(input: HumanInTheLoopInput): Promise<ChainResponse> {
-    console.log(`[HireAHumanChain] Processing with human review: ${input.task}`);
+    console.log(`[iknowaguyChain] Processing with human review: ${input.task}`);
 
     // Placeholder implementation - routes to Hermes for human review
     return {
@@ -75,7 +75,7 @@ export class HireAHumanChain {
    * Get a response with streaming support
    */
   async *stream(input: HumanInTheLoopInput): AsyncGenerator<string> {
-    console.log(`[HireAHumanChain] Streaming response for: ${input.task}`);
+    console.log(`[iknowaguyChain] Streaming response for: ${input.task}`);
 
     // Placeholder implementation
     const response = 'Placeholder streaming response';
@@ -86,10 +86,10 @@ export class HireAHumanChain {
 }
 
 /**
- * Create a HireAHumanChain instance
+ * Create a iknowaguyChain instance
  */
-export function createChain(config?: LangChainSDKConfig): HireAHumanChain {
-  return new HireAHumanChain(config);
+export function createChain(config?: LangChainSDKConfig): iknowaguyChain {
+  return new iknowaguyChain(config);
 }
 
-export default HireAHumanChain;
+export default iknowaguyChain;

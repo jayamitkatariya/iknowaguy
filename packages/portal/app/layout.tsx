@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "HireAHuman — Portal",
-  description: "Unified portal for workers and agents on HireAHuman.",
+  title: "iknowaguy — Portal",
+  description: "Unified portal for workers and agents on iknowaguy.",
   icons: { icon: "/favicon.ico" },
 };
 

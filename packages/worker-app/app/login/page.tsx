@@ -26,12 +26,8 @@ function LoginForm() {
       if (redirect && redirect !== "/browse" && redirect.startsWith("/")) {
         router.push(redirect);
       } else {
-        const { data: profile } = await supabase
-          .from("users")
-          .select("role")
-          .eq("id", data.user.id)
-          .single();
-        if (profile?.role === "agent") {
+        const role = data.user.user_metadata?.role || "human";
+        if (role === "agent") {
           router.push("/dashboard");
         } else {
           router.push("/browse");
@@ -151,7 +147,7 @@ export default function LoginPage() {
               fontSize: "15px",
               fontWeight: 600,
               letterSpacing: "-0.02em",
-            }}>HireAHuman</span>
+            }}>iknowaguy</span>
           </a>
         </nav>
       </header>

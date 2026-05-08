@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# HireAHuman Install Script
-# Usage: curl -fsSL https://install.hireahuman.ai | bash
+# iknowaguy Install Script
+# Usage: curl -fsSL https://install.iknowaguy.ai | bash
 #
 
 set -euo pipefail
@@ -18,8 +18,8 @@ CYAN='\033[36m'
 MAGENTA='\033[35m'
 
 # ── Config ───────────────────────────────────────────────────────────────────
-REPO_URL="https://github.com/hireahuman/hireahuman.git"
-INSTALL_DIR="${HOME}/.hireahuman"
+REPO_URL="https://github.com/jayamitkatariya/iknowaguy.git"
+INSTALL_DIR="${HOME}/.iknowaguy"
 MIN_NODE_VERSION=18
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -82,7 +82,7 @@ check_node() {
   if [ "$NODE_MAJOR" -lt "$MIN_NODE_VERSION" ]; then
     error "Node.js v${NODE_VERSION} is too old."
     echo ""
-    echo -e "   HireAHuman requires Node.js >= ${MIN_NODE_VERSION}."
+    echo -e "   iknowaguy requires Node.js >= ${MIN_NODE_VERSION}."
     echo -e "   Please upgrade: ${CYAN}https://nodejs.org/${RESET}"
     echo ""
     exit 1
@@ -104,7 +104,7 @@ check_node() {
 
 # ── Clone or Update ──────────────────────────────────────────────────────────
 clone_or_pull() {
-  step "Installing HireAHuman to ${INSTALL_DIR}"
+  step "Installing iknowaguy to ${INSTALL_DIR}"
 
   if [ -d "$INSTALL_DIR/.git" ]; then
     info "Existing installation found. Updating..."
@@ -173,7 +173,7 @@ setup_path() {
   esac
 
   echo ""
-  echo -e "   To use the ${BOLD}hireahuman${RESET} command, add this to your PATH:"
+  echo -e "   To use the ${BOLD}iknowaguy${RESET} command, add this to your PATH:"
   echo ""
   echo -e "   ${CYAN}export PATH=\"${BIN_PATH}:\$PATH\"${RESET}"
   echo ""
@@ -183,10 +183,10 @@ setup_path() {
     if [[ "$response" =~ ^[Yy]$ ]]; then
       mkdir -p "$(dirname "$SHELL_CONFIG")"
       echo "" >> "$SHELL_CONFIG"
-      echo "# HireAHuman CLI" >> "$SHELL_CONFIG"
+      echo "# iknowaguy CLI" >> "$SHELL_CONFIG"
       echo "export PATH=\"${BIN_PATH}:\$PATH\"" >> "$SHELL_CONFIG"
       success "Added to ${SHELL_CONFIG}"
-      warn "Run ${BOLD}source ${SHELL_CONFIG}${RESET} or open a new terminal to use hireahuman"
+      warn "Run ${BOLD}source ${SHELL_CONFIG}${RESET} or open a new terminal to use iknowaguy"
     else
       info "Skipping PATH modification. Run the export command above manually."
     fi
@@ -206,16 +206,16 @@ print_success() {
   echo -e "  ${BOLD}Next Steps:${RESET}"
   echo ""
   echo -e "  1. ${BOLD}Initialize your project:${RESET}"
-  echo -e "     ${CYAN}hireahuman init${RESET}"
+  echo -e "     ${CYAN}iknowaguy init${RESET}"
   echo ""
   echo -e "  2. ${BOLD}Start all servers:${RESET}"
-  echo -e "     ${CYAN}hireahuman dev${RESET}"
+  echo -e "     ${CYAN}iknowaguy dev${RESET}"
   echo ""
   echo -e "  3. ${BOLD}Run the setup wizard:${RESET}"
-  echo -e "     ${CYAN}hireahuman setup:agent${RESET}"
+  echo -e "     ${CYAN}iknowaguy setup:agent${RESET}"
   echo ""
-  echo -e "  ${DIM}Docs:    https://docs.hireahuman.ai${RESET}"
-  echo -e "  ${DIM}GitHub:  https://github.com/hireahuman/hireahuman${RESET}"
+  echo -e "  ${DIM}Docs:    https://docs.iknowaguy.ai${RESET}"
+  echo -e "  ${DIM}GitHub:  https://github.com/jayamitkatariya/iknowaguy${RESET}"
   echo ""
 }
 

@@ -73,7 +73,7 @@ export default function WorkerLayout({ children }: { children: React.ReactNode }
               borderRadius: "6px", display: "flex", alignItems: "center",
               justifyContent: "center", color: "var(--oc-bg)", fontWeight: 700, fontSize: "14px",
             }}>H</div>
-            <span style={{ fontSize: "14px", fontWeight: 600, letterSpacing: "0.02em", color: "var(--oc-text)" }}>HireAHuman</span>
+            <span style={{ fontSize: "14px", fontWeight: 600, letterSpacing: "0.02em", color: "var(--oc-text)" }}>iknowaguy</span>
           </Link>
           {!isMobile && navLinks.map((link) => (
             <Link key={link.href} href={link.href} style={{

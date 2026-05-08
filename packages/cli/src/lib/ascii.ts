@@ -1,5 +1,5 @@
 /**
- * HireAHuman ASCII Art Banner System — Voxe Edition
+ * iknowaguy ASCII Art Banner System — Voxe Edition
  * High contrast white on black, clean and sharp
  */
 
@@ -10,7 +10,7 @@ const WHITE_DIM = chalk.white;
 const GRAY = chalk.gray;
 const ACCENT = chalk.white;
 
-// Main banner — big HIREAHUMAN logo in white
+// Main banner — big iknowaguy logo in white
 export function printBanner(): void {
   const banner = `
 ${WHITE('████████╗██████╗ ██╗██╗  ██╗ █████╗ ██╗    ██╗ ██████╗ ███╗   ██╗')}

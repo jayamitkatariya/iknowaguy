@@ -1,22 +1,24 @@
-# @hireahuman/sdk
+# @iknowaguy/sdk
 
-Agent SDK for HireAHuman - Enables AI agents to interact with human workers without native MCP support.
+Agent SDK for iknowaguy — Enables AI agents to interact with human workers.
 
-## Installation
+> **Note:** Not yet published to npm. For now, use from source or the [MCP server](../mcp-server).
+
+## Installation (from source)
 
 ```bash
-npm install @hireahuman/sdk
+cd packages/agent-sdk
+pnpm build
 ```
 
 ## Usage
 
 ```typescript
-import { HireAHumanClient } from '@hireahuman/sdk';
+import { iknowaguyClient } from '@iknowaguy/sdk';
 
-// Initialize the client
-const client = new HireAHumanClient({
+const client = new iknowaguyClient({
   apiKey: 'your-api-key',
-  baseUrl: 'http://localhost:3000' // Optional, defaults to http://localhost:3000
+  baseUrl: 'http://localhost:3000'
 });
 
 // List available human workers
@@ -28,14 +30,12 @@ const humans = await client.listHumans({
 // Create a bounty task
 const bounty = await client.createBounty({
   title: 'Deliver groceries',
-  description: 'Need someone to pick up groceries from Whole Foods and deliver to my office',
+  description: 'Need someone to pick up groceries',
   category: 'delivery',
-  location_city: 'New York',
   location_address: '350 5th Ave, New York, NY',
   price: 50,
   price_type: 'fixed',
   currency: 'USD',
-  tenant_id: 'your-tenant-id'
 });
 
 // Accept a bounty with a specific human
@@ -43,8 +43,7 @@ await client.acceptBounty(bounty.id, human.id);
 
 // Complete a bounty
 await client.completeBounty(bounty.id, human.id, [
-  'https://example.com/photo1.jpg',
-  'https://example.com/receipt.pdf'
+  'https://example.com/photo1.jpg'
 ], 'Delivered in perfect condition');
 
 // Review a completed bounty
@@ -52,18 +51,6 @@ await client.reviewBounty({
   bounty_id: bounty.id,
   decision: 'approved',
   notes: 'Great work!',
-  reviewer_id: 'agent-or-admin-user-id'
-});
-
-// Send a message in the bounty thread
-await client.sendMessage(bounty.id, senderId, 'Please confirm delivery');
-
-// Create a dispute if needed
-await client.createDispute({
-  bounty_id: bounty.id,
-  raised_by: userId,
-  reason: 'Item was damaged',
-  evidence_urls: ['https://example.com/damage-photo.jpg']
 });
 
 // Initiate payment
@@ -72,15 +59,15 @@ await client.initiatePayment(bounty.id, 50, 'USD');
 
 ## API Reference
 
-### `HireAHumanClient`
+### `iknowaguyClient`
 
 #### Constructor
 
 ```typescript
-new HireAHumanClient({ apiKey, baseUrl? })
+new iknowaguyClient({ apiKey, baseUrl? })
 ```
 
-- `apiKey` (required): Your HireAHuman API key
+- `apiKey` (required): Your iknowaguy API key
 - `baseUrl` (optional): Base URL for the API. Defaults to `http://localhost:3000`
 
 #### Methods

@@ -2,35 +2,27 @@
 
 ## Prerequisites
 
-- Node.js 18+
-- Supabase account
-- A deployed MCP server URL
+- Node.js 20+
+- pnpm 10+
+- Supabase account (free tier works)
 
 ## Step 1: Set Up Supabase
 
-1. Create a project at supabase.com
-2. Run `supabase/migrations/001_complete.sql`
-3. Run `supabase/seed.sql` (optional)
-4. Copy your project URL and keys
+1. Create a project at [supabase.com](https://supabase.com)
+2. Open SQL Editor and run `supabase/migrations/001_complete.sql`
+3. (Optional) Run `supabase/seed.sql` for sample data
 
-## Step 2: Configure Environment Variables
+## Step 2: Configure Environment
 
 ```bash
-# packages/mcp-server/.env
+cp .env.example .env
+```
+
+Fill in at minimum:
+
+```bash
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-PORT=3001
-
-# packages/api/.env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-PORT=3000
-
-# packages/worker-app/.env.local
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-
-# packages/agent-portal/.env.local
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
@@ -38,49 +30,66 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ## Step 3: Install and Build
 
 ```bash
-npm install
-npm run build
+pnpm install
+pnpm build:all
 ```
 
-## Step 4: Deploy
+## Step 4: Run Locally
 
 ```bash
-# MCP Server (Railway, Render, etc.)
-cd packages/mcp-server && npx tsx src/index.ts
+# Terminal 1: MCP Server (your AI agent connects here)
+cd packages/mcp-server && pnpm dev
+# → http://localhost:3001
 
-# REST API
-cd packages/api && npx tsx src/index.ts
-
-# Worker App (Vercel)
-cd packages/worker-app && npm run build
-
-# Agent Portal (Vercel)
-cd packages/agent-portal && npm run build
+# Terminal 2: Website (worker marketplace + agent dashboard)
+cd packages/worker-app && pnpm dev
+# → http://localhost:3002
 ```
 
-## Step 5: Create Your First Tenant
+## Step 5: Deploy Website to Vercel
 
-```sql
-INSERT INTO tenants (name, slug, api_key, api_key_prefix, contact_email)
-VALUES (
-  'My Team',
-  'my-team',
-  'hak_live_abcdef123456',
-  'hak_live_ab',
-  'team@example.com'
-);
+```bash
+cd packages/worker-app
+vercel --prod
+```
+
+Set environment variables in Vercel dashboard:
+
+```
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY
 ```
 
 ## Step 6: Connect Your AI Agent
 
+Add to your Hermes/OpenClaw/Claude config:
+
 ```json
 {
-  "mcp_servers": [
-    {
-      "name": "hireahuman",
-      "url": "https://your-mcp-server.com/mcp",
-      "api_key": "hak_live_abcdef123456"
+  "mcpServers": {
+    "iknowaguy": {
+      "command": "pnpm",
+      "args": ["--prefix", "/path/to/iknowaguy/packages/mcp-server", "dev"],
+      "env": {
+        "IKNOWAGUY_API_KEY": "ikg_live_your-key",
+        "SUPABASE_URL": "https://your-project.supabase.co",
+        "SUPABASE_SERVICE_ROLE_KEY": "your-service-role-key"
+      }
     }
-  ]
+  }
 }
 ```
+
+Or run directly:
+
+```bash
+cd packages/mcp-server
+IKNOWAGUY_API_KEY=ikg_live_... SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... pnpm dev
+```
+
+Get your API key from the website at `/dashboard/api-keys`.
+
+## Step 7: Create First Bounty
+
+Visit the agent dashboard at `/dashboard/bounties/new` on your website, or use the MCP `create_bounty` tool from your AI agent.

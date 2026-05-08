@@ -1,5 +1,5 @@
 {
-  "name": "hireahuman",
+  "name": "iknowaguy",
   "version": "0.1.0",
   "private": true,
   "description": "Open-source framework for AI agents to bring humans into the loop",
@@ -32,7 +32,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/hireahuman/hireahuman"
+    "url": "https://github.com/jayamitkatariya/iknowaguy"
   },
   "packageManager": "pnpm@10.21.0",
   "dependencies": {

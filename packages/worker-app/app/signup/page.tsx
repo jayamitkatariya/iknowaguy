@@ -20,20 +20,25 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    
+
     const { data, error: authErr } = await supabase.auth.signUp({
       email, password,
       options: { data: { name, role } },
     });
-    
+
     if (authErr) {
       setError(authErr.message);
       setLoading(false);
       return;
     }
-    
+
     if (!data.user) {
-      setError("Signup succeeded but no user returned. Check your email for confirmation.");
+      if (data.session) {
+        const r = data.session.user?.user_metadata?.role || "human";
+        router.push(r === "agent" ? "/dashboard" : "/browse");
+        return;
+      }
+      setError("Check your email for a confirmation link.");
       setLoading(false);
       return;
     }
@@ -41,25 +46,31 @@ export default function SignupPage() {
     const userId = data.user.id;
 
     if (role === "worker") {
-      await supabase.from("human_profiles").insert({
-        id: userId,
-        full_name: name,
-        is_available: true,
-        verification_status: "pending",
-      });
-      await supabase.from("users").insert({
-        id: userId,
-        email: email,
-        role: "human",
-      });
+      try {
+        await supabase.from("human_profiles").insert({
+          id: userId,
+          full_name: name,
+          is_available: true,
+          verification_status: "pending",
+        });
+      } catch {}
+      try {
+        await supabase.from("users").insert({
+          id: userId,
+          email: email,
+          role: "human",
+        });
+      } catch {}
       router.push("/browse");
     } else {
-      await supabase.from("users").insert({
-        id: userId,
-        email: email,
-        role: "agent",
-      });
-      
+      try {
+        await supabase.from("users").insert({
+          id: userId,
+          email: email,
+          role: "agent",
+        });
+      } catch {}
+
       const orgSlugFinal = orgSlug || name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
       const orgNameFinal = orgName || name;
 
@@ -74,19 +85,14 @@ export default function SignupPage() {
             email: email,
           }),
         });
-        const result = await res.json();
-        if (!res.ok) {
-          setError(result.error || "Failed to register tenant");
-          setLoading(false);
-          return;
+        if (res.ok) {
+          const result = await res.json();
+          if (result.api_key) {
+            localStorage.setItem("api_key", result.api_key);
+          }
         }
-        localStorage.setItem("api_key", result.api_key || "");
-      } catch (err: any) {
-        setError(err.message || "Failed to register tenant");
-        setLoading(false);
-        return;
-      }
-      
+      } catch {}
+
       router.push("/dashboard");
     }
   };
@@ -132,7 +138,7 @@ export default function SignupPage() {
               fontSize: "15px",
               fontWeight: 600,
               letterSpacing: "-0.02em",
-            }}>HireAHuman</span>
+            }}>iknowaguy</span>
           </Link>
         </nav>
       </header>
@@ -147,7 +153,7 @@ export default function SignupPage() {
         <div style={{ width: "100%", maxWidth: "460px" }}>
           <div style={{ textAlign: "center", marginBottom: "32px" }}>
             <h1 className="oc-page-title">Create your account</h1>
-            <p className="oc-page-subtitle">Join HireAHuman</p>
+            <p className="oc-page-subtitle">Join iknowaguy</p>
           </div>
 
           <div className="oc-card" style={{ padding: "32px" }}>

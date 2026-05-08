@@ -7,10 +7,10 @@ export default function LandingPage() {
   const [activeTab, setActiveTab] = useState<"curl" | "npm" | "pip" | "brew">("curl");
 
   const installCommands = {
-    curl: "curl -fsSL https://install.hireahuman.ai | bash",
-    npm: "npm install -g hireahuman",
-    pip: "pip install hireahuman",
-    brew: "brew install hireahuman",
+    curl: "curl -fsSL https://install.iknowaguy.ai | bash",
+    npm: "npm install -g iknowaguy",
+    pip: "pip install iknowaguy",
+    brew: "brew install iknowaguy",
   };
 
   return (
@@ -23,7 +23,7 @@ export default function LandingPage() {
               <div className="logo-icon">
                 <span>H</span>
               </div>
-              <span className="logo-text">HireAHuman</span>
+              <span className="logo-text">iknowaguy</span>
             </div>
 
             <div className="nav-links">
@@ -198,7 +198,7 @@ export default function LandingPage() {
           <div className="footer-inner">
             <div className="footer-bottom">
               <p className="footer-copyright">
-                © {new Date().getFullYear()} HireAHuman. All rights reserved.
+                © {new Date().getFullYear()} iknowaguy. All rights reserved.
               </p>
             </div>
           </div>

@@ -1,5 +1,5 @@
 /**
- * Build script for @hireahuman/sdk
+ * Build script for @iknowaguy/sdk
  * Compiles TypeScript and generates declaration files
  */
 
@@ -17,7 +17,7 @@ if (existsSync(distDir)) {
 }
 mkdirSync(distDir, { recursive: true });
 
-console.log('Building @hireahuman/sdk...');
+console.log('Building @iknowaguy/sdk...');
 
 // Compile TypeScript
 try {

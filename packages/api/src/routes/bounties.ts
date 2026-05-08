@@ -40,8 +40,7 @@ bounties.get('/bounties', async (c) => {
     .from('bounties')
     .select(`
       *,
-      category:categories(name, slug, icon),
-      assigned_human:human_profiles(full_name, avatar_url, rating)
+      category:categories(name, slug, icon)
     `)
     .eq('tenant_id', tenantId)
     .order('created_at', { ascending: false })
@@ -78,7 +77,6 @@ bounties.get('/bounties/:id', async (c) => {
     .select(`
       *,
       category:categories(name, slug, icon),
-      assigned_human:human_profiles(full_name, avatar_url, rating),
       submissions:task_submissions(id, status, created_at, content, media_urls)
     `)
     .eq('id', id)

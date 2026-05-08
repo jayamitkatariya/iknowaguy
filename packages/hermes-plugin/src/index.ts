@@ -1,5 +1,5 @@
 /**
- * @hireahuman/hermes-plugin
+ * @iknowaguy/hermes-plugin
  * 
  * A connector plugin for integrating with Hermes - the human-in-the-loop orchestration layer.
  */
@@ -33,7 +33,7 @@ export class HermesPlugin {
 
   constructor(config: HermesPluginConfig = {}) {
     this.config = {
-      endpoint: 'https://api.hireahuman.io',
+      endpoint: 'https://api.iknowaguy.io',
       timeout: 30000,
       ...config,
     };

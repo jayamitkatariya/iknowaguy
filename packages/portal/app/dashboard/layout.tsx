@@ -83,7 +83,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             alignItems: "center",
             gap: "8px",
           }}>
-            ◈ HireAHuman
+            ◈ iknowaguy
           </Link>
         </div>
 

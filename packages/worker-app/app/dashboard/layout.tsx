@@ -22,27 +22,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     let cancelled = false;
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push("/login?redirect=" + encodeURIComponent(pathname));
-        return;
-      }
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          router.push("/login?redirect=" + encodeURIComponent(pathname));
+          return;
+        }
 
-      const { data: profile } = await supabase
-        .from("users")
-        .select("role")
-        .eq("id", session.user.id)
-        .single();
+        if (cancelled) return;
 
-      if (cancelled) return;
+        const role = session.user?.user_metadata?.role || "human";
+        if (role !== "agent") {
+          router.push("/login");
+          return;
+        }
 
-      if (profile?.role !== "agent") {
+        setUser(session.user);
+        setLoading(false);
+      } catch {
         router.push("/login");
-        return;
       }
-
-      setUser(session.user);
-      setLoading(false);
     };
     checkAuth();
     return () => { cancelled = true; };
@@ -106,7 +105,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <span style={{ color: "#000", fontWeight: 700, fontSize: "14px" }}>H</span>
               </div>
               <span style={{ color: "var(--oc-text-strong)", fontSize: "14px", fontWeight: 600 }}>
-                HireAHuman
+                iknowaguy
               </span>
             </Link>
 

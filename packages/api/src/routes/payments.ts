@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { supabase } from '../lib/supabase.js';
-import { createPaymentIntent, capturePayment, refundPayment, createConnectAccount, createAccountLink, createTransfer, getAccountStatus } from '@hireahuman/shared/payments';
+import { createPaymentIntent, capturePayment, refundPayment, createConnectAccount, createAccountLink, createTransfer, getAccountStatus } from '@iknowaguy/shared/payments';
 import type { Env } from '../middleware/api-key.js';
 
 const payments = new Hono<Env>();

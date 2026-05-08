@@ -1,4 +1,4 @@
-# HireAHuman — Complete Build Plan
+# iknowaguy — Complete Build Plan
 
 ## Vision
 Open-source, MCP-first platform for AI agents to hire real humans. Two modes:
@@ -46,17 +46,31 @@ Worker App    Admin Dashboard
 - CSS import ONLY in root layout.tsx (Server Component)
 - All inline styles for components, classes in globals.css only
 
-## Current State (7,800 LOC)
-- MCP server: dual implementation (index-http.ts monolith + modular tools/*.ts) — NEEDS CONSOLIDATION
-- Worker App: pages exist but half features fake (hardcoded stats, object URLs for uploads)
-- Admin Dashboard: settings don't persist, team invite is stub
-- Payments: Stripe adapter exists in shared/ but never wired into API routes or MCP tools
-- Notifications: 4 real adapters (email, slack, telegram, sms)
-- Database: production-grade schema with RLS
-- Security: plaintext API keys, no CSRF, in-memory rate limiter
-- Tests: zero
+## Current State (v0.2 — Deployed)
 
-## Phase Plan
+- **MCP server**: Modular tools/*.ts with Express HTTP transport, 17 tools, tenant isolation, SSE to Supabase Realtime
+- **Website**: Single Next.js 14 app on Vercel — landing page, worker marketplace, agent dashboard
+- **Auth**: Supabase Auth for web, SHA-256 API keys for MCP. Role-based access via user_metadata.
+- **Payments**: Stripe PaymentIntents with escrow, stub mode fallback, webhook handler on Vercel
+- **Notifications**: 4 real adapters (email, slack, telegram, sms) with in-app notification support
+- **Database**: 14 tables with RLS, GIN indexes, storage bucket for evidence
+- **Security**: Hashed API keys, auth gates on all routes, open redirect fixed, CORS configured
+- **Tests**: Integration tests for MCP tools, build verification passes (11/11 packages)
+- **Infra**: Monorepo deployed — GitHub, Vercel (website), Supabase (DB), npm-ready (MCP server)
+- **3 Next.js apps consolidated into 1** — REST API dropped, portal merged into worker-app
+
+## Remaining (post-launch)
+
+- [ ] Publish @iknowaguy/mcp-server to npm
+- [ ] Configure custom domain (iknowaguy.com)
+- [ ] Live Stripe keys + real payment flow
+- [ ] Add real-time Supabase Realtime subscriptions in website
+- [ ] Redis-backed rate limiting (currently in-memory fallback)
+- [ ] E2E tests, expanded test coverage
+- [ ] Worker verification flow, dispute resolution UI
+- [ ] Analytics dashboard with real stats
+
+## Phase Plan (all completed)
 
 ### Phase 1: Foundation
 - [x] Delete index-http.ts monolith, consolidate on modular tools/*.ts

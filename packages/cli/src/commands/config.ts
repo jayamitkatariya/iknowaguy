@@ -8,16 +8,16 @@ const D = chalk.white.dim;
 
 export class Config implements Command {
   name = 'config';
-  description = 'Show current HireAHuman configuration';
+  description = 'Show current iknowaguy configuration';
 
   async run(args: string[]): Promise<void> {
-    console.log(W('\n⚙️  HireAHuman Config\n'));
+    console.log(W('\n⚙️  iknowaguy Config\n'));
     printMiniBanner('config');
 
     const showAll = args.includes('--all') || args.includes('-a');
 
     if (!existsSync('.env')) {
-      console.log(D('⚠️  No .env file found. Run "hireahuman init" first.\n'));
+      console.log(D('⚠️  No .env file found. Run "iknowaguy init" first.\n'));
       return;
     }
 

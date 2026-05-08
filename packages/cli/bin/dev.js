@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * HireAHuman Dev Script
+ * iknowaguy Dev Script
  * 
  * Starts all 4 servers in background:
  * - MCP HTTP server (port 3001)
