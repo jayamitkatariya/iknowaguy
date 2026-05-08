@@ -195,6 +195,7 @@ bounties.post('/bounties/:id/complete', async (c) => {
     .from('bounties')
     .update({ status: 'submitted', updated_at: new Date().toISOString() })
     .eq('id', id)
+    .eq('tenant_id', tenantId)
     .select()
     .single();
 

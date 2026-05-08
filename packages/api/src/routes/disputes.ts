@@ -31,11 +31,23 @@ disputes.post('/disputes', async (c) => {
     return c.json({ error: 'Bounty not found or not accessible' }, 404);
   }
 
+  // Look up the first user in this tenant
+  const { data: raiserUser } = await supabase
+    .from('users')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .limit(1)
+    .single();
+
+  if (!raiserUser) {
+    return c.json({ error: 'No user found for tenant' }, 400);
+  }
+
   const { data, error } = await supabase
     .from('disputes')
     .insert({
       bounty_id: parsed.data.bounty_id,
-      raised_by: tenantId,
+      raised_by: raiserUser.id,
       reason: parsed.data.reason,
       description: parsed.data.description,
     })
@@ -49,7 +61,8 @@ disputes.post('/disputes', async (c) => {
   const { error: updateError } = await supabase
     .from('bounties')
     .update({ status: 'disputed', updated_at: new Date().toISOString() })
-    .eq('id', parsed.data.bounty_id);
+    .eq('id', parsed.data.bounty_id)
+    .eq('tenant_id', tenantId);
 
   if (updateError) {
     console.error('[disputes:create] Failed to update bounty status:', updateError);
@@ -62,22 +75,27 @@ disputes.get('/disputes/:id', async (c) => {
   const tenantId = c.get('tenantId');
   const id = c.req.param('id');
 
-  const { data, error } = await supabase
+  // Find dispute and verify tenant ownership via bounty
+  const { data: dispute, error } = await supabase
     .from('disputes')
     .select(`
       *,
-      bounty:bounties(title, status, reward_amount),
-      raised_by_user:users(email, role)
+      bounty:bounties(id, title, status, reward_amount, tenant_id),
+      raised_by_user:users(id, email, role)
     `)
     .eq('id', id)
-    .eq('raised_by', tenantId)
     .single();
 
-  if (error) {
-    return c.json({ error: error.message }, error.code === 'PGRST116' ? 404 : 500);
+  if (error || !dispute) {
+    return c.json({ error: 'Dispute not found' }, 404);
   }
 
-  return c.json({ data });
+  // Tenant isolation: check bounty belongs to this tenant
+  if (dispute.bounty?.tenant_id !== tenantId) {
+    return c.json({ error: 'Dispute not found' }, 404);
+  }
+
+  return c.json({ data: dispute });
 });
 
 export default disputes;

@@ -25,6 +25,7 @@ function generateApiKey(): string {
 }
 
 // Hash API key for storage (store prefix + hash, not raw key)
+// NOTE: For production, use bcrypt or argon2 with salt. This MVP uses plain SHA256.
 function hashApiKey(apiKey: string): string {
   return createHash('sha256').update(apiKey).digest('hex');
 }

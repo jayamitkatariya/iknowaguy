@@ -65,11 +65,23 @@ messages.post('/messages', async (c) => {
     return c.json({ error: 'Bounty not found or not accessible' }, 404);
   }
 
+  // Look up the first user in this tenant to use as sender
+  const { data: senderUser } = await supabase
+    .from('users')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .limit(1)
+    .single();
+
+  if (!senderUser) {
+    return c.json({ error: 'No user found for tenant' }, 400);
+  }
+
   const { data, error } = await supabase
     .from('messages')
     .insert({
       bounty_id: parsed.data.bounty_id,
-      sender_id: tenantId,
+      sender_id: senderUser.id,
       content: parsed.data.content,
       attachments: parsed.data.attachments || [],
     })

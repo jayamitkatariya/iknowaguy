@@ -171,9 +171,9 @@ app.notFound((c) => c.json({ error: 'Not found' }, 404));
 app.onError((err, c) => {
   console.error('Unhandled error:', err);
   const message = err.message || 'Internal server error';
-  const isClientError = err instanceof Error && (err as any).status >= 400 && (err as any).status < 500;
+  const isClientError = err instanceof Error && (err as any).statusCode >= 400 && (err as any).statusCode < 500;
   const safeMessage = isClientError ? message : 'Internal server error';
-  const status = isClientError ? (err as any).status : 500;
+  const status = isClientError ? (err as any).statusCode : 500;
   return c.json({ error: safeMessage }, status);
 });
 

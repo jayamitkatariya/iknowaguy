@@ -8,18 +8,28 @@ tasks.get('/tasks/:bounty_id', async (c) => {
   const tenantId = c.get('tenantId');
   const bountyId = c.req.param('bounty_id');
 
-  const { data: bounty, error: bountyError } = await supabase
-    .from('bounties')
-    .select(`
-      *,
-      category:categories(name, slug, icon)
-    `)
-    .eq('id', bountyId)
-    .eq('tenant_id', tenantId)
-    .single();
+  let bounty;
+  try {
+    const result = await supabase
+      .from('bounties')
+      .select(`
+        *,
+        category:categories(name, slug, icon)
+      `)
+      .eq('id', bountyId)
+      .eq('tenant_id', tenantId)
+      .single();
+    
+    if (result.error) {
+      return c.json({ error: result.error.message || 'Bounty not found' }, 404);
+    }
+    bounty = result.data;
+  } catch (err: any) {
+    return c.json({ error: err?.message || 'Failed to fetch bounty' }, 500);
+  }
 
-  if (bountyError || !bounty) {
-    return c.json({ error: bountyError?.message || 'Bounty not found' }, 404);
+  if (!bounty) {
+    return c.json({ error: 'Bounty not found' }, 404);
   }
 
   const { data: submissions, error: subError } = await supabase
@@ -32,7 +42,7 @@ tasks.get('/tasks/:bounty_id', async (c) => {
       reviewer_notes,
       created_at,
       updated_at,
-      human:users!human_id(email)
+      human:users(id, email, role)
     `)
     .eq('bounty_id', bountyId)
     .order('created_at', { ascending: false });

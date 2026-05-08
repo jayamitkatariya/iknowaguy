@@ -8,7 +8,7 @@ const payments = new Hono<Env>();
 
 const initiatePaymentSchema = z.object({
   bounty_id: z.string().uuid(),
-  amount: z.number().positive(),
+  amount: z.number().positive().optional(),
   currency: z.enum(['USD', 'EUR', 'GBP', 'INR']).default('USD'),
   method: z.enum(['stripe', 'escrow', 'direct']).optional(),
 });
@@ -37,9 +37,12 @@ payments.post('/payments/initiate', async (c) => {
     return c.json({ error: 'Payment can only be initiated for completed bounties' }, 400);
   }
 
+  // Use provided amount or fall back to bounty reward_amount
+  const amount = parsed.data.amount ?? bounty.reward_amount;
+
   try {
     const paymentIntent = await createPaymentIntent(
-      parsed.data.amount,
+      amount,
       parsed.data.currency as any,
       {
         bounty_id: parsed.data.bounty_id,
@@ -55,7 +58,7 @@ payments.post('/payments/initiate', async (c) => {
         bounty_id: parsed.data.bounty_id,
         tenant_id: tenantId,
         stripe_payment_intent_id: piResult.id,
-        amount: parsed.data.amount,
+        amount: amount,
         currency: parsed.data.currency,
         status: piResult.status,
       });
@@ -68,7 +71,7 @@ payments.post('/payments/initiate', async (c) => {
       data: {
         id: piResult.id,
         bounty_id: parsed.data.bounty_id,
-        amount: parsed.data.amount,
+        amount: amount,
         currency: parsed.data.currency,
         status: piResult.status,
         created_at: new Date().toISOString(),
@@ -361,7 +364,7 @@ payments.post('/connect/account-link', async (c) => {
     .from('human_profiles')
     .select('stripe_account_id')
     .eq('id', parsed.data.human_id)
-    .single();
+    .maybeSingle();
 
   if (profileError || !profile?.stripe_account_id) {
     return c.json({ error: 'Worker has not created a Stripe Connect account yet' }, 400);
@@ -410,7 +413,7 @@ payments.get('/connect/account-status/:human_id', async (c) => {
     .from('human_profiles')
     .select('stripe_account_id')
     .eq('id', humanId)
-    .single();
+    .maybeSingle();
 
   if (profileError || !profile?.stripe_account_id) {
     return c.json({ error: 'Worker has not created a Stripe Connect account yet' }, 400);
@@ -506,16 +509,20 @@ payments.post('/connect/transfer', async (c) => {
     const transferResult = transfer as any;
 
     // Record in payment_transactions
-    await supabase.from('payment_transactions').insert({
-      bounty_id: parsed.data.bounty_id,
-      human_id: bounty.assigned_human_id,
-      tenant_id: tenantId,
-      amount: parsed.data.amount,
-      currency: parsed.data.currency,
-      type: 'bounty_payment',
-      status: 'completed',
-      metadata: { transfer_id: transferResult.id },
-    });
+    try {
+      await supabase.from('payment_transactions').insert({
+        bounty_id: parsed.data.bounty_id,
+        human_id: bounty.assigned_human_id,
+        tenant_id: tenantId,
+        amount: parsed.data.amount,
+        currency: parsed.data.currency,
+        type: 'bounty_payment',
+        status: 'completed',
+        metadata: { transfer_id: transferResult.id },
+      });
+    } catch (insertErr) {
+      console.error('[payments:connect] Failed to record payment_transactions:', insertErr);
+    }
 
     return c.json({
       data: {
