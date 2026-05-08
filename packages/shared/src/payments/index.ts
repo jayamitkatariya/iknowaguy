@@ -9,7 +9,7 @@ export {
   createAccountLink,
   createTransfer,
   getAccountStatus,
-} from "./stripe";
+} from "./stripe.js";
 
 /**
  * Stub payment adapter for when no payment provider is configured.
