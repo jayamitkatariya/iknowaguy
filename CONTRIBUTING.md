@@ -65,7 +65,7 @@ npm run dev
 cd packages/mcp-server && npm run dev:http
 cd packages/api && npm run dev
 cd packages/worker-app && npm run dev
-cd packages/admin-dashboard && npm run dev
+cd packages/agent-portal && npm run dev
 ```
 
 ### 7. Verify Setup
@@ -84,7 +84,7 @@ hireahuman/
 │   ├── api/              # REST API (Hono)
 │   ├── shared/           # Shared types & notification adapters
 │   ├── worker-app/       # Next.js worker dashboard
-│   └── admin-dashboard/  # Next.js admin dashboard
+│   └── agent-portal/  # Next.js agent portal
 ├── supabase/
 │   └── migrations/       # Database schema
 ├── docs/                 # Documentation
@@ -124,7 +124,7 @@ export async function handleMyTool(args: any, tenantId: string) {
 
 ### Inline Styles for UI
 
-Both `worker-app` and `admin-dashboard` use **Tailwind CSS** with inline utility classes. Do not create custom CSS files unless absolutely necessary.
+Both `worker-app` and `agent-portal` use **inline styles** with CSS utility classes in globals.css. Do not create custom CSS files unless absolutely necessary.
 
 ```tsx
 // Good

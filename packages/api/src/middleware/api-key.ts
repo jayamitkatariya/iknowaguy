@@ -1,11 +1,18 @@
 import type { MiddlewareHandler } from 'hono';
+import { createHash } from 'crypto';
 import { supabase } from '../lib/supabase.js';
 
 export interface Env {
   Variables: {
     tenantId: string;
+    tenantSlug: string;
     apiKey: string;
   };
+}
+
+// Hash API key for storage comparison
+export function hashApiKey(apiKey: string): string {
+  return createHash('sha256').update(apiKey).digest('hex');
 }
 
 export const apiKeyMiddleware: MiddlewareHandler<Env> = async (c, next) => {
@@ -16,11 +23,12 @@ export const apiKeyMiddleware: MiddlewareHandler<Env> = async (c, next) => {
   }
 
   const apiKey = authHeader.slice(7);
+  const hashedKey = hashApiKey(apiKey);
 
   const { data: tenant, error } = await supabase
     .from('tenants')
     .select('id, name, slug, settings')
-    .eq('api_key', apiKey)
+    .eq('api_key_hash', hashedKey)
     .single();
 
   if (error || !tenant) {
@@ -28,6 +36,7 @@ export const apiKeyMiddleware: MiddlewareHandler<Env> = async (c, next) => {
   }
 
   c.set('tenantId', tenant.id);
+  c.set('tenantSlug', tenant.slug);
   c.set('apiKey', apiKey);
 
   await next();

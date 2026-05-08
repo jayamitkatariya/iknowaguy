@@ -5,6 +5,10 @@ export {
   constructWebhookEvent,
   getPaymentIntentStatus,
   getPaymentStatus,
+  createConnectAccount,
+  createAccountLink,
+  createTransfer,
+  getAccountStatus,
 } from "./stripe";
 
 /**

@@ -6,26 +6,35 @@ import { supabase } from "@/lib/supabase";
 
 export default function BrowsePage() {
   const [bounties, setBounties] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { fetchBounties(); }, []);
-
-  const fetchBounties = async () => {
-    setLoading(true);
-    const { data } = await supabase.from("bounties").select("*").eq("status", "open").order("created_at", { ascending: false });
-    setBounties(data || []);
-    setLoading(false);
-  };
+  useEffect(() => {
+    let cancelled = false;
+    const fetchBounties = async () => {
+      setLoading(true);
+      const { data } = await supabase.from("bounties").select("*, categories(name)").eq("status", "open").order("created_at", { ascending: false });
+      if (!cancelled) {
+        setBounties(data || []);
+        setLoading(false);
+      }
+    };
+    fetchBounties();
+    supabase.from("categories").select("*").then(({ data }) => {
+      if (!cancelled) setCategories(data || []);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   const filtered = bounties.filter((b) => {
     const matchSearch = !search || b.title?.toLowerCase().includes(search.toLowerCase()) || b.description?.toLowerCase().includes(search.toLowerCase());
-    const matchCat = category === "all" || b.category === category;
+    const matchCat = category === "all" || b.categories?.name === category;
     return matchSearch && matchCat;
   });
 
-  const categories = ["all", ...Array.from(new Set(bounties.map((b) => b.category).filter(Boolean)))];
+  const categoryNames = ["all", ...categories.map((c) => c.name)];
 
   const getDeadline = (d: string | null) => {
     if (!d) return "No deadline";
@@ -56,7 +65,7 @@ export default function BrowsePage() {
           onChange={(e) => setCategory(e.target.value)}
           style={{ maxWidth: "200px", cursor: "pointer" }}
         >
-          {categories.map((c) => <option key={c} value={c}>{c === "all" ? "All Categories" : c}</option>)}
+          {categoryNames.map((c) => <option key={c} value={c}>{c === "all" ? "All Categories" : c}</option>)}
         </select>
       </div>
 
@@ -97,9 +106,9 @@ export default function BrowsePage() {
                 <p style={{ fontSize: "13px", color: "var(--oc-text-muted)", lineHeight: 1.6, flex: 1, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", fontFamily: "var(--oc-font)" }}>
                   {b.description}
                 </p>
-                {b.category && (
+                {b.categories?.name && (
                   <span className="oc-badge oc-badge-cyan" style={{ marginTop: "16px", alignSelf: "flex-start" }}>
-                    {b.category}
+                    {b.categories.name}
                   </span>
                 )}
               </div>

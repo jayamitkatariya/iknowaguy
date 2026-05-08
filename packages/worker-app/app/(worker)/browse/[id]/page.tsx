@@ -13,20 +13,53 @@ export default function BountyDetailPage() {
   const [accepting, setAccepting] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => { fetchBounty(); }, [id]);
-
-  const fetchBounty = async () => {
-    setLoading(true);
-    const { data } = await supabase.from("bounties").select("*, categories(name)").eq("id", id).single();
-    setBounty(data);
-    setLoading(false);
-  };
+  useEffect(() => {
+    let cancelled = false;
+    const fetchBounty = async () => {
+      setLoading(true);
+      const { data, error: fetchError } = await supabase.from("bounties").select("*, categories(name)").eq("id", id).single();
+      if (cancelled) return;
+      if (fetchError) {
+        setError(fetchError.message);
+      } else {
+        setBounty(data);
+      }
+      setLoading(false);
+    };
+    fetchBounty();
+    return () => { cancelled = true; };
+  }, [id]);
 
   const handleAccept = async () => {
     setAccepting(true);
     setError("");
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setError("You must be logged in to accept a task."); setAccepting(false); return; }
+    if (!user) {
+      router.push("/login?redirect=/browse");
+      return;
+    }
+    // Check if user has a human profile
+    const { data: profile } = await supabase
+      .from("human_profiles")
+      .select("id")
+      .eq("id", user.id)
+      .single();
+    if (!profile) {
+      setError("You must complete your worker profile before accepting tasks.");
+      setAccepting(false);
+      return;
+    }
+    // Create bounty_assignment record first
+    const { error: assignError } = await supabase.from("bounty_assignments").insert({
+      bounty_id: id,
+      human_id: user.id,
+      status: "accepted",
+    });
+    if (assignError) {
+      setError(assignError.message);
+      setAccepting(false);
+      return;
+    }
     const { error: updateError } = await supabase.from("bounties").update({
       assigned_human_id: user.id,
       status: "in_progress",
@@ -35,7 +68,7 @@ export default function BountyDetailPage() {
       setError(updateError.message);
       setAccepting(false);
     } else {
-      router.push("/my-tasks");
+      router.push(`/my-tasks/${id}`);
     }
   };
 

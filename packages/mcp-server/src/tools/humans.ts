@@ -29,12 +29,13 @@ export const HumanRequestSchema = z.object({
   deadline: z.string().optional().describe("ISO 8601 deadline"),
 });
 
-export async function handleListHumans(args: any, _tenantId: string) {
+export async function handleListHumans(args: any, tenantId: string) {
   const supabase = getSupabaseClient();
 
   let query = supabase
     .from("human_profiles")
     .select("id, full_name, avatar_url, bio, skills, languages, location_city, location_country, verification_status, rating, completed_tasks, hourly_rate, created_at")
+    .eq("tenant_id", tenantId)
     .eq("verification_status", args.verification_status ?? "verified");
 
   if (args.skills && args.skills.length > 0) {
@@ -62,7 +63,7 @@ export async function handleListHumans(args: any, _tenantId: string) {
   };
 }
 
-export async function handleGetHuman(args: any, _tenantId: string) {
+export async function handleGetHuman(args: any, tenantId: string) {
   const supabase = getSupabaseClient();
 
   // human_profiles.id IS the user id — no join needed
@@ -70,6 +71,7 @@ export async function handleGetHuman(args: any, _tenantId: string) {
     .from("human_profiles")
     .select("id, full_name, avatar_url, bio, skills, languages, location_city, location_country, verification_status, rating, completed_tasks, hourly_rate, created_at, updated_at")
     .eq("id", args.human_id)
+    .eq("tenant_id", tenantId)
     .single();
 
   if (error) {
@@ -93,7 +95,7 @@ export async function handleGetHuman(args: any, _tenantId: string) {
   };
 }
 
-export async function handleRequestHuman(args: any, _tenantId: string) {
+export async function handleRequestHuman(args: any, tenantId: string) {
   const supabase = getSupabaseClient();
   let targetHumanId = args.target_human_id;
 
@@ -102,6 +104,7 @@ export async function handleRequestHuman(args: any, _tenantId: string) {
     let query = supabase
       .from("human_profiles")
       .select("id")
+      .eq("tenant_id", tenantId)
       .eq("verification_status", "verified");
 
     if (args.skills && args.skills.length > 0) {

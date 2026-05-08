@@ -120,6 +120,8 @@ CREATE TABLE human_profiles (
   notification_email TEXT,
   notification_phone TEXT,
   notification_preferred_channels TEXT[] DEFAULT '{}',
+  stripe_account_id TEXT,
+  stripe_onboarding_complete BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -462,8 +464,8 @@ CREATE POLICY "evidence_authenticated_delete" ON storage.objects FOR DELETE USIN
 -- ============================================================
 
 -- Sample Tenant
-INSERT INTO tenants (id, name, slug, api_key, contact_email) VALUES
-  ('a1111111-1111-1111-1111-111111111111', 'Acme AI Labs', 'acme-ai', 'hak_live_demo123456789012345678901234', 'admin@acme-ai.com')
+INSERT INTO tenants (id, name, slug, api_key, api_key_hash, api_key_prefix, contact_email) VALUES
+  ('a1111111-1111-1111-1111-111111111111', 'Acme AI Labs', 'acme-ai', 'hak_live_demo123456789012345678901234', '8896bb74e8df85cad3e996d9c1f64d55bf16e16904fff938b7835c27bda09c68', 'hak_live_de', 'admin@acme-ai.com')
 ON CONFLICT DO NOTHING;
 
 -- Sample Users

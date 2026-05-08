@@ -20,9 +20,8 @@ function initRedis(): Promise<void> {
     if (!REDIS_URL) return;
     try {
       const ioredis = await import("ioredis");
-      const ioredisMod = await import("ioredis");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const Redis: any = ioredisMod.default || ioredisMod.Redis;
+      const Redis: any = ioredis.default || ioredis.Redis;
       redis = new Redis(REDIS_URL);
       (redis as any).on("error", () => {});
       (redis as any).on("connect", () => {

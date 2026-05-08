@@ -9,7 +9,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@hireahuman/shared": "*",
+    "@hireahuman/shared": "workspace:*",
     "@hono/node-server": "^1.19.9",
     "@supabase/supabase-js": "^2.45.0",
     "dotenv": "^16.4.5",

@@ -4,15 +4,16 @@ import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { serve } from '@hono/node-server';
 import health from './routes/health.js';
+import auth from './routes/auth.js';
 import humans from './routes/humans.js';
 import bounties from './routes/bounties.js';
 import tasks from './routes/tasks.js';
 import messages from './routes/messages.js';
 import disputes from './routes/disputes.js';
+import categories from './routes/categories.js';
 import payments from './routes/payments.js';
-import { constructWebhookEvent } from '@hireahuman/shared/payments';
+import { constructWebhookEvent, getAccountStatus } from '@hireahuman/shared/payments';
 import { supabase } from './lib/supabase.js';
-import { apiKeyMiddleware } from './middleware/api-key.js';
 import { rateLimitMiddleware } from './middleware/rate-limit.js';
 
 const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'] as const;
@@ -26,7 +27,7 @@ const app = new Hono();
 
 const corsOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
-  : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'];
+  : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'http://localhost:3003'];
 
 app.use('*', cors({
   origin: corsOrigins,
@@ -71,14 +72,38 @@ app.use('/api/*', csrfMiddleware);
 app.get('/', (c) => c.json({ name: 'HireAHuman API', version: '0.1.0' }));
 
 app.route('/api', health);
+app.route('/auth', auth); // Public auth endpoints (no API key required)
 
-app.use('/api/*', apiKeyMiddleware);
+app.get('/connect/account-status', async (c) => {
+  const stripeAccountId = c.req.query('stripeAccountId');
+  if (!stripeAccountId) {
+    return c.json({ error: 'Missing stripeAccountId query parameter' }, 400);
+  }
+
+  try {
+    const status = await getAccountStatus(stripeAccountId);
+    return c.json({
+      data: {
+        stripe_account_id: stripeAccountId,
+        charges_enabled: status.charges_enabled,
+        payouts_enabled: status.payouts_enabled,
+        details_submitted: status.details_submitted,
+      },
+    });
+  } catch (err: any) {
+    console.error('[connect:account-status] Error:', err.message);
+    return c.json({ error: 'Failed to get account status', details: err.message }, 500);
+  }
+});
+
+app.use('/api/*', csrfMiddleware);
 
 app.route('/api', humans);
 app.route('/api', bounties);
 app.route('/api', tasks);
 app.route('/api', messages);
 app.route('/api', disputes);
+app.route('/api/categories', categories);
 app.route('/api', payments);
 
 app.post('/webhooks/stripe', async (c) => {

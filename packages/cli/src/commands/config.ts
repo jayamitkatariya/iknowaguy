@@ -53,7 +53,7 @@ export class Config implements Command {
 
     console.log(W('\nApps:'));
     console.log(`  Worker App: ${config.WORKER_APP_URL || 'http://localhost:3002'}`);
-    console.log(`  Admin App: ${config.ADMIN_APP_URL || 'http://localhost:3003'}`);
+    console.log(`  Agent Portal: ${config.AGENT_PORTAL_URL || 'http://localhost:3003'}`);
 
     console.log(W('\nNotifications:'));
     console.log(`  Slack: ${config.NOTIFY_SLACK_WEBHOOK ? W('configured') : D('not set')}`);

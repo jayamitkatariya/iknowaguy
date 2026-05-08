@@ -56,26 +56,31 @@ export async function setTenantContext(supabaseClient: ReturnType<typeof getSupa
 }
 
 export async function authMiddleware(req: Request, res: Response, next: NextFunction) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    return res.status(401).json({ error: "Missing Authorization header" });
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ error: "Missing Authorization header" });
+    }
+
+    const key = extractApiKey(authHeader);
+    if (!key) {
+      return res.status(401).json({ error: "Invalid Authorization header format" });
+    }
+
+    const tenant = await validateApiKey(key);
+
+    if (!tenant) {
+      return res.status(401).json({ error: "Invalid API key" });
+    }
+
+    req.tenant = tenant;
+
+    const supabase = getSupabaseClient();
+    await setTenantContext(supabase, tenant.id);
+
+    next();
+  } catch (error: any) {
+    console.error("[auth] Middleware error:", error.message);
+    return res.status(500).json({ error: "Internal authentication error" });
   }
-
-  const key = extractApiKey(authHeader);
-  if (!key) {
-    return res.status(401).json({ error: "Invalid Authorization header format" });
-  }
-
-  const tenant = await validateApiKey(key);
-
-  if (!tenant) {
-    return res.status(401).json({ error: "Invalid API key" });
-  }
-
-  req.tenant = tenant;
-
-  const supabase = getSupabaseClient();
-  await setTenantContext(supabase, tenant.id);
-
-  next();
 }

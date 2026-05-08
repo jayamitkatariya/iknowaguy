@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get("redirect") || "/browse";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -20,11 +22,93 @@ export default function LoginPage() {
     if (error) {
       setError(error.message);
       setLoading(false);
-    } else {
-      router.push("/browse");
+    } else if (data.user) {
+      if (redirect && redirect !== "/browse" && redirect.startsWith("/")) {
+        router.push(redirect);
+      } else {
+        const { data: profile } = await supabase
+          .from("users")
+          .select("role")
+          .eq("id", data.user.id)
+          .single();
+        if (profile?.role === "agent") {
+          router.push("/dashboard");
+        } else {
+          router.push("/browse");
+        }
+      }
     }
   };
 
+  return (
+    <div className="oc-card" style={{ padding: "32px" }}>
+      <form onSubmit={handleLogin}>
+        <div style={{ marginBottom: "20px" }}>
+          <label style={{
+            display: "block",
+            color: "var(--oc-text-muted)",
+            fontSize: "12px",
+            fontWeight: 700,
+            marginBottom: "8px",
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+          }}>Email</label>
+          <input
+            type="email"
+            className="oc-input"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div style={{ marginBottom: "20px" }}>
+          <label style={{
+            display: "block",
+            color: "var(--oc-text-muted)",
+            fontSize: "12px",
+            fontWeight: 700,
+            marginBottom: "8px",
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+          }}>Password</label>
+          <input
+            type="password"
+            className="oc-input"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        {error && (
+          <p style={{ color: "var(--oc-red)", fontSize: "13px", marginBottom: "16px" }}>
+            {error}
+          </p>
+        )}
+        <button
+          type="submit"
+          className="oc-btn oc-btn-primary"
+          disabled={loading}
+          style={{ width: "100%", padding: "14px 24px", opacity: loading ? 0.7 : 1 }}
+        >
+          {loading ? "Signing in..." : "Sign in"}
+        </button>
+      </form>
+
+      <div style={{ height: "1px", background: "var(--oc-border)", margin: "24px 0" }} />
+
+      <p style={{ textAlign: "center", fontSize: "13px", color: "var(--oc-text-muted)" }}>
+        Don't have an account?{" "}
+        <Link href="/signup" style={{ color: "var(--oc-accent)", fontWeight: 600 }}>
+          Sign up
+        </Link>
+      </p>
+    </div>
+  );
+}
+
+export default function LoginPage() {
   return (
     <div style={{
       minHeight: "100vh",
@@ -82,73 +166,16 @@ export default function LoginPage() {
         <div style={{ width: "100%", maxWidth: "420px" }}>
           <div style={{ textAlign: "center", marginBottom: "32px" }}>
             <h1 className="oc-page-title">Welcome back</h1>
-            <p className="oc-page-subtitle">Sign in to your worker account</p>
+            <p className="oc-page-subtitle">Sign in to your account</p>
           </div>
 
-          <div className="oc-card" style={{ padding: "32px" }}>
-            <form onSubmit={handleLogin}>
-              <div style={{ marginBottom: "20px" }}>
-                <label style={{
-                  display: "block",
-                  color: "var(--oc-text-muted)",
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  marginBottom: "8px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                }}>Email</label>
-                <input
-                  type="email"
-                  className="oc-input"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div style={{ marginBottom: "20px" }}>
-                <label style={{
-                  display: "block",
-                  color: "var(--oc-text-muted)",
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  marginBottom: "8px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.08em",
-                }}>Password</label>
-                <input
-                  type="password"
-                  className="oc-input"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              {error && (
-                <p style={{ color: "var(--oc-red)", fontSize: "13px", marginBottom: "16px" }}>
-                  {error}
-                </p>
-              )}
-              <button
-                type="submit"
-                className="oc-btn oc-btn-primary"
-                disabled={loading}
-                style={{ width: "100%", padding: "14px 24px", opacity: loading ? 0.7 : 1 }}
-              >
-                {loading ? "Signing in..." : "Sign in"}
-              </button>
-            </form>
-
-            <div style={{ height: "1px", background: "var(--oc-border)", margin: "24px 0" }} />
-
-            <p style={{ textAlign: "center", fontSize: "13px", color: "var(--oc-text-muted)" }}>
-              Don't have an account?{" "}
-              <Link href="/signup" style={{ color: "var(--oc-accent)", fontWeight: 600 }}>
-                Sign up
-              </Link>
-            </p>
-          </div>
+          <Suspense fallback={
+            <div className="oc-card" style={{ padding: "32px", textAlign: "center" }}>
+              <p style={{ color: "var(--oc-text-muted)" }}>Loading...</p>
+            </div>
+          }>
+            <LoginForm />
+          </Suspense>
         </div>
       </main>
     </div>

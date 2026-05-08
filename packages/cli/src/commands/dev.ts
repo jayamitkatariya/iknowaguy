@@ -15,7 +15,7 @@ const D = chalk.white.dim;
 const MCP_PORT = process.env.PORT || '3001';
 const API_PORT = process.env.API_PORT || '3000';
 const WORKER_PORT = process.env.WORKER_PORT || '3002';
-const ADMIN_PORT = process.env.ADMIN_PORT || '3003';
+const AGENT_PORTAL_PORT = process.env.AGENT_PORTAL_PORT || '3003';
 
 export class Dev implements Command {
   name = 'dev';
@@ -43,7 +43,7 @@ export class Dev implements Command {
     console.log(D('  MCP Server:   http://localhost:' + MCP_PORT));
     console.log(D('  REST API:     http://localhost:' + API_PORT));
     console.log(D('  Worker App:   http://localhost:' + WORKER_PORT));
-    console.log(D('  Admin:        http://localhost:' + ADMIN_PORT));
+    console.log(D('  Agent Portal: http://localhost:' + AGENT_PORTAL_PORT));
     console.log('');
     console.log(W('  📡 Endpoints:'));
     console.log(D('    MCP HTTP:   http://localhost:' + MCP_PORT + '/mcp'));
@@ -84,21 +84,21 @@ export class Dev implements Command {
     worker.stdout?.on('data', (d) => process.stdout.write(W('[Worker] ') + d));
     worker.stderr?.on('data', (d) => process.stderr.write(W('[Worker ERR] ') + d));
 
-    const admin = spawn('npm', ['run', 'dev'], {
-      cwd: path.resolve(rootDir, 'packages/admin-dashboard'),
+    const agentPortal = spawn('npm', ['run', 'dev'], {
+      cwd: path.resolve(rootDir, 'packages/agent-portal'),
       stdio: 'pipe',
       shell: true,
-      env: { ...process.env, PORT: ADMIN_PORT },
+      env: { ...process.env, PORT: AGENT_PORTAL_PORT },
     });
-    admin.stdout?.on('data', (d) => process.stdout.write(W('[Admin] ') + d));
-    admin.stderr?.on('data', (d) => process.stderr.write(W('[Admin ERR] ') + d));
+    agentPortal.stdout?.on('data', (d) => process.stdout.write(W('[AgentPortal] ') + d));
+    agentPortal.stderr?.on('data', (d) => process.stderr.write(W('[AgentPortal ERR] ') + d));
 
     process.on('SIGINT', () => {
       console.log(W('\n\n👋 Shutting down...'));
       mcp.kill();
       api.kill();
       worker.kill();
-      admin.kill();
+      agentPortal.kill();
       process.exit(0);
     });
   }

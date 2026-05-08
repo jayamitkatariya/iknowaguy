@@ -30,7 +30,7 @@ PORT=3000
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 
-# packages/admin-dashboard/.env.local
+# packages/agent-portal/.env.local
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
@@ -54,8 +54,8 @@ cd packages/api && npx tsx src/index.ts
 # Worker App (Vercel)
 cd packages/worker-app && npm run build
 
-# Admin Dashboard (Vercel)
-cd packages/admin-dashboard && npm run build
+# Agent Portal (Vercel)
+cd packages/agent-portal && npm run build
 ```
 
 ## Step 5: Create Your First Tenant

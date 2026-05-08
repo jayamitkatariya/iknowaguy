@@ -1,6 +1,7 @@
 node_modules/
 .next/
 .turbo/
+.env
 *.env.local
 .env.local
 .env*.local
@@ -10,3 +11,5 @@ build/
 *.tsbuildinfo
 .vscode/settings.json
 .idea/
+.vercel/
+*.pem

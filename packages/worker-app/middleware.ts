@@ -6,11 +6,11 @@ export async function middleware(request: NextRequest) {
 
   // Explicitly allow public routes
   if (
-    pathname === "/" || 
-    pathname.startsWith("/login") || 
-    pathname.startsWith("/signup") || 
-    pathname.startsWith("/api") || 
-    pathname.startsWith("/_next") || 
+    pathname === "/" ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/signup") ||
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/_next") ||
     pathname === "/favicon.ico"
   ) {
     return NextResponse.next();
@@ -38,7 +38,10 @@ export async function middleware(request: NextRequest) {
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    // Preserve redirect so user lands where they tried to go after login
+    const redirectUrl = new URL("/login", request.url);
+    redirectUrl.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(redirectUrl);
   }
 
   return res;

@@ -11,6 +11,7 @@ const navLinks = [
   { href: "/earnings", label: "Earnings" },
   { href: "/notifications", label: "Alerts" },
   { href: "/profile", label: "Profile" },
+  { href: "/dashboard", label: "Dashboard" },
 ];
 
 export default function WorkerLayout({ children }: { children: React.ReactNode }) {
@@ -28,15 +29,32 @@ export default function WorkerLayout({ children }: { children: React.ReactNode }
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
       if (!data.session) {
-        router.replace("/login");
+        router.push("/login?redirect=" + encodeURIComponent(pathname));
+        return;
       }
+
+      const { data: profile } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", data.session.user.id)
+        .single();
+
+      if (cancelled) return;
+
+      if (profile?.role !== "human") {
+        router.push("/login");
+        return;
+      }
+
       setChecking(false);
     };
     checkSession();
-  }, [router]);
+    return () => { cancelled = true; };
+  }, [router, pathname]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();

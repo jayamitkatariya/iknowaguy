@@ -97,7 +97,7 @@ npm run build
 npm run dev                 # MCP Server (port 3001)
 cd packages/api && npm run dev           # REST API (port 3000)
 cd packages/worker-app && npm run dev    # Worker App (port 3002)
-cd packages/admin-dashboard && npm run dev  # Admin Dashboard (port 3003)
+cd packages/agent-portal && npm run dev  # Agent Portal (port 3003)
 ```
 
 ## How It Works
@@ -116,9 +116,10 @@ cd packages/admin-dashboard && npm run dev  # Admin Dashboard (port 3003)
 │  │ Categories  │  │  Rate Limit │  │  payment_intent.succeeded│  │
 │  │ Humans      │  │  RLS Tenant │  │  payment_intent.failed   │  │
 │  │ Bounties    │  │  Context    │  └─────────────────────────┘  │
-│  │ Messages    │  └─────────────┘                               │
-│  │ Payments    │                                                │
-│  └─────────────┘                                                │
+│  │ Messages    │  └─────────────┘  ┌─────────────────────────┐  │
+│  │ Payments    │                   │  SSE /events            │  │
+│  └─────────────┘                   │  (bounty state changes) │  │
+│                                      └─────────────────────────┘  │
 └─────────────────────────┬───────────────────────────────────────┘
                           │ REST / WebSocket
                           ▼
@@ -207,7 +208,7 @@ All configuration is via environment variables. Copy `.env.example` to `.env` an
 | `PORT` | MCP server port | `3001` |
 | `API_PORT` | REST API port | `3000` |
 | `WORKER_APP_URL` | Worker app base URL | `http://localhost:3002` |
-| `ADMIN_APP_URL` | Admin dashboard base URL | `http://localhost:3003` |
+| `AGENT_PORTAL_URL` | Agent portal base URL | `http://localhost:3003` |
 | `REDIS_URL` | Redis connection string | `redis://localhost:6379` |
 | `STRIPE_SECRET_KEY` | Stripe secret key | `sk_live_...` |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook endpoint secret | `whsec_...` |
@@ -217,6 +218,45 @@ All configuration is via environment variables. Copy `.env.example` to `.env` an
 | `NOTIFY_SLACK_WEBHOOK` | Slack incoming webhook URL | `https://hooks.slack.com/...` |
 
 See `.env.example` for the complete list.
+
+## Realtime Events (SSE)
+
+Connect to `GET /events` to receive live bounty state-change notifications as [Server-Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events). This lets your agent react instantly when a human accepts, submits, or completes a bounty — no polling required.
+
+```javascript
+// Node.js / browser SSE client
+const es = new EventSource("http://localhost:3001/events?tenant_id=your_tenant_id");
+
+es.addEventListener("bounty.created", (e) => {
+  const { data } = JSON.parse(e.data);
+  console.log("New bounty:", data.title);
+});
+
+es.addEventListener("bounty.accepted", (e) => {
+  const { data } = JSON.parse(e.data);
+  console.log("Human accepted:", data.assigned_human_id);
+});
+
+es.addEventListener("bounty.submitted", (e) => {
+  const { data } = JSON.parse(e.data);
+  console.log("Work submitted for bounty:", data.bounty_id);
+  // Trigger your review flow here
+});
+
+es.addEventListener("bounty.approved", (e) => {
+  const { data } = JSON.parse(e.data);
+  // Call release_payment tool
+});
+
+es.addEventListener("bounty.rejected", (e) => {
+  const { data } = JSON.parse(e.data);
+  // Notify worker or re-assign
+});
+```
+
+**Events emitted:** `bounty.created`, `bounty.accepted`, `bounty.submitted`, `bounty.approved`, `bounty.rejected`, `bounty.disputed`, `bounty.cancelled`, `bounty.refunded`
+
+See [docs/connector-guide.md](docs/connector-guide.md) for the full SSE reference and example integrations.
 
 ## Integrations
 

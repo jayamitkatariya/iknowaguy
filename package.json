@@ -3,25 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "description": "Open-source framework for AI agents to bring humans into the loop",
-  "workspaces": [
+  "packages": [
     "packages/*"
   ],
   "scripts": {
-    "build": "turbo build",
+    "build:all": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo lint",
+    "lint": "turbo run lint",
     "clean": "turbo clean && rm -rf node_modules .turbo",
-    "setup": "npm install && turbo build",
+    "setup": "pnpm install && pnpm build",
     "db:migrate": "psql $DATABASE_URL -f supabase/migrations/001_complete.sql",
     "db:seed": "psql $DATABASE_URL -f supabase/seed.sql",
     "test": "turbo test"
   },
   "devDependencies": {
     "turbo": "^2.3.0",
-    "typescript": "^5.7.3",
+    "typescript": "5.4.5",
     "vitest": "^3.1.1"
   },
-  "packageManager": "npm@10.9.0",
   "keywords": [
     "human-in-the-loop",
     "ai-agents",
@@ -35,6 +34,7 @@
     "type": "git",
     "url": "https://github.com/hireahuman/hireahuman"
   },
+  "packageManager": "pnpm@10.21.0",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0"
   }

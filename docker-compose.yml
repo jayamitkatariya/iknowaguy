@@ -16,7 +16,7 @@ services:
       timeout: 5s
       retries: 3
 
-  # ── MCP Server (HTTP mode) ────────────────────────────────────────────────
+  # ── MCP Server (HTTP mode on :3001, stdio mode via CLI) ──────────────────
   mcp-server:
     build:
       context: .
@@ -38,6 +38,7 @@ services:
       timeout: 5s
       retries: 3
 
+  # ── REST API (Hono on :3000) ──────────────────────────────────────────────
   api:
     build:
       context: .
@@ -53,11 +54,12 @@ services:
     depends_on:
       - mcp-server
 
-  # ── Worker App (Next.js) ──────────────────────────────────────────────────
+  # ── Worker App (Next.js on :3002) ───────────────────────────────────────
   worker-app:
     build:
-      context: ./packages/worker-app
-      dockerfile: ../../Dockerfile.nextjs
+      context: .
+      dockerfile: Dockerfile.nextjs
+      target: runner
     container_name: hireahuman-worker
     env_file:
       - .env
@@ -65,27 +67,30 @@ services:
       PORT: 3000
       NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_URL}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      NEXT_PUBLIC_API_URL: http://api:3000
     ports:
       - "3002:3000"
     depends_on:
-      - mcp-server
+      - api
 
-  # ── Admin Dashboard (Next.js) ─────────────────────────────────────────────
-  admin-dashboard:
+  # ── Agent Portal (Next.js on :3003) ──────────────────────────────────────
+  agent-portal:
     build:
-      context: ./packages/admin-dashboard
-      dockerfile: ../../Dockerfile.nextjs
-    container_name: hireahuman-admin
+      context: .
+      dockerfile: Dockerfile.nextjs
+      target: runner
+    container_name: hireahuman-agent-portal
     env_file:
       - .env
     environment:
       PORT: 3000
       NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_URL}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+      NEXT_PUBLIC_API_URL: http://api:3000
     ports:
       - "3003:3000"
     depends_on:
-      - mcp-server
+      - api
 
 volumes:
   redis_data:

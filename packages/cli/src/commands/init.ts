@@ -30,7 +30,7 @@ API_PORT=3000
 WORKER_APP_URL=http://localhost:3002
 
 # Admin Dashboard URL
-ADMIN_APP_URL=http://localhost:3003
+AGENT_PORTAL_URL=http://localhost:3003
 `;
 
 export class Init implements Command {
@@ -102,8 +102,8 @@ export class Init implements Command {
   workerApp: {
     url: process.env.WORKER_APP_URL || 'http://localhost:3002',
   },
-  adminApp: {
-    url: process.env.ADMIN_APP_URL || 'http://localhost:3003',
+  agentPortalApp: {
+    url: process.env.AGENT_PORTAL_URL || 'http://localhost:3003',
   },
 };
 

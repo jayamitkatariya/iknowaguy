@@ -14,8 +14,22 @@ export const MessageListSchema = z.object({
   offset: z.number().optional().default(0).describe("Offset for pagination"),
 });
 
-export async function handleSendMessage(args: any, _tenantId: string) {
+export async function handleSendMessage(args: any, tenantId: string) {
   const supabase = getSupabaseClient();
+
+  // Verify bounty belongs to tenant
+  const { data: bounty, error: bountyError } = await supabase
+    .from("bounties")
+    .select("id")
+    .eq("id", args.bounty_id)
+    .eq("tenant_id", tenantId)
+    .single();
+
+  if (bountyError || !bounty) {
+    return {
+      content: [{ type: "text" as const, text: JSON.stringify({ error: "Bounty not found" }) }],
+    };
+  }
 
   const { data, error } = await supabase
     .from("messages")
@@ -43,17 +57,29 @@ export async function handleSendMessage(args: any, _tenantId: string) {
   };
 }
 
-export async function handleListMessages(args: any, _tenantId: string) {
+export async function handleListMessages(args: any, tenantId: string) {
   const supabase = getSupabaseClient();
+
+  // Verify bounty belongs to tenant
+  const { data: bounty, error: bountyError } = await supabase
+    .from("bounties")
+    .select("id")
+    .eq("id", args.bounty_id)
+    .eq("tenant_id", tenantId)
+    .single();
+
+  if (bountyError || !bounty) {
+    return {
+      content: [{ type: "text" as const, text: JSON.stringify({ error: "Bounty not found" }) }],
+    };
+  }
 
   const { data, error } = await supabase
     .from("messages")
     .select(`
       *,
       sender:users!sender_id (
-        id,
-        name,
-        avatar_url
+        id
       )
     `)
     .eq("bounty_id", args.bounty_id)

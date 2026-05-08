@@ -13,9 +13,11 @@ export default function ProfilePage() {
   const [totalEarnings, setTotalEarnings] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
     const loadData = async () => {
       const { data } = await supabase.auth.getUser();
       if (data.user) {
+        if (cancelled) return;
         setUser(data.user);
         setName(data.user.user_metadata?.name || "");
         setEmail(data.user.email || "");
@@ -27,6 +29,7 @@ export default function ProfilePage() {
           .select("*", { count: "exact", head: true })
           .eq("assigned_human_id", userId)
           .in("status", ["completed", "approved"]);
+        if (cancelled) return;
         setCompletedCount(count || 0);
 
         const { data: payments } = await supabase
@@ -34,11 +37,13 @@ export default function ProfilePage() {
           .select("amount")
           .eq("human_id", userId)
           .eq("status", "completed");
+        if (cancelled) return;
         const total = (payments || []).reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
         setTotalEarnings(total);
       }
     };
     loadData();
+    return () => { cancelled = true; };
   }, []);
 
   const handleSave = async () => {

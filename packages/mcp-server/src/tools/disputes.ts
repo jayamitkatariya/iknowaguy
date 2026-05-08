@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getSupabaseClient } from "../lib/supabase.js";
 import { notifyDisputeRaised } from "../lib/notifications.js";
+import { sseEmitter } from "../lib/sse.js";
 
 export const DisputeRaiseSchema = z.object({
   bounty_id: z.string().describe("ID of the bounty"),
@@ -10,13 +11,14 @@ export const DisputeRaiseSchema = z.object({
   evidence_urls: z.array(z.string()).optional().describe("Evidence URLs"),
 });
 
-export async function handleRaiseDispute(args: any, _tenantId: string) {
+export async function handleRaiseDispute(args: any, tenantId: string) {
   const supabase = getSupabaseClient();
 
   const { data: bounty, error: bountyError } = await supabase
     .from("bounties")
     .select("id, status, tenant_id, assigned_human_id, title")
     .eq("id", args.bounty_id)
+    .eq("tenant_id", tenantId)
     .single();
 
   if (bountyError || !bounty) {
@@ -66,6 +68,9 @@ export async function handleRaiseDispute(args: any, _tenantId: string) {
   notifyDisputeRaised(dispute, bounty).catch((err) => {
     console.warn("[disputes:raise] Notification error:", err.message);
   });
+
+  // Broadcast SSE event
+  sseEmitter.broadcast("bounty.disputed", bounty.tenant_id, { bounty_id: args.bounty_id, dispute_id: dispute.id, reason: args.reason });
 
   return {
     content: [

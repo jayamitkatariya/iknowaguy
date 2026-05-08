@@ -29,19 +29,19 @@ Worker App    Admin Dashboard
 
 ## Tech Stack
 - **Runtime:** Node.js 22+
-- **Package Manager:** npm (NOT pnpm — causes module resolution issues)
+- **Package Manager:** pnpm (NOT npm — this project uses pnpm)
 - **Monorepo:** Turborepo
 - **MCP Server:** Express + @modelcontextprotocol/sdk + Zod
 - **Database:** Supabase (cloud PostgreSQL)
 - **Frontend:** Next.js 14.2.5 (NOT 15 — no `use(params)`)
-- **Styling:** Inline CSS + globals.css (NO Tailwind — SWC CSS bug in this workspace)
+- **Styling:** Inline CSS + globals.css (NOT Tailwind — inline styles used)
 - **Payments:** Stripe
 - **Notifications:** Slack webhooks, Telegram Bot API, Email (nodemailer), SMS (Twilio)
 
 ## Critical Constraints
 - Next.js 14.2.5 only — `use(params)` is NOT supported
 - No Tailwind CSS — SWC parsing bug
-- No pnpm — use npm
+- No npm — use pnpm
 - Supabase singleton client: `import { supabase } from "@/lib/supabase"` — never call createClient() again
 - CSS import ONLY in root layout.tsx (Server Component)
 - All inline styles for components, classes in globals.css only

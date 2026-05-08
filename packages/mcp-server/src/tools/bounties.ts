@@ -2,6 +2,7 @@ import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getSupabaseClient } from "../lib/supabase.js";
 import { sanitizeInput } from "../lib/utils.js";
+import { sseEmitter } from "../lib/sse.js";
 import {
   notifyBountyCreated,
   notifyBountyAccepted,
@@ -86,6 +87,9 @@ export async function handleCreateBounty(args: any, tenantId: string) {
     console.warn("[bounties:create] Notification error:", err.message);
   });
 
+  // Broadcast SSE event
+  sseEmitter.broadcast("bounty.created", tenantId, { bounty_id: data.id, title: data.title, status: data.status, reward_amount: data.reward_amount });
+
   return {
     content: [
       {
@@ -96,12 +100,13 @@ export async function handleCreateBounty(args: any, tenantId: string) {
   };
 }
 
-export async function handleListBounties(args: any, _tenantId: string) {
+export async function handleListBounties(args: any, tenantId: string) {
   const supabase = getSupabaseClient();
 
   let query = supabase
     .from("bounties")
-    .select("id, tenant_id, category_id, title, description, instructions, location_address, reward_amount, currency, status, deadline, created_at", { count: "exact" });
+    .select("id, tenant_id, category_id, title, description, instructions, location_address, reward_amount, currency, status, deadline, created_at", { count: "exact" })
+    .eq("tenant_id", tenantId);
 
   if (args.status) {
     query = query.eq("status", args.status);
@@ -135,13 +140,14 @@ export async function handleListBounties(args: any, _tenantId: string) {
   };
 }
 
-export async function handleGetBounty(args: any, _tenantId: string) {
+export async function handleGetBounty(args: any, tenantId: string) {
   const supabase = getSupabaseClient();
 
   const { data, error } = await supabase
     .from("bounties")
     .select("id, tenant_id, category_id, template_id, assigned_human_id, title, description, instructions, location_address, location_lat, location_lng, reward_amount, currency, status, deadline, metadata, created_at, updated_at")
     .eq("id", args.id)
+    .eq("tenant_id", tenantId)
     .single();
 
   if (error) {
@@ -153,13 +159,14 @@ export async function handleGetBounty(args: any, _tenantId: string) {
   };
 }
 
-export async function handleAcceptBounty(args: any, _tenantId: string) {
+export async function handleAcceptBounty(args: any, tenantId: string) {
   const supabase = getSupabaseClient();
 
   const { data: bounty, error: fetchError } = await supabase
     .from("bounties")
     .select("status")
     .eq("id", args.id)
+    .eq("tenant_id", tenantId)
     .single();
 
   if (fetchError || !bounty) {
@@ -181,6 +188,7 @@ export async function handleAcceptBounty(args: any, _tenantId: string) {
     .from("bounties")
     .update({ status: "accepted", assigned_human_id: args.assigned_human_id })
     .eq("id", args.id)
+    .eq("tenant_id", tenantId)
     .select()
     .single();
 
@@ -192,14 +200,16 @@ export async function handleAcceptBounty(args: any, _tenantId: string) {
   await supabase.from("bounty_assignments").insert({
     bounty_id: args.id,
     human_id: args.assigned_human_id,
-    status: "active",
-    accepted_at: new Date().toISOString(),
+    status: "accepted",
   });
 
   // Notify tenant/agent asynchronously
   notifyBountyAccepted(data, args.assigned_human_id).catch((err) => {
     console.warn("[bounties:accept] Notification error:", err.message);
   });
+
+  // Broadcast SSE event
+  sseEmitter.broadcast("bounty.accepted", tenantId, { bounty_id: data.id, assigned_human_id: args.assigned_human_id, status: data.status });
 
   return {
     content: [
@@ -211,7 +221,7 @@ export async function handleAcceptBounty(args: any, _tenantId: string) {
   };
 }
 
-export async function handleSubmitBounty(args: any, _tenantId: string) {
+export async function handleSubmitBounty(args: any, tenantId: string) {
   const supabase = getSupabaseClient();
 
   // Get the bounty to find assigned human
@@ -219,6 +229,7 @@ export async function handleSubmitBounty(args: any, _tenantId: string) {
     .from("bounties")
     .select("assigned_human_id")
     .eq("id", args.id)
+    .eq("tenant_id", tenantId)
     .single();
 
   if (fetchError || !bounty) {
@@ -274,6 +285,7 @@ export async function handleSubmitBounty(args: any, _tenantId: string) {
     .from("bounties")
     .update({ status: "submitted" })
     .eq("id", args.id)
+    .eq("tenant_id", tenantId)
     .select()
     .single();
 
@@ -286,6 +298,9 @@ export async function handleSubmitBounty(args: any, _tenantId: string) {
     console.warn("[bounties:submit] Notification error:", err.message);
   });
 
+  // Broadcast SSE event
+  sseEmitter.broadcast("bounty.submitted", tenantId, { bounty_id: updatedBounty.id, status: updatedBounty.status });
+
   return {
     content: [
       {
@@ -296,8 +311,20 @@ export async function handleSubmitBounty(args: any, _tenantId: string) {
   };
 }
 
-export async function handleReviewBounty(args: any, _tenantId: string) {
+export async function handleReviewBounty(args: any, tenantId: string) {
   const supabase = getSupabaseClient();
+
+  // Verify bounty belongs to tenant
+  const { data: bountyCheck, error: tenantCheckError } = await supabase
+    .from("bounties")
+    .select("id")
+    .eq("id", args.id)
+    .eq("tenant_id", tenantId)
+    .single();
+
+  if (tenantCheckError || !bountyCheck) {
+    return { content: [{ type: "text" as const, text: JSON.stringify({ error: "Bounty not found" }) }] };
+  }
 
   // Find the latest submission for this bounty
   const { data: submission, error: subError } = await supabase
@@ -332,6 +359,7 @@ export async function handleReviewBounty(args: any, _tenantId: string) {
     .from("bounties")
     .update({ status: newStatus })
     .eq("id", args.id)
+    .eq("tenant_id", tenantId)
     .select()
     .single();
 
@@ -351,6 +379,10 @@ export async function handleReviewBounty(args: any, _tenantId: string) {
       });
     }
   }
+
+  // Broadcast SSE event
+  const eventType = args.decision === "approved" ? "bounty.approved" : "bounty.rejected";
+  sseEmitter.broadcast(eventType, tenantId, { bounty_id: bounty.id, decision: args.decision, status: bounty.status });
 
   return {
     content: [

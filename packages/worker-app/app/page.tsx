@@ -7,6 +7,7 @@ export default function LandingPage() {
   const [activeTab, setActiveTab] = useState<"curl" | "npm" | "pip" | "brew">("curl");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [email, setEmail] = useState("");
+  const [subscribed, setSubscribed] = useState(false);
 
   const installCommands = {
     curl: "curl -fsSL https://install.hireahuman.ai | bash",
@@ -94,8 +95,8 @@ export default function LandingPage() {
 
             <div className="nav-links">
               <a href="#features" className="nav-link">Features</a>
-              <a href="#pricing" className="nav-link">Pricing</a>
-              <a href="#docs" className="nav-link">Docs</a>
+              <a href="#faq" className="nav-link">FAQ</a>
+              <a href="https://docs.hireahuman.ai" className="nav-link" target="_blank" rel="noopener noreferrer">Docs</a>
             </div>
 
             <div className="nav-actions">
@@ -166,9 +167,9 @@ export default function LandingPage() {
             <Link href="/signup" className="oc-btn oc-btn-primary hero-cta">
               Start as Worker
             </Link>
-            <Link href="/docs" className="oc-btn oc-btn-ghost hero-cta">
+            <a href="https://docs.hireahuman.ai" className="oc-btn oc-btn-ghost hero-cta" target="_blank" rel="noopener noreferrer">
               Read the Docs
-            </Link>
+            </a>
           </div>
         </section>
 
@@ -289,7 +290,8 @@ export default function LandingPage() {
               onSubmit={(e) => {
                 e.preventDefault();
                 setEmail("");
-                alert("Thanks for subscribing!");
+                setSubscribed(true);
+                setTimeout(() => setSubscribed(false), 4000);
               }}
             >
               <input
@@ -300,10 +302,15 @@ export default function LandingPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
-              <button type="submit" className="oc-btn oc-btn-primary">
-                Subscribe
+              <button type="submit" className="oc-btn oc-btn-primary" disabled={subscribed}>
+                {subscribed ? "Subscribed!" : "Subscribe"}
               </button>
             </form>
+            {subscribed && (
+              <p style={{ textAlign: "center", marginTop: "12px", color: "var(--oc-accent)", fontSize: "13px", fontFamily: "var(--oc-font)" }}>
+                Thanks for subscribing! We'll keep you updated.
+              </p>
+            )}
           </div>
         </section>
         </main>
@@ -327,15 +334,15 @@ export default function LandingPage() {
               <div className="footer-col">
                 <h4 className="footer-heading">Product</h4>
                 <a href="#features" className="footer-link">Features</a>
-                <a href="#pricing" className="footer-link">Pricing</a>
                 <a href="#faq" className="footer-link">FAQ</a>
+                <a href="https://docs.hireahuman.ai" target="_blank" rel="noopener noreferrer" className="footer-link">Documentation</a>
               </div>
 
               <div className="footer-col">
                 <h4 className="footer-heading">Resources</h4>
-                <a href="/docs" className="footer-link">Documentation</a>
-                <a href="/api" className="footer-link">API Reference</a>
-                <a href="/mcp" className="footer-link">MCP Integration</a>
+                <a href="https://docs.hireahuman.ai" target="_blank" rel="noopener noreferrer" className="footer-link">Documentation</a>
+                <a href="/dashboard/api-keys" className="footer-link">API Keys</a>
+                <a href="https://docs.hireahuman.ai/mcp" target="_blank" rel="noopener noreferrer" className="footer-link">MCP Integration</a>
               </div>
 
               <div className="footer-col">
@@ -351,8 +358,8 @@ export default function LandingPage() {
                 © {new Date().getFullYear()} HireAHuman. All rights reserved.
               </p>
               <div className="footer-legal">
-                <a href="/privacy" className="footer-link">Privacy Policy</a>
-                <a href="/terms" className="footer-link">Terms of Service</a>
+                <a href="https://docs.hireahuman.ai/privacy" target="_blank" rel="noopener noreferrer" className="footer-link">Privacy Policy</a>
+                <a href="https://docs.hireahuman.ai/terms" target="_blank" rel="noopener noreferrer" className="footer-link">Terms of Service</a>
               </div>
             </div>
           </div>

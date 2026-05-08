@@ -24,6 +24,20 @@ INSERT INTO human_profiles (id, full_name, avatar_url, location_city, location_c
   ('c2222222-2222-2222-2222-222222222222', 'Priya Sharma', 'https://api.dicebear.com/9.x/avataaars/svg?seed=Priya', 'New York', 'US', 'Legal researcher and compliance specialist. Detail-oriented with strong analytical skills.', ARRAY['research', 'mystery-shopping', 'representation'], ARRAY['en', 'hi'], 'verified', 4.92, 63, 40.00)
 ON CONFLICT (id) DO NOTHING;
 
+-- Categories
+INSERT INTO categories (id, name, slug, description, icon) VALUES
+  ('cat11111-1111-1111-1111-111111111111', 'Data Entry', 'data-entry', 'Simple data entry and transcription tasks', '📝'),
+  ('cat22222-2222-2222-2222-222222222222', 'Verification', 'verification', 'Data or document verification tasks', '✅'),
+  ('cat33333-3333-3333-3333-333333333333', 'Annotation', 'annotation', 'Image or text annotation tasks', '🏷️'),
+  ('cat44444-4444-4444-4444-444444444444', 'Photography', 'photography', 'Photo capture and documentation tasks', '📷'),
+  ('cat55555-5555-5555-5555-555555555555', 'Research', 'research', 'Market research and survey tasks', '🔍'),
+  ('cat66666-6666-6666-6666-666666666666', 'Inspection', 'inspection', 'Property and facility inspection tasks', '🏠'),
+  ('cat77777-7777-7777-7777-777777777777', 'Mystery Shopping', 'mystery-shopping', 'Customer experience evaluation tasks', '🛒'),
+  ('cat88888-8888-8888-8888-888888888888', 'Delivery', 'delivery', 'Courier and delivery tasks', '📦'),
+  ('cat99999-9999-9999-9999-999999999999', 'Errands', 'errands', 'Personal errands and task running', '🏃'),
+  ('cataaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'General', 'general', 'General tasks and odd jobs', '⚡')
+ON CONFLICT (slug) DO NOTHING;
+
 -- Sample Bounties
 INSERT INTO bounties (id, tenant_id, category_id, assigned_human_id, title, description, instructions, location_address, reward_amount, status, deadline) VALUES
   -- Open bounty (unassigned)

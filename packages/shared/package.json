@@ -15,20 +15,20 @@
     "./notifications": "./dist/notifications/index.js"
   },
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc --watch",
+    "build": "npx tsc",
+    "watch": "npx tsc --watch",
     "test": "vitest run"
   },
   "dependencies": {
-    "stripe": "^17.7.0",
-    "zod": "^3.23.8",
+    "axios": "^1.7.4",
     "nodemailer": "^6.9.14",
-    "axios": "^1.7.4"
+    "stripe": "^17.7.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/nodemailer": "^6.4.15",
+    "@types/nodemailer": "^6.4.23",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
+    "typescript": "^5.4.5",
     "vitest": "^3.1.1"
   }
 }

@@ -10,6 +10,7 @@ export default function MyTasksPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     const fetchTasks = async () => {
       setLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
@@ -20,15 +21,18 @@ export default function MyTasksPage() {
         .select("*")
         .eq("assigned_human_id", userId)
         .order("created_at", { ascending: false });
-      setTasks(data || []);
-      setLoading(false);
+      if (!cancelled) {
+        setTasks(data || []);
+        setLoading(false);
+      }
     };
     fetchTasks();
+    return () => { cancelled = true; };
   }, []);
 
   const filtered = tasks.filter((t) => {
     if (tab === "active") return t.status === "in_progress" || t.status === "submitted";
-    if (tab === "completed") return t.status === "completed" || t.status === "approved";
+    if (tab === "completed") return t.status === "completed";
     return true;
   });
 
@@ -36,8 +40,7 @@ export default function MyTasksPage() {
     switch (s) {
       case "in_progress":
       case "submitted": return "oc-badge-amber";
-      case "completed":
-      case "approved": return "oc-badge-green";
+      case "completed": return "oc-badge-green";
       case "rejected": return "oc-badge-red";
       default: return "oc-badge-gray";
     }
@@ -103,7 +106,7 @@ export default function MyTasksPage() {
               }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                    <Link href={`/my-tasks/${t.id}/submit`} style={{ fontSize: "15px", fontWeight: 600, color: "var(--oc-text-strong)", fontFamily: "var(--oc-font)", textDecoration: "none", transition: "color 150ms" }}
+                    <Link href={`/my-tasks/${t.id}`} style={{ fontSize: "15px", fontWeight: 600, color: "var(--oc-text-strong)", fontFamily: "var(--oc-font)", textDecoration: "none", transition: "color 150ms" }}
                       onMouseEnter={(e) => e.currentTarget.style.color = "var(--oc-accent)"}
                       onMouseLeave={(e) => e.currentTarget.style.color = "var(--oc-text-strong)"}
                     >

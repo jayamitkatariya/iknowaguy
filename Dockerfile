@@ -5,58 +5,56 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # STAGE 1: BUILD
 # ═══════════════════════════════════════════════════════════════════════════════
-FROM node:22 AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Copy root package files for workspace install
-COPY package*.json ./
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@10.21.0 --activate
+
+# Copy root package files for pnpm workspace
+COPY package*.json pnpm-workspace.yaml ./
 COPY packages/mcp-server/package*.json ./packages/mcp-server/
 COPY packages/shared/package*.json ./packages/shared/
 
-# Install all dependencies (workspaces + root)
-RUN npm install -ws
+# Install all dependencies
+RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY packages/mcp-server/ ./packages/mcp-server/
 COPY packages/shared/ ./packages/shared/
-COPY tsconfig.json ./
+COPY turbo.json tsconfig.json ./
 
-# Build the MCP server and its workspace dependencies
-RUN cd packages/shared && npm run build
-RUN cd packages/mcp-server && npm run build
+# Build shared first, then mcp-server
+RUN pnpm build --filter=@hireahuman/shared
+RUN pnpm build --filter=@hireahuman/mcp-server
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # STAGE 2: RUNTIME
 # ═══════════════════════════════════════════════════════════════════════════════
-FROM node:22-slim AS runner
+FROM node:22-alpine AS runner
 
 WORKDIR /app
 
-# Install minimal dependencies for native modules if needed
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@10.21.0 --activate
 
-# Copy built artifacts and production node_modules from builder
+# Copy built artifacts and package files
 COPY --from=builder /app/packages/mcp-server/dist ./packages/mcp-server/dist
 COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
 COPY --from=builder /app/packages/mcp-server/package*.json ./packages/mcp-server/
 COPY --from=builder /app/packages/shared/package*.json ./packages/shared/
-COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/package*.json pnpm-workspace.yaml ./
 
 # Reinstall production dependencies only
-RUN npm install -ws --production && npm cache clean --force
+RUN pnpm install --frozen-lockfile --prod
 
-# Expose ports used by the HireAHuman stack
-# 3001: MCP HTTP Server
-# 3002: Worker App
-# 3003: Admin Dashboard
+# Expose MCP server port
 EXPOSE 3001
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3001/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"
 
-# Run the MCP HTTP server
-CMD ["node", "packages/mcp-server/dist/index-http.js"]
+# Run the unified MCP server (supports --stdio and HTTP modes)
+CMD ["node", "packages/mcp-server/dist/index.js"]

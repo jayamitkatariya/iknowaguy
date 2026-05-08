@@ -139,3 +139,105 @@ export function getPaymentStatus(paymentIntentId: string): string {
   }
   return "active";
 }
+
+// ─── Stripe Connect ───────────────────────────────────────────────────────────
+
+export async function createConnectAccount(
+  email: string,
+  metadata: Record<string, string> = {}
+): Promise<Stripe.Account | { id: string; email: string }> {
+  if (isStubMode) {
+    console.log("[stripe:stub] createConnectAccount called in stub mode");
+    return {
+      id: `acct_stub_${Date.now().toString(36)}`,
+      email,
+    };
+  }
+
+  const stripe = getStripe();
+
+  const account = await stripe.accounts.create({
+    type: "express",
+    email,
+    metadata,
+    capabilities: {
+      transfers: { requested: true },
+    },
+  });
+
+  return account;
+}
+
+export async function createAccountLink(
+  accountId: string,
+  refreshUrl: string,
+  returnUrl: string
+): Promise<Stripe.AccountLink | { url: string }> {
+  if (isStubMode) {
+    console.log("[stripe:stub] createAccountLink called in stub mode for:", accountId);
+    return {
+      url: `${returnUrl}?account_id=${accountId}&stub=true`,
+    };
+  }
+
+  const stripe = getStripe();
+
+  const accountLink = await stripe.accountLinks.create({
+    account: accountId,
+    refresh_url: refreshUrl,
+    return_url: returnUrl,
+    type: "account_onboarding",
+  });
+
+  return accountLink;
+}
+
+export async function createTransfer(
+  amount: number,
+  destinationAccountId: string,
+  currency: Currency = "USD",
+  metadata: Record<string, string> = {}
+): Promise<Stripe.Transfer | { id: string; amount: number; destination: string }> {
+  if (isStubMode) {
+    console.log("[stripe:stub] createTransfer called in stub mode");
+    return {
+      id: `tr_stub_${Date.now().toString(36)}`,
+      amount: Math.round(amount * 100),
+      destination: destinationAccountId,
+    };
+  }
+
+  const stripe = getStripe();
+
+  const transfer = await stripe.transfers.create({
+    amount: Math.round(amount * 100),
+    currency: currency.toLowerCase(),
+    destination: destinationAccountId,
+    metadata,
+  });
+
+  return transfer;
+}
+
+export async function getAccountStatus(
+  accountId: string
+): Promise<{ id: string; charges_enabled: boolean; payouts_enabled: boolean; details_submitted: boolean }> {
+  if (isStubMode) {
+    return {
+      id: accountId,
+      charges_enabled: true,
+      payouts_enabled: true,
+      details_submitted: true,
+    };
+  }
+
+  const stripe = getStripe();
+  const account = await stripe.accounts.retrieve(accountId);
+
+  return {
+    id: account.id,
+    charges_enabled: account.charges_enabled ?? false,
+    payouts_enabled: account.payouts_enabled ?? false,
+    details_submitted: account.details_submitted ?? false,
+  };
+}

@@ -12,9 +12,9 @@
     }
   },
   "scripts": {
-    "build": "tsx build.ts",
-    "watch": "tsx build.ts --watch",
-    "typecheck": "tsc --noEmit"
+    "build": "npx tsx build.ts",
+    "watch": "npx tsx build.ts --watch",
+    "typecheck": "npx tsc --noEmit"
   },
   "keywords": [
     "hireahuman",
@@ -29,6 +29,6 @@
   "license": "MIT",
   "devDependencies": {
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.4.5"
   }
 }
