@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+import { apiFetch } from "@/lib/api";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({ active: 0, completed: 0, totalSpent: 0, workers: 0 });
@@ -14,16 +14,11 @@ export default function DashboardPage() {
     let cancelled = false;
     const fetchDashboard = async () => {
       try {
-        const { data: bounties, error: bErr } = await supabase
-          .from("bounties")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(10);
+        const response = await apiFetch('/api/bounties');
+        const list = response.data || [];
 
-        if (bErr) throw new Error(bErr.message);
         if (cancelled) return;
 
-        const list = bounties || [];
         const active = list.filter((b: any) =>
           b.status === "open" || b.status === "in_progress" || b.status === "accepted"
         ).length;

@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard" },
@@ -23,21 +22,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     let cancelled = false;
     const checkAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
+        const apiKey = localStorage.getItem('api_key');
+        const authDataStr = localStorage.getItem('auth_data');
+        
+        if (!apiKey) {
           router.push("/login?redirect=" + encodeURIComponent(pathname));
           return;
         }
 
         if (cancelled) return;
 
-        const role = session.user?.user_metadata?.role || "human";
-        if (role !== "agent") {
-          router.push("/login");
-          return;
+        if (authDataStr) {
+          try {
+            const authData = JSON.parse(authDataStr);
+            setUser(authData.user || { email: 'User' });
+          } catch {
+            setUser({ email: 'User' });
+          }
+        } else {
+          setUser({ email: 'User' });
         }
 
-        setUser(session.user);
         setLoading(false);
       } catch {
         router.push("/login");
@@ -48,7 +53,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [router, pathname]);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    localStorage.removeItem('api_key');
+    localStorage.removeItem('auth_data');
     router.push("/");
   };
 

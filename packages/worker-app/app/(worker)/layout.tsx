@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 
 const navLinks = [
   { href: "/browse", label: "Browse" },
@@ -30,34 +29,29 @@ export default function WorkerLayout({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     let cancelled = false;
-    const checkSession = async () => {
+    const checkAuth = async () => {
       try {
-        const { data } = await supabase.auth.getSession();
-        if (!data.session) {
+        const apiKey = localStorage.getItem('api_key');
+        
+        if (!apiKey) {
           router.push("/login?redirect=" + encodeURIComponent(pathname));
           return;
         }
 
         if (cancelled) return;
-
-        const role = data.session.user?.user_metadata?.role || "human";
-        if (role !== "human") {
-          router.push("/login");
-          return;
-        }
-
         setChecking(false);
       } catch {
         router.push("/login");
       }
     };
-    checkSession();
+    checkAuth();
     return () => { cancelled = true; };
   }, [router, pathname]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.replace("/login");
+    localStorage.removeItem('api_key');
+    localStorage.removeItem('auth_data');
+    router.replace("/");
   };
 
   if (checking) {

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
 
 export default function ApiKeysPage() {
   const [apiKey, setApiKey] = useState<string | null>(null);
@@ -14,25 +13,26 @@ export default function ApiKeysPage() {
 
   useEffect(() => {
     let cancelled = false;
-    const fetchTenant = async () => {
+    const loadApiKey = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return;
-
-        const { data: tenants } = await supabase
-          .from("tenants")
-          .select("*")
-          .eq("contact_email", session.user.email)
-          .limit(1);
-
+        const storedKey = localStorage.getItem('api_key');
+        const authDataStr = localStorage.getItem('auth_data');
+        
         if (cancelled) return;
 
-        if (tenants && tenants.length > 0) {
-          const t = tenants[0];
-          setTenantName(t.name || t.slug || "");
-          const prefix = t.api_key_prefix || "";
-          setApiKey(prefix ? `hah_${prefix}...` : null);
-          setApiKeyPlaintext(t.api_key || null);
+        if (storedKey) {
+          setApiKeyPlaintext(storedKey);
+          // Show masked version: first 20 chars + "..."
+          setApiKey(storedKey.length > 20 ? storedKey.substring(0, 20) + "..." : storedKey);
+        }
+        
+        if (authDataStr) {
+          try {
+            const authData = JSON.parse(authDataStr);
+            if (authData.tenant) {
+              setTenantName(authData.tenant.name || authData.tenant.slug || "");
+            }
+          } catch {}
         }
       } catch (err: any) {
         if (!cancelled) setError(err.message || "Failed to load API key");
@@ -40,7 +40,7 @@ export default function ApiKeysPage() {
         if (!cancelled) setLoading(false);
       }
     };
-    fetchTenant();
+    loadApiKey();
     return () => { cancelled = true; };
   }, []);
 
@@ -48,20 +48,33 @@ export default function ApiKeysPage() {
     setGenerating(true);
     setError("");
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Not authenticated");
-
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "generate_key", email: session.user.email }),
+      const res = await fetch('http://localhost:3001/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: '', password: '' }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to generate key");
-
-      setApiKeyPlaintext(data.api_key);
-      setApiKey(`hah_${data.api_key_prefix}...`);
+      // If we have stored auth data, use it to get the current user info
+      const authDataStr = localStorage.getItem('auth_data');
+      if (authDataStr) {
+        const authData = JSON.parse(authDataStr);
+        if (authData.user?.email) {
+          const loginRes = await fetch('http://localhost:3001/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: authData.user.email, password: '' }),
+          });
+          if (loginRes.ok) {
+            const loginData = await loginRes.json();
+            if (loginData.data?.api_key) {
+              localStorage.setItem('api_key', loginData.data.api_key);
+              localStorage.setItem('auth_data', JSON.stringify(loginData.data));
+              setApiKeyPlaintext(loginData.data.api_key);
+              setApiKey(loginData.data.api_key.length > 20 ? loginData.data.api_key.substring(0, 20) + "..." : loginData.data.api_key);
+            }
+          }
+        }
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {

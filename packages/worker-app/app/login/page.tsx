@@ -3,12 +3,11 @@
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") || "/browse";
+  const redirect = searchParams.get("redirect") || "/dashboard";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,21 +17,38 @@ function LoginForm() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    } else if (data.user) {
-      if (redirect && redirect !== "/browse" && redirect.startsWith("/")) {
-        router.push(redirect);
-      } else {
-        const role = data.user.user_metadata?.role || "human";
-        if (role === "agent") {
-          router.push("/dashboard");
-        } else {
-          router.push("/browse");
-        }
+    try {
+      const res = await fetch('http://localhost:3001/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || data.message || 'Login failed');
       }
+      
+      if (data.data?.api_key) {
+        localStorage.setItem('api_key', data.data.api_key);
+        localStorage.setItem('auth_data', JSON.stringify(data.data));
+        
+        // Check for redirect param
+        const redirectParam = searchParams.get("redirect");
+        if (redirectParam && redirectParam.startsWith("/")) {
+          router.push(redirectParam);
+        } else {
+          // Check user role from stored data
+          const role = data.data.user?.role || data.data.tenant?.role || 'agent';
+          router.push(role === 'worker' ? '/browse' : '/dashboard');
+        }
+      } else {
+        throw new Error('No API key received');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Login failed');
+      setLoading(false);
     }
   };
 

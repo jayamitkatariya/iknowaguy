@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { apiFetch } from "@/lib/api";
 
 export default function BountiesPage() {
   const [filter, setFilter] = useState<"all" | "active" | "completed" | "pending">("all");
@@ -14,14 +14,8 @@ export default function BountiesPage() {
     let cancelled = false;
     const fetchBounties = async () => {
       try {
-        const { data, error: bErr } = await supabase
-          .from("bounties")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(50);
-
-        if (bErr) throw new Error(bErr.message);
-        if (!cancelled) setBounties(data || []);
+        const response = await apiFetch('/api/bounties');
+        if (!cancelled) setBounties(response.data || []);
       } catch (err: any) {
         if (!cancelled) setError(err.message);
       } finally {

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -21,79 +20,43 @@ export default function SignupPage() {
     setLoading(true);
     setError("");
 
-    const { data, error: authErr } = await supabase.auth.signUp({
-      email, password,
-      options: { data: { name, role } },
-    });
+    const orgSlugFinal = orgSlug || name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+    const orgNameFinal = orgName || name;
 
-    if (authErr) {
-      setError(authErr.message);
-      setLoading(false);
-      return;
-    }
+    try {
+      const res = await fetch('http://localhost:3001/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: orgNameFinal || name,
+          slug: orgSlugFinal,
+          email,
+          password,
+        }),
+      });
 
-    if (!data.user) {
-      if (data.session) {
-        const r = data.session.user?.user_metadata?.role || "human";
-        router.push(r === "agent" ? "/dashboard" : "/browse");
-        return;
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || data.message || 'Registration failed');
       }
-      setError("Check your email for a confirmation link.");
-      setLoading(false);
-      return;
-    }
 
-    const userId = data.user.id;
-
-    if (role === "worker") {
-      try {
-        await supabase.from("human_profiles").insert({
-          id: userId,
-          full_name: name,
-          is_available: true,
-          verification_status: "pending",
-        });
-      } catch {}
-      try {
-        await supabase.from("users").insert({
-          id: userId,
-          email: email,
-          role: "human",
-        });
-      } catch {}
-      router.push("/browse");
-    } else {
-      try {
-        await supabase.from("users").insert({
-          id: userId,
-          email: email,
-          role: "agent",
-        });
-      } catch {}
-
-      const orgSlugFinal = orgSlug || name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
-      const orgNameFinal = orgName || name;
-
-      try {
-        const res = await fetch("/api/auth/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "register",
-            name: orgNameFinal,
-            slug: orgSlugFinal,
-            email: email,
-          }),
-        });
-        if (res.ok) {
-          const result = await res.json();
-          if (result.api_key) {
-            localStorage.setItem("api_key", result.api_key);
-          }
+      if (data.data?.api_key) {
+        localStorage.setItem('api_key', data.data.api_key);
+        localStorage.setItem('auth_data', JSON.stringify(data.data));
+        
+        // Redirect based on role
+        if (role === "agent") {
+          router.push("/dashboard");
+        } else {
+          router.push("/browse");
         }
-      } catch {}
-
-      router.push("/dashboard");
+      } else {
+        throw new Error('No API key received');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Registration failed');
+      setLoading(false);
     }
   };
 
