@@ -45,8 +45,18 @@ const csrfMiddleware: import('hono').MiddlewareHandler = async (c, next) => {
   }
 
   const origin = c.req.header('Origin');
-  if (!origin) {
+  // Allow non-browser API clients (curl, Postman, server-to-server) that don't send Origin
+  // Browser-initiated requests always send Origin via Sec-Fetch-Mode=same-origin
+  const secFetchMode = c.req.header('Sec-Fetch-Mode');
+  const isBrowserRequest = !!secFetchMode;
+
+  if (isBrowserRequest && !origin) {
     return c.json({ error: 'Missing Origin header' }, 403);
+  }
+
+  if (!origin) {
+    // Non-browser client (curl, server) — skip CSRF check
+    return next();
   }
 
   const allowed = corsOrigins.some((allowedOrigin) => {
@@ -72,8 +82,11 @@ app.use('/api/*', csrfMiddleware);
 
 app.get('/', (c) => c.json({ name: 'iknowaguy API', version: '0.1.0' }));
 
+// Public routes — health at /api/health (not /api/health/health)
+app.route('/', health);  // root '/' → serves the health check at /api/health via mounted route
+
 // Public routes — mounted BEFORE apiKeyMiddleware so they bypass auth
-app.route('/api/health', health);        // /api/health — public health check
+app.get('/api/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOString(), uptime: process.uptime() }));
 app.route('/api/categories', categories); // /api/categories — public, no auth required
 app.route('/auth', auth);                 // /auth/* — login/register, no API key required
 
