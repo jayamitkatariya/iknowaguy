@@ -1,6 +1,6 @@
 #!/bin/bash
 # iknowaguy CLI Installer
-# Usage: curl -sL https://get.iknowaguy.ai/install.sh | bash
+# Usage: curl -sL https://website-ochre-sigma-97.vercel.app/install.sh | bash
 # Or:    npm install -g @iknowaguy/cli
 
 set -e

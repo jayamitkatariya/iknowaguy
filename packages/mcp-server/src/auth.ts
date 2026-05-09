@@ -6,7 +6,33 @@ export function hashApiKey(key: string): string {
   return crypto.createHash("sha256").update(key).digest("hex");
 }
 
+// Verify Supabase Auth Bearer token and return the user
+export async function verifySupabaseAuthToken(token: string): Promise<{ id: string; email?: string } | null> {
+  try {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data.user) {
+      return null;
+    }
+    return { id: data.user.id, email: data.user.email };
+  } catch {
+    return null;
+  }
+}
+
 export async function validateApiKey(key: string): Promise<{ id: string; name: string; slug: string } | null> {
+  // If this is a Supabase Auth token (JWT format - starts with eyJ), verify it
+  if (key.startsWith("eyJ")) {
+    const authUser = await verifySupabaseAuthToken(key);
+    if (authUser) {
+      return {
+        id: authUser.id,
+        name: authUser.email || "Supabase User",
+        slug: "supabase-auth",
+      };
+    }
+  }
+
   const supabase = getSupabaseClient();
   const hashedKey = hashApiKey(key);
 

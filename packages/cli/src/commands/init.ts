@@ -3,9 +3,10 @@
  * 
  * Flow:
  * 1. Check if already initialized → show existing config
- * 2. If API is reachable on localhost:3001 → call /auth/register directly
- * 3. If not reachable → prompt for Supabase credentials, create tenant directly
- * 4. Save config to ~/.iknowaguy/config.json
+ * 2. Parse --email, --password, --name flags
+ * 3. If API server running on localhost:3001 → call /auth/register
+ * 4. Otherwise → call Supabase Auth directly (requires valid anon key)
+ * 5. Save config to ~/.iknowaguy/config.json
  */
 import * as chalkNS from 'chalk'; const chalk = chalkNS.default;
 import { readConfig, writeConfig, CONFIG_FILE } from '../lib/config.js';
@@ -13,6 +14,8 @@ import { readConfig, writeConfig, CONFIG_FILE } from '../lib/config.js';
 const C = chalk.green;
 const W = chalk.white.bold;
 const Y = chalk.yellow;
+
+const SUPABASE_URL = 'https://yktuluujkcldtvvbdmmf.supabase.co';
 
 export class Init {
   name = 'init';
@@ -26,7 +29,6 @@ export class Init {
     if (existing) {
       console.log(C('✅ iknowaguy is already initialized!'));
       console.log(`   Tenant ID: ${existing.tenant_id}`);
-      console.log(`   API Key: ${existing.api_key.substring(0, 20)}...`);
       console.log(`   Config: ${CONFIG_FILE}\n`);
       console.log('Run "iknowaguy start" to start the servers.\n');
       return;
@@ -62,30 +64,29 @@ export class Init {
 
     console.log(C('📡 Connecting to registration service...'));
 
+    // Strategy 1: Try calling the local API if it's running
     try {
-      // Try calling the local API first
-      const response = await fetch('http://localhost:3001/auth/register', {
+      const localApiResponse = await fetch('http://localhost:3001/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, slug, email, password }),
       });
 
-      if (response.ok) {
-        const data = await response.json() as any;
+      if (localApiResponse.ok) {
+        const data = await localApiResponse.json() as any;
         
         if (data.data?.api_key) {
-          // Success from local API
           const config = {
             version: '0.1.0',
-            tenant_id: data.data.tenant?.id || data.data.tenant_id || `tenant_${Date.now()}`,
+            tenant_id: data.data.tenant?.id || data.data.tenant_id,
             api_key: data.data.api_key,
-            supabase_url: data.data.tenant?.supabase_url || process.env.SUPABASE_URL || 'https://placeholder.supabase.co',
-            supabase_service_role_key: data.data.tenant?.supabase_service_role_key || process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-key',
+            supabase_url: data.data.tenant?.supabase_url || SUPABASE_URL,
+            supabase_service_role_key: data.data.tenant?.supabase_service_role_key || '',
             api_port: 3001,
             mcp_port: 3000,
           };
 
-          writeConfig(config);
+          writeConfig(config as any);
 
           console.log(C('\n✅ You\'re connected! API key saved.\n'));
           console.log(`   Tenant: ${config.tenant_id}`);
@@ -98,56 +99,127 @@ export class Init {
         }
       }
 
-      // API returned but wasn't ok or didn't have expected data — show error
-      const errorText = await response.text();
-      console.log(chalk.red(`\n❌ Registration failed (${response.status}): ${errorText}\n`));
+      const errorText = await localApiResponse.text();
+      // If API is running but returned error, still better than falling through
+      if (localApiResponse.status !== 502 && localApiResponse.status !== 503) {
+        console.log(chalk.red(`\n❌ Registration via local API failed (${localApiResponse.status}): ${errorText}\n`));
+        process.exit(1);
+      }
+    } catch {
+      // Local API not running - will try Supabase Auth below
+    }
+
+    // Strategy 2: Direct Supabase Auth registration
+    // This requires a valid anon key - if the key is invalid/missing, show clear error
+    console.log(Y('⚠️  Local API not running. Trying Supabase Auth directly...'));
+
+    // Check for SUPABASE_ANON_KEY env var (must be provided for direct registration)
+    const anonKey = process.env.SUPABASE_ANON_KEY;
+    if (!anonKey) {
+      console.log(chalk.red(`\n❌ Cannot register: Local API not running and SUPABASE_ANON_KEY not set.\n`));
+      console.log('To register without the local API:\n');
+      console.log('  1. Set your anon key: export SUPABASE_ANON_KEY="your-anon-key"\n');
+      console.log('  2. Run init again\n');
+      console.log('Or start the API server first, then run init.\n');
       process.exit(1);
+    }
 
-    } catch (err: any) {
-      // Local API not running — check if Supabase env vars are set for direct registration
-      if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-        console.log(Y('⚠️  Local API not running. Registering directly via Supabase...'));
-        
-        const { createClient } = await import('@supabase/supabase-js');
-        const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+    try {
+      // Step 1: Sign up via Supabase Auth
+      const signupResponse = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': anonKey,
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          options: {
+            data: { name }
+          }
+        }),
+      });
 
-        const apiKey = `hah_${Buffer.from(Math.random().toString(36)).toString('base64').replace(/[/+=]/g, '').substring(0, 24)}`;
+      const signupData = await signupResponse.json() as any;
 
-        const { data, error } = await supabase
-          .from('tenants')
-          .insert({ name, slug, api_key: apiKey })
-          .select('id')
-          .single();
-
-        if (error || !data) {
-          console.log(chalk.red(`\n❌ Failed to create tenant in Supabase: ${error?.message}\n`));
-          process.exit(1);
-        }
-
-        const config = {
-          version: '0.1.0',
-          tenant_id: data.id as string,
-          api_key: apiKey,
-          supabase_url: process.env.SUPABASE_URL,
-          supabase_service_role_key: process.env.SUPABASE_SERVICE_ROLE_KEY,
-          api_port: 3001,
-          mcp_port: 3000,
-        };
-
-        writeConfig(config);
-
-        console.log(C('\n✅ Tenant registered directly via Supabase. Config saved.\n'));
-        console.log(`   Tenant: ${config.tenant_id}`);
-        console.log(`   API Key: ${config.api_key.substring(0, 20)}...`);
-        console.log(W('\nNext steps:'));
-        console.log('  1. Run ' + C('iknowaguy start') + ' to start the servers');
-        console.log('  2. Connect your AI agent using the MCP server at port 3000\n');
-        return;
+      if (!signupResponse.ok) {
+        const errorMsg = signupData?.msg || signupData?.error_description || JSON.stringify(signupData);
+        console.log(chalk.red(`\n❌ Supabase Auth registration failed: ${errorMsg}\n`));
+        process.exit(1);
       }
 
-      console.log(chalk.red(`\n❌ Cannot reach iknowaguy API at http://localhost:3001`));
-      console.log(chalk.red('   Make sure the API is running, or set SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY env vars.\n'));
-      console.log('To start the API: npx @iknowaguy/api\n');
+      // Extract session
+      const session = signupData.session || signupData;
+      const accessToken = session?.access_token;
+      const userId = signupData.id || session?.user?.id;
+
+      if (!accessToken || !userId) {
+        console.log(chalk.red(`\n❌ Invalid response from Supabase Auth.\n`));
+        process.exit(1);
+      }
+
+      console.log(C('✅ Auth registration successful'));
+
+      // Step 2: Create tenant record (using the session token)
+      console.log(C('📦 Creating tenant record...'));
+
+      const tenantResponse = await fetch(`${SUPABASE_URL}/rest/v1/tenants`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': anonKey,
+          'Authorization': `Bearer ${accessToken}`,
+          'Prefer': 'return=representation',
+        },
+        body: JSON.stringify({
+          id: userId,
+          name,
+          slug,
+          created_at: new Date().toISOString(),
+        }),
+      });
+
+      let tenantId = userId;
+
+      if (!tenantResponse.ok) {
+        const errorText = await tenantResponse.text();
+        if (tenantResponse.status === 409) {
+          console.log(Y('⚠️  Tenant already exists, using existing tenant ID'));
+          tenantId = userId;
+        } else {
+          console.log(chalk.red(`\n❌ Failed to create tenant: ${errorText}\n`));
+          process.exit(1);
+        }
+      } else {
+        const tenantData = await tenantResponse.json() as any;
+        tenantId = tenantData[0]?.id || userId;
+        console.log(C('✅ Tenant created'));
+      }
+
+      // Step 3: Save config
+      const config = {
+        version: '0.1.0',
+        tenant_id: tenantId,
+        api_key: `iknowaguy_${Buffer.from(accessToken).toString('base64').replace(/[/+=]/g, '').substring(0, 24)}`,
+        supabase_url: SUPABASE_URL,
+        supabase_session: accessToken,
+        supabase_service_role_key: '',
+        api_port: 3001,
+        mcp_port: 3000,
+      };
+
+      writeConfig(config as any);
+
+      console.log(C('\n✅ You\'re connected! Config saved.\n'));
+      console.log(`   Tenant ID: ${tenantId}`);
+      console.log(W('\nNext steps:'));
+      console.log('  1. Run ' + C('iknowaguy start') + ' to start the servers');
+      console.log('  2. Connect your AI agent using the MCP server at port 3000\n');
+      console.log('Config saved to: ' + CONFIG_FILE + '\n');
+
+    } catch (err: any) {
+      console.log(chalk.red(`\n❌ Initialization failed: ${err.message}\n`));
       process.exit(1);
     }
   }

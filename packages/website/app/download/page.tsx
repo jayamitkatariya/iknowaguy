@@ -24,7 +24,7 @@ export default function DownloadPage() {
         <div className="download-section">
           <h2>macOS / Linux</h2>
           <p>Run the install script to download and set up the CLI:</p>
-          <div className="download-cmd">curl -sL https://get.iknowaguy.ai/install.sh | bash</div>
+          <div className="download-cmd">curl -sL https://website-ochre-sigma-97.vercel.app/install.sh | bash</div>
         </div>
 
         <div className="download-section">

@@ -21,7 +21,7 @@ export default function HomePage() {
               Local-first developer tool that gives AI agents (Hermes, Claude, Cline, OpenCode) 
               access to real humans via MCP server running on your laptop.
             </p>
-            <div className="install-cmd">curl -sL https://get.iknowaguy.ai/install.sh | bash</div>
+            <div className="install-cmd">curl -sL https://website-ochre-sigma-97.vercel.app/install.sh | bash</div>
             <div>
               <Link href="/download" className="btn btn-primary">Download CLI</Link>
               <Link href="/docs" className="btn btn-secondary" style={{ marginLeft: '12px' }}>Read Docs</Link>
@@ -83,7 +83,7 @@ export default function HomePage() {
             <h2>Get started in 30 seconds</h2>
             <p>No server infrastructure. Supabase is the only cloud dependency.</p>
             <pre className="code-block" style={{ display: 'inline-block', background: '#333', color: '#fff' }}>
-              curl -sL https://get.iknowaguy.ai/install.sh | bash
+              curl -sL https://website-ochre-sigma-97.vercel.app/install.sh | bash
             </pre>
             <br />
             <Link href="/docs" className="btn">Read the Docs</Link>

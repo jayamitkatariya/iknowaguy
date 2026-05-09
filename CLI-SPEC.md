@@ -96,7 +96,7 @@ iknowaguy/
 
 ### `iknowaguy init`
 - Check if already initialized (`~/.iknowaguy/config.json`)
-- If not: call `POST https://api.iknowaguy.ai/auth/register` with name + slug
+- If not: call `POST https://yktuluujkcldtvvbdmmf.supabase.co/auth/v1/signup` with email + password, then create tenant
 - Get back: `{ api_key, tenant_id, supabase_url, supabase_service_role_key }`
 - Store in `~/.iknowaguy/config.json` (chmod 600)
 - Print: "You're connected! API key saved."
@@ -160,7 +160,7 @@ Pages:
 
 **Content**:
 - Hero: "Give your AI agents access to human workers"
-- Install command: `curl -sL https://get.iknowaguy.ai/install.sh | bash`
+- Install command: `curl -sL https://website-ochre-sigma-97.vercel.app/install.sh | bash`
 - Or: `npx @iknowaguy/cli init`
 - Docs link to MCP tools reference
 
@@ -183,7 +183,7 @@ Same for `mcp-server` — read config from `~/.iknowaguy/config.json` or env var
 
 ### Option A: curl (one-liner, works on macOS + Linux)
 ```bash
-curl -sL https://get.iknowaguy.ai/install.sh | bash
+curl -sL https://website-ochre-sigma-97.vercel.app/install.sh | bash
 ```
 Downloads the install script from the website, runs it. The install script:
 1. Creates `~/.iknowaguy/`

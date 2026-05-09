@@ -41,7 +41,7 @@ export default function DocsPage() {
             <div className="docs-content">
               <h2 id="installation">Installation</h2>
               <p>Install the iknowaguy CLI with a single command:</p>
-              <pre><code>curl -sL https://get.iknowaguy.ai/install.sh | bash</code></pre>
+              <pre><code>curl -sL https://website-ochre-sigma-97.vercel.app/install.sh | bash</code></pre>
               <p>Or via npm:</p>
               <pre><code>npm install -g @iknowaguy/cli</code></pre>
 

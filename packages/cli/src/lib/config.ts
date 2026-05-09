@@ -10,6 +10,7 @@ export interface Config {
   tenant_id: string;
   api_key: string;
   supabase_url: string;
+  supabase_session?: string; // Supabase Auth Bearer token
   supabase_service_role_key: string;
   api_port: number;
   mcp_port: number;

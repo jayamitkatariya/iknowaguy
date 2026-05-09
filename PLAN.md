@@ -100,7 +100,7 @@ iknowaguy/
 
 ### Option A: curl (one-liner, works on macOS + Linux)
 ```bash
-curl -sL https://get.iknowaguy.ai/install.sh | bash
+curl -sL https://website-ochre-sigma-97.vercel.app/install.sh | bash
 ```
 
 ### Option B: npm
