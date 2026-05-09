@@ -5,6 +5,8 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import { createServer } from "http";
 import { z } from "zod";
+import { readFileSync, existsSync } from "fs";
+import { join } from "path";
 import { rateLimitMiddleware } from "./middleware/rate-limit.js";
 import { requestIdMiddleware } from "./middleware/request-id.js";
 import { loggerMiddleware } from "./middleware/logger.js";
@@ -12,6 +14,60 @@ import { authMiddleware } from "./auth.js";
 import { getSupabaseClient } from "./lib/supabase.js";
 import { constructWebhookEvent } from "./lib/stripe.js";
 import { sseEmitter } from "./lib/sse.js";
+
+// ── Config file support ────────────────────────────────────────────────────────
+interface Config {
+  supabase_url?: string;
+  supabase_service_role_key?: string;
+  api_port?: number;
+  mcp_port?: number;
+}
+
+function loadConfig(): Config {
+  // Check --config flag
+  const configArg = process.argv.find(arg => arg.startsWith('--config='));
+  if (configArg) {
+    const configPath = configArg.split('=')[1];
+    if (existsSync(configPath)) {
+      try {
+        const content = readFileSync(configPath, 'utf-8');
+        return JSON.parse(content) as Config;
+      } catch {
+        console.error(`Failed to parse config file: ${configPath}`);
+      }
+    } else {
+      console.error(`Config file not found: ${configPath}`);
+    }
+  }
+
+  // Check default config location
+  const homeDir = process.env.HOME || process.env.USERPROFILE || '';
+  const defaultConfig = join(homeDir, '.iknowaguy', 'config.json');
+  if (existsSync(defaultConfig)) {
+    try {
+      const content = readFileSync(defaultConfig, 'utf-8');
+      return JSON.parse(content) as Config;
+    } catch {
+      // Ignore
+    }
+  }
+
+  return {};
+}
+
+// Load config
+const config = loadConfig();
+
+// ── Apply config file values to environment ────────────────────────────────────
+if (!process.env.SUPABASE_URL && config.supabase_url) {
+  process.env.SUPABASE_URL = config.supabase_url;
+}
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY && config.supabase_service_role_key) {
+  process.env.SUPABASE_SERVICE_ROLE_KEY = config.supabase_service_role_key;
+}
+if (!process.env.PORT && config.mcp_port) {
+  process.env.PORT = config.mcp_port.toString();
+}
 
 import { registerHumanTools } from "./tools/humans.js";
 import { registerBountyTools } from "./tools/bounties.js";

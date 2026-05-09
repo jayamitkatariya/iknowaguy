@@ -1,33 +1,32 @@
-import { Command } from './commands/command';
-import { Init } from './commands/init';
-import { Dev } from './commands/dev';
-import { SetupAgent } from './commands/setup-agent';
-import { SetupNotify } from './commands/setup-notify';
-import { SetupPayments } from './commands/setup-payments';
-import { Config } from './commands/config';
-import { Doctor } from './commands/doctor';
+/**
+ * Core CLI logic - routes commands
+ */
+import { Init } from './commands/init.js';
+import { Start } from './commands/start.js';
+import { Stop } from './commands/stop.js';
+import { Status } from './commands/status.js';
+import { Version } from './commands/version.js';
+
+export interface Command {
+  name: string;
+  description: string;
+  run(args: string[]): Promise<void>;
+}
 
 const commands: Record<string, Command> = {
   init: new Init(),
-  dev: new Dev(),
-  'setup:agent': new SetupAgent(),
-  'setup:notify': new SetupNotify(),
-  'setup:payments': new SetupPayments(),
-  config: new Config(),
-  doctor: new Doctor(),
+  start: new Start(),
+  stop: new Stop(),
+  status: new Status(),
+  version: new Version(),
 };
 
-export async function runWithArgs(args: string[]): Promise<void> {
-  const [cmdName, ...rest] = args;
-  const cmd = commands[cmdName];
+export async function run(commandName: string, args: string[]): Promise<void> {
+  const cmd = commands[commandName];
   if (!cmd) {
-    console.error(`Unknown command: ${cmdName}`);
-    console.error('Run "iknowaguy" to see available commands.');
+    console.error(`Unknown command: ${commandName}`);
+    console.error(`Run 'iknowaguy' to see available commands.`);
     process.exit(1);
   }
-  await cmd.run(rest);
-}
-
-export async function run(): Promise<void> {
-  await runWithArgs(process.argv.slice(2));
+  await cmd.run(args);
 }

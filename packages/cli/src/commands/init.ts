@@ -1,167 +1,154 @@
-import chalk from 'chalk';
-import { nanoid } from 'nanoid';
-import { existsSync, writeFileSync } from 'fs';
-import { join } from 'path';
-import { Command } from './command';
-import { printMiniBanner } from '../lib/ascii';
+/**
+ * init command - Register tenant and create config
+ * 
+ * Flow:
+ * 1. Check if already initialized → show existing config
+ * 2. If API is reachable on localhost:3001 → call /auth/register directly
+ * 3. If not reachable → prompt for Supabase credentials, create tenant directly
+ * 4. Save config to ~/.iknowaguy/config.json
+ */
+import * as chalkNS from 'chalk'; const chalk = chalkNS.default;
+import { readConfig, writeConfig, CONFIG_FILE } from '../lib/config.js';
 
+const C = chalk.green;
 const W = chalk.white.bold;
-const D = chalk.white.dim;
+const Y = chalk.yellow;
 
-const TEMPLATE_ENV = `# iknowaguy Environment
-# Copy this to .env and fill in your values
-
-# Supabase Project URL (from supabase.com dashboard)
-SUPABASE_URL=https://your-project.supabase.co
-
-# Supabase Service Role Key (from supabase.com > Settings > API)
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-
-# iknowaguy API Key (generate with: iknowaguy api-key:generate)
-IKNOWAGUY_API_KEY=***
-
-# MCP Server Port
-PORT=3001
-
-# API Server Port
-API_PORT=3000
-
-# Worker App URL (for notifications)
-WORKER_APP_URL=http://localhost:3002
-
-# Admin Dashboard URL
-AGENT_PORTAL_URL=http://localhost:3003
-`;
-
-export class Init implements Command {
+export class Init {
   name = 'init';
-  description = 'Initialize iknowaguy in your project';
+  description = 'Initialize iknowaguy (register tenant)';
 
   async run(args: string[]): Promise<void> {
-    console.log(W('\n🚀 iknowaguy Init\n'));
-    printMiniBanner('init');
+    console.log(W('\n🚀 Initializing iknowaguy\n'));
 
-    const nodeVersion = process.version;
-    console.log(D(`Node.js: ${nodeVersion}`));
-
-    const projectDir = process.cwd();
-    console.log(D(`Project: ${projectDir}`));
-    console.log('');
-
-    const inquirer = (await import('inquirer')).default;
-    const answers = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'supabaseUrl',
-        message: 'Supabase Project URL:',
-        default: 'https://your-project.supabase.co',
-        validate: (input: string) => {
-          if (!input.startsWith('https://')) return 'Must start with https://';
-          return true;
-        },
-      },
-      {
-        type: 'input',
-        name: 'supabaseKey',
-        message: 'Supabase Service Role Key:',
-        default: '',
-        validate: (input: string) => {
-          if (!input || input.length < 20) return 'Please enter a valid service role key';
-          return true;
-        },
-      },
-      {
-        type: 'input',
-        name: 'tenantName',
-        message: 'Your Team / Tenant Name:',
-        default: 'My Team',
-      },
-    ]);
-
-    const { supabaseUrl, supabaseKey, tenantName } = answers;
-    const apiKey = `ikg_live_${nanoid(24)}`;
-    const apiKeyPrefix = apiKey.slice(0, 12);
-
-    const envContent = TEMPLATE_ENV
-      .replace('https://your-project.supabase.co', supabaseUrl)
-      .replace('your-service-role-key', supabaseKey)
-      .replace('***', apiKey);
-
-    const envPath = join(projectDir, '.env');
-    writeFileSync(envPath, envContent);
-    console.log(W(`✅ Created .env`));
-
-    const configContent = `const config = {
-  supabase: {
-    url: process.env.SUPABASE_URL || '',
-    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
-  },
-  api: {
-    port: parseInt(process.env.PORT || '3001'),
-  },
-  workerApp: {
-    url: process.env.WORKER_APP_URL || 'http://localhost:3002',
-  },
-  agentPortalApp: {
-    url: process.env.AGENT_PORTAL_URL || 'http://localhost:3003',
-  },
-};
-
-export default config;
-`;
-    const configPath = join(projectDir, 'iknowaguy.config.ts');
-    writeFileSync(configPath, configContent);
-    console.log(W(`✅ Created iknowaguy.config.ts`));
-
-    console.log(D('\n📡 Creating tenant in Supabase...'));
-    try {
-      const { createClient } = await import('@supabase/supabase-js');
-      const supabase = createClient(supabaseUrl, supabaseKey);
-
-      const slug = tenantName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-
-      const { error } = await supabase.from('tenants').insert({
-        name: tenantName,
-        slug,
-        api_key: apiKey,
-        api_key_prefix: apiKeyPrefix,
-        contact_email: '',
-        is_active: true,
-      });
-
-      if (error) {
-        console.log(D(`⚠️  Could not create tenant (will need manual setup): ${error.message}`));
-      } else {
-        console.log(W(`✅ Created tenant: ${tenantName}`));
-        console.log(D(`   API Key: ${apiKey}`));
-        console.log(D(`   Save this key — you'll need it for your AI agent!`));
-      }
-    } catch (err: any) {
-      console.log(D(`⚠️  Could not connect to Supabase: ${err.message}`));
-      console.log(D('   Run the SQL in supabase/migrations/001_initial.sql manually'));
+    // Check if already initialized
+    const existing = readConfig();
+    if (existing) {
+      console.log(C('✅ iknowaguy is already initialized!'));
+      console.log(`   Tenant ID: ${existing.tenant_id}`);
+      console.log(`   API Key: ${existing.api_key.substring(0, 20)}...`);
+      console.log(`   Config: ${CONFIG_FILE}\n`);
+      console.log('Run "iknowaguy start" to start the servers.\n');
+      return;
     }
 
-    const mcpConfig = {
-      mcp_servers: [
-        {
-          name: 'iknowaguy',
-          url: 'http://localhost:3001/mcp',
+    // Parse flags
+    let name = 'My Workspace';
+    let email = '';
+    let password = '';
+
+    for (let i = 0; i < args.length; i++) {
+      if (args[i] === '--name' && args[i + 1]) {
+        name = args[i + 1];
+        i++;
+      } else if (args[i] === '--email' && args[i + 1]) {
+        email = args[i + 1];
+        i++;
+      } else if (args[i] === '--password' && args[i + 1]) {
+        password = args[i + 1];
+        i++;
+      }
+    }
+
+    if (!email || !password) {
+      console.log(Y('📋 To initialize, provide --email and --password:'));
+      console.log('   iknowaguy init --email you@example.com --password "YourPassword123" [--name "My Workspace"]\n');
+      console.log('Or run without args for interactive mode (coming soon).\n');
+      return;
+    }
+
+    // Generate slug from email
+    const slug = email.split('@')[0].replace(/[^a-z0-9]/gi, '-').toLowerCase() + '-' + Date.now().toString(36);
+
+    console.log(C('📡 Connecting to registration service...'));
+
+    try {
+      // Try calling the local API first
+      const response = await fetch('http://localhost:3001/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, slug, email, password }),
+      });
+
+      if (response.ok) {
+        const data = await response.json() as any;
+        
+        if (data.data?.api_key) {
+          // Success from local API
+          const config = {
+            version: '0.1.0',
+            tenant_id: data.data.tenant?.id || data.data.tenant_id || `tenant_${Date.now()}`,
+            api_key: data.data.api_key,
+            supabase_url: data.data.tenant?.supabase_url || process.env.SUPABASE_URL || 'https://placeholder.supabase.co',
+            supabase_service_role_key: data.data.tenant?.supabase_service_role_key || process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-key',
+            api_port: 3001,
+            mcp_port: 3000,
+          };
+
+          writeConfig(config);
+
+          console.log(C('\n✅ You\'re connected! API key saved.\n'));
+          console.log(`   Tenant: ${config.tenant_id}`);
+          console.log(`   API Key: ${config.api_key.substring(0, 20)}...`);
+          console.log(W('\nNext steps:'));
+          console.log('  1. Run ' + C('iknowaguy start') + ' to start the servers');
+          console.log('  2. Connect your AI agent using the MCP server at port 3000\n');
+          console.log('Config saved to: ' + CONFIG_FILE + '\n');
+          return;
+        }
+      }
+
+      // API returned but wasn't ok or didn't have expected data — show error
+      const errorText = await response.text();
+      console.log(chalk.red(`\n❌ Registration failed (${response.status}): ${errorText}\n`));
+      process.exit(1);
+
+    } catch (err: any) {
+      // Local API not running — check if Supabase env vars are set for direct registration
+      if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        console.log(Y('⚠️  Local API not running. Registering directly via Supabase...'));
+        
+        const { createClient } = await import('@supabase/supabase-js');
+        const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+        const apiKey = `hah_${Buffer.from(Math.random().toString(36)).toString('base64').replace(/[/+=]/g, '').substring(0, 24)}`;
+
+        const { data, error } = await supabase
+          .from('tenants')
+          .insert({ name, slug, api_key: apiKey })
+          .select('id')
+          .single();
+
+        if (error || !data) {
+          console.log(chalk.red(`\n❌ Failed to create tenant in Supabase: ${error?.message}\n`));
+          process.exit(1);
+        }
+
+        const config = {
+          version: '0.1.0',
+          tenant_id: data.id as string,
           api_key: apiKey,
-        },
-      ],
-    };
+          supabase_url: process.env.SUPABASE_URL,
+          supabase_service_role_key: process.env.SUPABASE_SERVICE_ROLE_KEY,
+          api_port: 3001,
+          mcp_port: 3000,
+        };
 
-    const mcpConfigPath = join(projectDir, 'iknowaguy-mcp.json');
-    writeFileSync(mcpConfigPath, JSON.stringify(mcpConfig, null, 2));
-    console.log(W(`\n✅ Created iknowaguy-mcp.json`));
+        writeConfig(config);
 
-    console.log(W('\n📋 Next Steps:\n'));
-    console.log(`  1. ${W('Run the SQL schema')} in Supabase SQL Editor`);
-    console.log(`     → supabase/migrations/001_initial.sql`);
-    console.log(`  2. ${W('Start development:')}`);
-    console.log(`     → iknowaguy dev`);
-    console.log(`  3. ${W('Link your AI agent:')}`);
-    console.log(`     → iknowaguy setup:agent`);
-    console.log(`\n${W('✅ Init complete!')}\n`);
+        console.log(C('\n✅ Tenant registered directly via Supabase. Config saved.\n'));
+        console.log(`   Tenant: ${config.tenant_id}`);
+        console.log(`   API Key: ${config.api_key.substring(0, 20)}...`);
+        console.log(W('\nNext steps:'));
+        console.log('  1. Run ' + C('iknowaguy start') + ' to start the servers');
+        console.log('  2. Connect your AI agent using the MCP server at port 3000\n');
+        return;
+      }
+
+      console.log(chalk.red(`\n❌ Cannot reach iknowaguy API at http://localhost:3001`));
+      console.log(chalk.red('   Make sure the API is running, or set SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY env vars.\n'));
+      console.log('To start the API: npx @iknowaguy/api\n');
+      process.exit(1);
+    }
   }
 }

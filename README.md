@@ -8,102 +8,97 @@
   <a href="https://github.com/jayamitkatariya/iknowaguy/releases"><img src="https://img.shields.io/github/v/release/jayamitkatariya/iknowaguy?style=flat-square&color=blue" alt="GitHub release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License"></a>
   <img src="https://img.shields.io/badge/MCP-2024--11--05-purple?style=flat-square" alt="MCP Protocol">
-  <a href="https://worker-app-six.vercel.app"><img src="https://img.shields.io/badge/demo-live-green?style=flat-square" alt="Live Demo"></a>
+  <a href="https://iknowaguy.ai"><img src="https://img.shields.io/badge/docs-iknowaguy.ai-blue?style=flat-square" alt="Docs"></a>
 </p>
 
 ---
 
 ## One-Liner
 
-**iknowaguy** is an open-source, MCP-first platform that lets AI agents call real humans to complete physical and digital tasks they can't do alone — photography, inspections, research, deliveries, and more.
-
-## Why This Exists
-
-AI agents are incredible at code, analysis, and automation, but they're helpless in the physical world. iknowaguy bridges that gap by giving your agent a standardized way to discover, assign, pay, and communicate with real humans. When your agent hits a wall, it doesn't give up — it hires a human.
+**iknowaguy** is a local-first developer tool that gives AI agents (Hermes, Claude, Cline, OpenCode) access to human workers via an MCP server running on your laptop.
 
 ## Quick Start
 
-### For AI Agent Developers
+### Install (macOS / Linux)
 
 ```bash
-# Install via curl (one-liner)
-curl -sL https://raw.githubusercontent.com/jayamitkatariya/iknowaguy/main/scripts/install.sh | bash
-
-# Or clone + install manually
-git clone https://github.com/jayamitkatariya/iknowaguy.git
-cd iknowaguy
-pnpm install
-cd packages/mcp-server && pnpm dev
+curl -sL https://get.iknowaguy.ai/install.sh | bash
 ```
 
-Your AI agent (Hermes, Claude, OpenClaw) now has 17 MCP tools to create bounties, find workers, and release payments.
-
-### For Workers
-
-Visit **[worker-app-six.vercel.app](https://worker-app-six.vercel.app)** — browse open tasks, sign up, and start earning.
-
-### For Agent Teams
-
-Visit **[worker-app-six.vercel.app/dashboard](https://worker-app-six.vercel.app/dashboard)** — manage bounties and generate API keys for your AI agents.
-
-### CURL — Test the API
+### Or via npm
 
 ```bash
-# Health check
-curl http://localhost:3001/health
-
-# List tools
-curl -X POST http://localhost:3001/mcp \
-  -H "Authorization: Bearer $IKNOWAGUY_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+npm install -g @iknowaguy/cli
 ```
 
-## How It Works
+### Initialize and start
 
+```bash
+iknowaguy init      # Register tenant + store config in ~/.iknowaguy/config.json
+iknowaguy start     # Start API (port 3001) + MCP server (port 3000)
 ```
-┌──────────────────────────────────────────────────────────────────┐
-│                        AI AGENT                                   │
-│  (Claude / Cursor / Hermes / OpenClaw / Custom)                  │
-└─────────────────────────┬────────────────────────────────────────┘
-                          │ MCP (stdio or HTTP localhost:3001)
-                          ▼
-┌──────────────────────────────────────────────────────────────────┐
-│           MCP SERVER (local — @iknowaguy/mcp-server)            │
-│  • 17 tools: create/list/review bounties, pay workers, etc.     │
-│  • Auth: API key hashed with SHA-256                            │
-│  • RLS: tenant isolation via Supabase policies                  │
-│  • SSE: real-time status events via Supabase Realtime           │
-└─────────────────────────┬────────────────────────────────────────┘
-                          │ Direct Supabase connection
-                          ▼
-┌──────────────────────────────────────────────────────────────────┐
-│                     SUPABASE (PostgreSQL + Auth + Realtime)       │
-│  tenants · users · bounties · task_submissions · payments · ...  │
-└──────────────────┬───────────────────────────────────────────────┘
-                   │
-                   ▼
-┌──────────────────────────────────────────────────────────────────┐
-│              WEBSITE (worker-app-six.vercel.app)                  │
-│  • Landing page, docs                                            │
-│  • Worker marketplace (browse, accept, submit, earn)             │
-│  • Agent dashboard (create bounties, review, API keys)           │
-│  • Stripe webhook handler, file uploads                          │
-└──────────────────────────────────────────────────────────────────┘
-```
+
+Your AI agent now has 17 MCP tools to create bounties, find workers, assign tasks, and pay humans.
 
 ## Architecture
 
-- **MCP Server**: Runs locally alongside your AI agent. Communicates via MCP protocol over stdio or HTTP.
-- **Supabase**: Cloud PostgreSQL database shared by MCP server and website. Handles auth, storage, and realtime.
-- **Website**: Single Next.js 14 app on Vercel. Worker marketplace + agent dashboard + landing page — all on one domain.
-- **Payments**: Stripe (stub mode for dev, live keys for production). Webhooks handled by Vercel serverless functions.
-- **Notifications**: Email (Nodemailer), Slack, Telegram, SMS (Twilio).
+```
+User's Laptop
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│  iknowaguy init  ──► Register tenant in Supabase            │
+│       │                  Get API key + tenant_id             │
+│       │                  Store in ~/.iknowaguy/config.json   │
+│       ▼                                                     │
+│  iknowaguy start                                             │
+│       │                                                     │
+│       ├── starts :3001 (Local REST API)                     │
+│       │       └── reads from ~/.iknowaguy/config.json        │
+│       │       └── talks to Supabase (cloud, shared)          │
+│       │                                                     │
+│       └── starts :3000 (MCP Server)                         │
+│               └── AI agents connect via MCP                 │
+│                                                             │
+│  iknowaguy stop                                             │
+│  iknowaguy status                                           │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Package Structure
+
+```
+iknowaguy/
+  packages/
+    cli/              # CLI tool (init, start, stop, status, update)
+    api/              # Local REST API server (port 3001)
+    mcp-server/       # MCP server (port 3000) — stdio + HTTP
+    website/          # Marketing site (iknowaguy.ai) — Next.js
+    shared/           # Shared types and utilities
+    supabase/        # Migrations and seed data
+```
+
+## Website
+
+**iknowaguy.ai** — Marketing site with:
+- `/` — Landing page: hero, features, MCP tools list, CTA
+- `/docs` — Documentation: installation, quickstart, MCP tools reference
+- `/download` — Download links: curl, npm, manual
+
+## CLI Commands
+
+| Command | Description |
+|---------|-------------|
+| `iknowaguy init` | Register tenant and create config at ~/.iknowaguy/config.json |
+| `iknowaguy start` | Start API (3001) and MCP server (3000) as background processes |
+| `iknowaguy stop` | Stop background processes |
+| `iknowaguy status` | Check if running and on which ports |
+| `iknowaguy update` | Update to latest version |
 
 ## MCP Tools
 
 | Tool | Description | Category |
-|---|---|---|
+|------|-------------|----------|
 | `list_categories` | List all available task categories | Discovery |
 | `get_category` | Get a specific category by ID or slug | Discovery |
 | `list_humans` | Search available human workers with skill/location filters | Discovery |
@@ -123,22 +118,22 @@ curl -X POST http://localhost:3001/mcp \
 | `release_payment` | Capture held funds to pay the worker | Payment |
 | `refund_payment` | Refund held funds back to the payer | Payment |
 
-## Configuration
+## Config File
 
-Copy `.env.example` to `.env` and fill in your values:
+`~/.iknowaguy/config.json`:
+```json
+{
+  "version": "0.1.0",
+  "tenant_id": "uuid",
+  "api_key": "hah_xxx",
+  "supabase_url": "https://xxx.supabase.co",
+  "supabase_service_role_key": "eyJxxx",
+  "api_port": 3001,
+  "mcp_port": 3000
+}
+```
 
-| Variable | Required | Description |
-|---|---|---|
-| `SUPABASE_URL` | Yes | Supabase project URL |
-| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Service role key (MCP server only) |
-| `SUPABASE_ANON_KEY` | Website | Anon key (website only) |
-| `IKNOWAGUY_API_KEY` | MCP | API key for CLI/dev |
-| `PORT` | No | MCP server port (default: 3001) |
-| `REDIS_URL` | No | Redis for rate limiting (falls back to in-memory) |
-| `STRIPE_SECRET_KEY` | No | Stripe secret key (stub mode if unset) |
-| `STRIPE_WEBHOOK_SECRET` | No | Stripe webhook secret |
-
-See `.env.example` for the full list including notification settings.
+Permissions: `chmod 600` — contains service role key.
 
 ## Integrations
 
@@ -167,28 +162,24 @@ iknowaguy works with any MCP-compatible client:
 ## Tech Stack
 
 | Layer | Technology |
-|---|---|
+|------|------------|
 | Protocol | Model Context Protocol (MCP) 2024-11-05 |
-| Server | Node.js 22+, Express, TypeScript |
-| Validation | Zod |
+| CLI | Node.js 22+, TypeScript, Oclif |
+| Server | Express + MCP SDK, TypeScript |
 | Database | Supabase (PostgreSQL + Realtime + Auth + Storage) |
 | Auth | Supabase Auth (web) + API keys SHA-256 (MCP) |
 | Payments | Stripe (PaymentIntents + Webhooks) with stub mode fallback |
-| Rate Limit | Redis with in-memory fallback |
-| Notifications | Nodemailer, Slack Webhooks, Telegram Bot API, Twilio |
-| Website | Next.js 14, React 18, Inline CSS |
+| Website | Next.js 14, React 18 |
 | Package Manager | pnpm |
 | Monorepo | Turborepo |
 
-## Contributing
-
-We love contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions.
+## Development
 
 ```bash
 git clone https://github.com/jayamitkatariya/iknowaguy.git
 cd iknowaguy
 pnpm install
-pnpm build:all
+pnpm build
 ```
 
 ## License

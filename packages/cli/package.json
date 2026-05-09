@@ -1,33 +1,31 @@
 {
   "name": "@iknowaguy/cli",
   "version": "0.1.0",
-  "description": "iknowaguy CLI - One-command setup for AI agents to bring humans into the loop",
+  "description": "iknowaguy CLI - Local-first CLI tool for AI agents to bring humans into the loop",
+  "type": "module",
   "bin": {
-    "iknowaguy": "./bin/run"
+    "iknowaguy": "./bin/iknowaguy.js"
   },
   "files": [
     "bin",
     "dist"
   ],
   "scripts": {
-    "build": "npx tsc",
-    "dev": "npx tsc && node bin/run",
+    "build": "tsc",
+    "dev": "tsc && node bin/iknowaguy.js",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@oclif/core": "^4.0.0",
     "@supabase/supabase-js": "^2.45.0",
     "axios": "^1.7.2",
     "chalk": "^4.1.2",
-    "conf": "^12.0.0",
     "dotenv": "^16.4.5",
-    "inquirer": "^9.2.23",
+    "fs-extra": "^11.2.0",
     "nanoid": "^5.0.7"
   },
   "devDependencies": {
-    "@types/inquirer": "^9.0.9",
+    "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.14.0",
-    "esbuild": "^0.21.5",
     "typescript": "^5.4.5"
   },
   "engines": {
@@ -38,19 +36,5 @@
     "type": "git",
     "url": "https://github.com/jayamitkatariya/iknowaguy.git",
     "directory": "packages/cli"
-  },
-  "homepage": "https://iknowaguy-app.vercel.app",
-  "bugs": {
-    "url": "https://github.com/jayamitkatariya/iknowaguy/issues"
-  },
-  "keywords": [
-    "human-in-the-loop",
-    "ai-agents",
-    "mcp",
-    "cli",
-    "marketplace",
-    "task-queue",
-    "physical-world",
-    "iknowaguy"
-  ]
+  }
 }

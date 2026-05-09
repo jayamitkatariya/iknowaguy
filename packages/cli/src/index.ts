@@ -1,26 +1,38 @@
-#!/usr/bin/env node
-import chalk from 'chalk';
-import { run, runWithArgs } from './core';
-import { printBanner } from './lib/ascii';
+/**
+ * iknowaguy CLI - Local-first CLI tool for AI agents to bring humans into the loop
+ */
+import * as chalkNS from 'chalk'; const chalk = chalkNS.default;
+import { run } from './core.js';
 
 const args = process.argv.slice(2);
 
-if (args.length === 0) {
-  printBanner();
-  console.log(`${chalk.white.bold('Usage:')} ${chalk.cyan('iknowaguy <command>')} ${chalk.gray('[options]')}\n`);
-  console.log(`${chalk.white.bold('Commands:')}\n`);
-  console.log(`  ${chalk.green('init')}             Initialize iknowaguy in your project`);
-  console.log(`  ${chalk.green('dev')}              Start local development server`);
-  console.log(`  ${chalk.green('setup:agent')}      Link your AI agent (OpenClaw/Hermes/Claude)`);
-  console.log(`  ${chalk.green('setup:notify')}     Configure notification channels`);
-  console.log(`  ${chalk.green('setup:payments')}   Configure payment provider`);
-  console.log(`  ${chalk.green('config')}           Show current configuration`);
-  console.log(`  ${chalk.green('doctor')}           Diagnose setup issues\n`);
-  console.log(`${chalk.gray('Run "iknowaguy <command> --help" for more info.\n')}`);
-  process.exit(0);
+async function main() {
+  if (args.length === 0) {
+    console.log(chalk.cyan(`
+╔═══════════════════════════════════════════════════════╗
+║                    iknowaguy CLI                       ║
+║     Give your AI agents access to human workers        ║
+╚═══════════════════════════════════════════════════════╝
+`));
+    console.log(`Usage: ${chalk.green('iknowaguy')} ${chalk.yellow('<command>')} [options]\n`);
+    console.log(`${chalk.bold('Commands:')}`);
+    console.log(`  ${chalk.green('init')}      Initialize iknowaguy (register tenant)`);
+    console.log(`  ${chalk.green('start')}     Start API server and MCP server`);
+    console.log(`  ${chalk.green('stop')}      Stop running servers`);
+    console.log(`  ${chalk.green('status')}    Check if servers are running`);
+    console.log(`  ${chalk.green('version')}   Show version info\n`);
+    console.log(`Run ${chalk.green('iknowaguy <command> --help')} for more information.\n`);
+    process.exit(0);
+  }
+
+  const [command, ...rest] = args;
+
+  try {
+    await run(command, rest);
+  } catch (err: any) {
+    console.error(chalk.red(`Error: ${err.message}`));
+    process.exit(1);
+  }
 }
 
-runWithArgs(args).catch((err) => {
-  console.error('Error:', err.message);
-  process.exit(1);
-});
+main();

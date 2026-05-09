@@ -3,6 +3,8 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { serve } from '@hono/node-server';
+import { readFileSync, existsSync } from 'fs';
+import { join } from 'path';
 import health from './routes/health.js';
 import auth from './routes/auth.js';
 import humans from './routes/humans.js';
@@ -17,10 +19,65 @@ import { supabase } from './lib/supabase.js';
 import { rateLimitMiddleware } from './middleware/rate-limit.js';
 import { apiKeyMiddleware } from './middleware/api-key.js';
 
+// ── Config file support ────────────────────────────────────────────────────────
+interface Config {
+  supabase_url?: string;
+  supabase_service_role_key?: string;
+  api_port?: number;
+  mcp_port?: number;
+}
+
+function loadConfig(): Config {
+  // Check --config flag
+  const configArg = process.argv.find(arg => arg.startsWith('--config='));
+  if (configArg) {
+    const configPath = configArg.split('=')[1];
+    if (existsSync(configPath)) {
+      try {
+        const content = readFileSync(configPath, 'utf-8');
+        return JSON.parse(content) as Config;
+      } catch {
+        console.error(`Failed to parse config file: ${configPath}`);
+      }
+    } else {
+      console.error(`Config file not found: ${configPath}`);
+    }
+  }
+
+  // Check default config location
+  const homeDir = process.env.HOME || process.env.USERPROFILE || '';
+  const defaultConfig = join(homeDir, '.iknowaguy', 'config.json');
+  if (existsSync(defaultConfig)) {
+    try {
+      const content = readFileSync(defaultConfig, 'utf-8');
+      return JSON.parse(content) as Config;
+    } catch {
+      // Ignore
+    }
+  }
+
+  return {};
+}
+
+// Load config
+const config = loadConfig();
+
+// ── Environment setup ──────────────────────────────────────────────────────────
 const requiredEnvVars = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'] as const;
-const missingEnvVars = requiredEnvVars.filter((key) => !process.env[key]);
-if (missingEnvVars.length > 0) {
-  console.error(`Missing required environment variables: ${missingEnvVars.join(', ')}`);
+
+// Fall back to config file values if env vars not set
+if (!process.env.SUPABASE_URL && config.supabase_url) {
+  process.env.SUPABASE_URL = config.supabase_url;
+}
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY && config.supabase_service_role_key) {
+  process.env.SUPABASE_SERVICE_ROLE_KEY = config.supabase_service_role_key;
+}
+
+// Check again after config file fallback
+const finalMissingEnvVars = requiredEnvVars.filter((key) => !process.env[key]);
+if (finalMissingEnvVars.length > 0) {
+  console.error(`Missing required environment variables: ${finalMissingEnvVars.join(', ')}`);
+  console.error('Set them in ~/.iknowaguy/config.json or as environment variables.');
   process.exit(1);
 }
 
