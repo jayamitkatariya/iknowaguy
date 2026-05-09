@@ -1,4 +1,4 @@
-# Publish @iknowaguy/mcp-server to npm
+# Publish @iknowaguy/cli to npm
 
 ## Prerequisites
 
@@ -10,7 +10,7 @@
 ### Option A: Using OTP (one-time code)
 
 ```bash
-cd packages/mcp-server
+cd packages/cli
 pnpm build
 npm publish --access public --otp=YOUR_6_DIGIT_CODE
 ```
@@ -23,14 +23,14 @@ Your OTP comes from your authenticator app (Google Authenticator, Authy, 1Passwo
 2. Fill in:
    - **Token name:** `opencode-publish`
    - **Expiration:** 90 days
-   - **Packages and scopes:** Read and write, scope `@iknowaguy`, select `mcp-server`
+   - **Packages and scopes:** Read and write, scope `@iknowaguy`, select `cli`
    - **Type:** Automation (this bypasses 2FA)
 3. Click "Generate Token" and copy it
 4. Run:
 
 ```bash
-export NPM_TOKEN=npm_xxxxxxxxxxxxxxxxxxxxxxxxxx
-cd packages/mcp-server
+export NPM_TOKEN=npm_xx...xxxx
+cd packages/cli
 pnpm build
 npm publish --access public
 ```
@@ -40,27 +40,29 @@ npm publish --access public
 Users can install instantly:
 
 ```bash
-npx @iknowaguy/mcp-server
+npm install -g @iknowaguy/cli
 ```
 
-Or add to AI agent config:
+Then initialize:
 
-```json
-{
-  "mcpServers": {
-    "iknowaguy": {
-      "command": "npx",
-      "args": ["@iknowaguy/mcp-server"],
-      "env": { "IKNOWAGUY_API_KEY": "ikg_live_your-key" }
-    }
-  }
-}
+```bash
+iknowaguy init
+iknowaguy start
 ```
 
 ## Verify it worked
 
 ```bash
-npm view @iknowaguy/mcp-server
+npm view @iknowaguy/cli
 ```
 
-Should show version `0.1.0` and the package details.
+Should show version and the package details.
+
+## Local-First Architecture
+
+The CLI package includes:
+- `iknowaguy` command (init, start, stop, status, update)
+- API server (port 3001)
+- MCP server (port 3000)
+
+When users run `iknowaguy start`, both servers run locally on their laptop. Supabase is the only cloud dependency.

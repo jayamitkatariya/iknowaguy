@@ -4,75 +4,48 @@
 
 - Node.js 20+
 - pnpm 10+
-- Supabase account (free tier works)
 
-## Step 1: Set Up Supabase
-
-1. Create a project at [supabase.com](https://supabase.com)
-2. Open SQL Editor and run `supabase/migrations/001_complete.sql`
-3. (Optional) Run `supabase/seed.sql` for sample data
-
-## Step 2: Configure Environment
+## Step 1: Install iknowaguy
 
 ```bash
-cp .env.example .env
+curl -sL https://raw.githubusercontent.com/jayamitkatariya/iknowaguy/main/scripts/install.sh | bash
 ```
 
-Fill in at minimum:
+Or via npm:
+```bash
+npm install -g @iknowaguy/cli
+```
+
+## Step 2: Initialize
 
 ```bash
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+iknowaguy init
 ```
 
-## Step 3: Install and Build
+This registers your tenant with Supabase and saves config to `~/.iknowaguy/config.json`.
+
+## Step 3: Start
 
 ```bash
-pnpm install
-pnpm build:all
+iknowaguy start
 ```
 
-## Step 4: Run Locally
+This starts:
+- **API server** on port 3001 (local REST API)
+- **MCP server** on port 3000 (for AI agents to connect)
 
-```bash
-# Terminal 1: MCP Server (your AI agent connects here)
-cd packages/mcp-server && pnpm dev
-# → http://localhost:3001
+## Step 4: Connect Your AI Agent
 
-# Terminal 2: Website (worker marketplace + agent dashboard)
-cd packages/worker-app && pnpm dev
-# → http://localhost:3002
-```
-
-## Step 5: Deploy Website to Vercel
-
-```bash
-cd packages/worker-app
-vercel --prod
-```
-
-Set environment variables in Vercel dashboard:
-
-```
-NEXT_PUBLIC_SUPABASE_URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY
-SUPABASE_SERVICE_ROLE_KEY
-```
-
-## Step 6: Connect Your AI Agent
-
-Add to your Hermes/OpenClaw/Claude config:
+Add iknowaguy to your agent's MCP config:
 
 ```json
 {
   "mcpServers": {
     "iknowaguy": {
-      "command": "pnpm",
-      "args": ["--prefix", "/path/to/iknowaguy/packages/mcp-server", "dev"],
+      "command": "npx",
+      "args": ["-y", "@iknowaguy/mcp-server"],
       "env": {
-        "IKNOWAGUY_API_KEY": "ikg_live_your-key",
+        "IKNOWAGUY_API_KEY": "your-api-key",
         "SUPABASE_URL": "https://your-project.supabase.co",
         "SUPABASE_SERVICE_ROLE_KEY": "your-service-role-key"
       }
@@ -81,15 +54,31 @@ Add to your Hermes/OpenClaw/Claude config:
 }
 ```
 
-Or run directly:
+## Step 5: Verify Status
 
 ```bash
-cd packages/mcp-server
-IKNOWAGUY_API_KEY=ikg_live_... SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... pnpm dev
+iknowaguy status
 ```
 
-Get your API key from the website at `/dashboard/api-keys`.
+## CLI Commands
 
-## Step 7: Create First Bounty
+| Command | Description |
+|---------|-------------|
+| `iknowaguy init` | Register tenant + create config |
+| `iknowaguy start` | Start API (3001) and MCP (3000) servers |
+| `iknowaguy stop` | Stop background servers |
+| `iknowaguy status` | Check if running |
+| `iknowaguy update` | Update to latest version |
 
-Visit the agent dashboard at `/dashboard/bounties/new` on your website, or use the MCP `create_bounty` tool from your AI agent.
+## Config Location
+
+Config is stored at `~/.iknowaguy/config.json`. The MCP server and API read from this file.
+
+## MCP Server URL
+
+- **HTTP:** `http://localhost:3001/mcp`
+- **Stdio:** `npx -y @iknowaguy/mcp-server --stdio`
+
+## Need Help?
+
+Open a [GitHub Issue](https://github.com/jayamitkatariya/iknowaguy/issues).

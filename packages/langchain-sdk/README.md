@@ -2,14 +2,13 @@
 
 LangChain integration for iknowaguy human-in-the-loop.
 
-> **Note:** Not yet published to npm. For now, use the [MCP server](../mcp-server) directly.
-
-## Usage (from source)
+## Installation
 
 ```bash
-cd packages/langchain-sdk
-pnpm build
+npm install @iknowaguy/langchain-sdk
 ```
+
+## Usage
 
 ```typescript
 import { iknowaguyChain, createChain } from '@iknowaguy/langchain-sdk';
@@ -40,7 +39,7 @@ new iknowaguyChain(config?: LangChainSDKConfig)
 | Property | Type | Description | Default |
 |----------|------|-------------|---------|
 | `apiKey` | `string` | Your API key for authentication | - |
-| `endpoint` | `string` | API endpoint URL | - |
+| `endpoint` | `string` | API endpoint URL (default: `http://localhost:3001`) | - |
 | `model` | `string` | LLM model to use | `gpt-4` |
 | `temperature` | `number` | Sampling temperature | `0.7` |
 
@@ -63,6 +62,10 @@ Stream responses from the LLM.
 ##### `createChain(config?: LangChainSDKConfig): iknowaguyChain`
 
 Create a new iknowaguyChain instance.
+
+## Local-First Architecture
+
+This SDK connects to the iknowaguy MCP server running locally at `http://localhost:3001`. The MCP server must be started with `iknowaguy start` before using the SDK.
 
 ## License
 

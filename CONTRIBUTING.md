@@ -22,50 +22,45 @@ cd iknowaguy
 pnpm install
 ```
 
-### 3. Configure
+### 3. Build All Packages
 
 ```bash
-cp .env.example .env
+pnpm build
 ```
 
-Edit `.env` with your Supabase credentials.
-
-### 4. Database
-
-1. Create a project at [supabase.com](https://supabase.com)
-2. Open SQL Editor
-3. Run `supabase/migrations/001_complete.sql`
-4. (Optional) Run `supabase/seed.sql` for sample data
-
-### 5. Build All Packages
+### 4. Start Development
 
 ```bash
-pnpm build:all
+iknowaguy init      # Register tenant + create config
+iknowaguy start     # Start API (3001) + MCP server (3000)
 ```
 
-### 6. Start Development
+Or run individually:
 
 ```bash
-# Start MCP server (port 3001)
+# Start API server (port 3001)
+cd packages/api && pnpm dev
+
+# Start MCP server (port 3000)
 cd packages/mcp-server && pnpm dev
 
-# Start website (port 3002)
-cd packages/worker-app && pnpm dev
+# Start marketing website (port 3002)
+cd packages/website && pnpm dev
 ```
 
 ## Project Structure
 
 ```
 packages/
-├── mcp-server/      # MCP JSON-RPC server (Express). Core product.
-├── shared/          # Shared types, utils, pricing, notifications
-├── worker-app/      # Next.js 14 — website (landing + worker marketplace + agent dashboard)
-├── api/             # REST API (Hono) — legacy, not deployed
-├── cli/             # iknowaguy CLI
-├── agent-sdk/       # TypeScript SDK for agent developers
-├── hermes-plugin/   # Hermes Agent integration plugin
-├── openclaw-plugin/ # OpenClaw integration plugin
-└── langchain-sdk/   # LangChain toolkit integration
+├── cli/              # iknowaguy CLI (init, start, stop, status, update)
+├── api/              # Local REST API server (port 3001)
+├── mcp-server/       # MCP JSON-RPC server (port 3000) — core product
+├── shared/           # Shared types, utils, pricing
+├── website/          # Marketing Next.js site (runs locally)
+├── agent-sdk/        # TypeScript SDK for agent developers
+├── hermes-plugin/    # Hermes Agent integration plugin
+├── openclaw-plugin/  # OpenClaw integration plugin
+└── langchain-sdk/    # LangChain toolkit integration
 ```
 
 ## Code Style
@@ -116,7 +111,7 @@ The website uses **inline styles** with CSS utility classes in `globals.css`. No
 
 1. Create a branch from `main`
 2. Make changes with clear commits
-3. Verify: `pnpm build:all`
+3. Verify: `pnpm build`
 4. Update docs if needed
 5. Open PR with description explaining *why*
 
@@ -124,10 +119,10 @@ The website uses **inline styles** with CSS utility classes in `globals.css`. No
 
 Currently expanding test coverage. At minimum:
 
-- `pnpm build:all` must pass without errors
+- `pnpm build` must pass without errors
 - MCP tools tested manually via `curl`
 - Database migrations run cleanly
 
 ## Questions?
 
-- Open a [GitHub Issue](https://github.com/jayamitkatariya/iknowaguy/issues)
+Open a [GitHub Issue](https://github.com/jayamitkatariya/iknowaguy/issues)

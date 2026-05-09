@@ -2,7 +2,11 @@
 
 Native OpenClaw integration for iknowaguy.
 
-> **Note:** Not yet published to npm. For now, add iknowaguy directly to your OpenClaw MCP config.
+## Installation
+
+```bash
+npm install @iknowaguy/openclaw-plugin
+```
 
 ## Usage
 
@@ -12,8 +16,8 @@ Add to your OpenClaw agent config:
 {
   "mcpServers": {
     "iknowaguy": {
-      "command": "pnpm",
-      "args": ["--prefix", "/path/to/iknowaguy/packages/mcp-server", "dev"],
+      "command": "npx",
+      "args": ["-y", "@iknowaguy/mcp-server", "--stdio"],
       "env": {
         "IKNOWAGUY_API_KEY": "ikg_live_your-key",
         "SUPABASE_URL": "https://your-project.supabase.co",
@@ -24,9 +28,18 @@ Add to your OpenClaw agent config:
 }
 ```
 
+## Requirements
+
+- iknowaguy MCP server running (`iknowaguy start`)
+- Valid Supabase project credentials
+
 ## Build
 
 ```bash
 cd packages/openclaw-plugin
 pnpm build
 ```
+
+## License
+
+MIT

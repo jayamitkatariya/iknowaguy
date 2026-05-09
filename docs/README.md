@@ -4,14 +4,7 @@
 
 ## What Is It?
 
-iknowaguy gives AI agents access to human workers for tasks requiring physical presence, judgment, or specialized skills.
-
-**Two modes via the same MCP tools:**
-
-| Mode | How It Works | Use Case |
-|------|-------------|----------|
-| **Internal** | Agent routes tasks to your team via Slack, Telegram, Email, SMS | Team human-in-the-loop |
-| **External** | Agent posts bounties to a public marketplace | Open bounty pool with payments |
+iknowaguy is a **local-first developer tool** that gives AI agents access to human workers for tasks requiring physical presence, judgment, or specialized skills. The MCP server runs on your laptop.
 
 ## Architecture
 
@@ -20,53 +13,73 @@ AI Agent (Hermes / Claude / OpenClaw)
     │
     │ MCP protocol (local, stdio or HTTP)
     ▼
-MCP Server (packages/mcp-server)  ← runs on your laptop
+MCP Server (runs on your laptop, port 3000)
     │
     │ Direct Supabase connection (service role)
     ▼
 Supabase (PostgreSQL + Auth + Storage + Realtime)  ← cloud
-    │
-    │ Shared data source
-    ▼
-Website (worker-app-six.vercel.app)  ← Vercel
-    • Landing page
-    • Worker marketplace (browse, accept, submit, earn)
-    • Agent dashboard (create bounties, review, API keys)
-    • Stripe webhooks, file uploads
 ```
+
+All data is tenant-isolated via Supabase Row-Level Security.
 
 ## Quick Start
 
-### 1. Clone and install
+### Install
+
+```bash
+curl -sL https://raw.githubusercontent.com/jayamitkatariya/iknowaguy/main/scripts/install.sh | bash
+```
+
+Or via npm:
+```bash
+npm install -g @iknowaguy/cli
+```
+
+### Initialize and start
+
+```bash
+iknowaguy init      # Register tenant + create config at ~/.iknowaguy/config.json
+iknowaguy start     # Start API (port 3001) + MCP server (port 3000)
+```
+
+### Connect your agent
+
+Add to your agent's MCP config:
+
+```json
+{
+  "mcpServers": {
+    "iknowaguy": {
+      "command": "npx",
+      "args": ["-y", "@iknowaguy/mcp-server"],
+      "env": {
+        "IKNOWAGUY_API_KEY": "your-api-key",
+        "SUPABASE_URL": "https://your-project.supabase.co",
+        "SUPABASE_SERVICE_ROLE_KEY": "your-service-role-key"
+      }
+    }
+  }
+}
+```
+
+## MCP Tools
+
+17 tools covering the full bounty lifecycle:
+
+- **Discovery:** `list_categories`, `get_category`, `list_humans`, `get_human`
+- **Bounty:** `create_bounty`, `list_bounties`, `get_bounty`, `accept_bounty`, `submit_bounty`, `review_bounty`
+- **Communication:** `send_message`, `list_messages`
+- **Resolution:** `raise_dispute`
+- **Payment:** `initiate_payment`, `get_payment_status`, `release_payment`, `refund_payment`
+
+## Development
 
 ```bash
 git clone https://github.com/jayamitkatariya/iknowaguy.git
 cd iknowaguy
 pnpm install
-pnpm build:all
+pnpm build
 ```
-
-### 2. Start MCP server
-
-```bash
-cd packages/mcp-server && pnpm dev
-```
-
-### 3. Start website
-
-```bash
-cd packages/worker-app && pnpm dev
-```
-
-### 4. Connect your agent
-
-Get an API key from the website at `/dashboard/api-keys`, then configure your MCP client.
-
-## Deploy
-
-The website deploys to Vercel with zero config. The MCP server runs locally alongside your AI agent.
-
-See [getting-started.md](./getting-started.md) for detailed setup.
 
 ## License
 

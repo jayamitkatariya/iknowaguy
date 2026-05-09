@@ -13,49 +13,60 @@ One-command setup for iknowaguy — bring humans into the loop for your AI agent
 
 **AI agents bring humans into the loop**
 
-> **Note:** Not yet published to npm. Run from source.
+## Installation
 
-## Run from source
+### Option A: curl (macOS + Linux)
 
 ```bash
-cd packages/cli
-pnpm build
-node bin/run init
+curl -sL https://raw.githubusercontent.com/jayamitkatariya/iknowaguy/main/scripts/install.sh | bash
 ```
 
-## Commands
+### Option B: npm
 
 ```bash
-iknowaguy init             # Initialize — create project config
-iknowaguy dev              # Start dev — run everything locally
-iknowaguy setup:agent      # Link agent — connect Hermes/OpenClaw/Claude
-iknowaguy setup:notify     # Notifications — Slack, Telegram, Email, SMS
-iknowaguy setup:payments   # Payments — Stripe, PayPal, Manual
-iknowaguy config           # Show config — view current settings
-iknowaguy doctor           # Diagnose — check setup health
+npm install -g @iknowaguy/cli
 ```
 
 ## Quick Start
 
 ```bash
-cd packages/cli
-pnpm build
-node bin/run init
-node bin/run dev
-node bin/run doctor
+iknowaguy init      # Register tenant + create config at ~/.iknowaguy/config.json
+iknowaguy start     # Start API (port 3001) + MCP server (port 3000)
+iknowaguy status    # Verify running
 ```
+
+## Commands
+
+| Command | Description |
+|---------|-------------|
+| `iknowaguy init` | Register tenant and create config |
+| `iknowaguy start` | Start API (3001) and MCP server (3000) |
+| `iknowaguy stop` | Stop background processes |
+| `iknowaguy status` | Check if running and on which ports |
+| `iknowaguy update` | Update to latest version |
+
+## Architecture
+
+The CLI starts two local servers:
+- **API server** on port 3001 — REST API for the MCP server and direct access
+- **MCP server** on port 3000 — AI agents connect via MCP protocol
+
+Both servers read configuration from `~/.iknowaguy/config.json`.
 
 ## Development
 
 ```bash
-pnpm build   # Build CLI
-pnpm dev     # Build and run
+cd packages/cli
+pnpm install
+pnpm build
+node bin/run init
+node bin/run start
 ```
 
 ## Features
 
-- **MCP-first** — 10 MCP tools for AI agent integration
-- **Multi-agent** — Hermes Agent, OpenClaw, Claude Code supported
-- **Notifications** — Slack, Telegram, Email, SMS via unified adapter
-- **Payments** — Stripe, PayPal, or Manual (bounty payouts)
-- **Docker** — Full stack with `docker compose up`
+- **MCP-first** — 17 MCP tools for AI agent integration
+- **Local-first** — servers run on your laptop, Supabase is the only cloud dependency
+- **Multi-agent** — Hermes Agent, OpenClaw, Claude Desktop, Cursor supported
+- **Payments** — Stripe integration with escrow flow
+- **Docker** — Run locally with `docker compose up` (coming soon)

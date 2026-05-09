@@ -14,11 +14,11 @@ User's Laptop
 │       ▼                                                     │
 │  iknowaguy start                                             │
 │       │                                                     │
-│       ├── starts :3001 (Local REST API)                      │
+│       ├── starts :3001 (Local REST API)                     │
 │       │       └── reads from ~/.iknowaguy/config.json       │
-│       │       └── talks to Supabase (cloud, shared)          │
+│       │       └── talks to Supabase (cloud, shared)         │
 │       │                                                     │
-│       └── starts :3000 (MCP Server)                          │
+│       └── starts :3000 (MCP Server)                         │
 │               └── AI agents connect via MCP                 │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
@@ -30,11 +30,11 @@ User's Laptop
 iknowaguy/
   packages/
     cli/              # CLI tool: init, start, stop, status, update
-    api/              # Local REST API server (port 3001)
-    mcp-server/       # MCP server (port 3000) — stdio + HTTP
-    website/          # Marketing site (iknowaguy.ai) — Next.js 14
-    shared/           # Shared types and utilities
-    supabase/         # Migrations and seed data
+    api/               # Local REST API server (port 3001)
+    mcp-server/        # MCP server (port 3000) — stdio + HTTP
+    website/           # Marketing site (runs locally) — Next.js 14
+    shared/            # Shared types and utilities
+    supabase/          # Migrations and seed data
 ```
 
 ## Tech Stack
@@ -51,20 +51,29 @@ iknowaguy/
 
 ### Completed
 - [x] **packages/cli/** — Full CLI implementation with init, start, stop, status, update commands
-- [x] **packages/website/** — Marketing Next.js site with /, /docs, /download pages
+- [x] **packages/website/** — Marketing Next.js site (runs locally, not deployed)
 - [x] **packages/api/** — Local REST API server (port 3001)
 - [x] **packages/mcp-server/** — MCP server with 17 tools
 - [x] **scripts/install.sh** — Updated to install the full CLI
 - [x] README.md updated with new architecture and installation instructions
 - [x] PLAN.md updated
 
-### Website Pages
-- `/` — Landing page: hero with install command, features, 17 MCP tools list, CTA
-- `/docs` — Documentation: installation, quickstart, MCP tools reference, CLI commands
-- `/download` — Download links for macOS/Linux (curl), npm, manual
+### Installation
+```bash
+curl -sL https://raw.githubusercontent.com/jayamitkatariya/iknowaguy/main/scripts/install.sh | bash
+```
 
-### Configuration
-`~/.iknowaguy/config.json` with version, tenant_id, api_key, supabase_url, supabase_service_role_key, api_port (3001), mcp_port (3000).
+Or via npm:
+```bash
+npm install -g @iknowaguy/cli
+```
+
+Post-install:
+```bash
+iknowaguy init      # Register tenant
+iknowaguy start     # Start API + MCP server
+iknowaguy status    # Verify running
+```
 
 ## MCP Tools (17 total)
 
@@ -91,29 +100,9 @@ iknowaguy/
 
 ## Remaining (post-launch)
 - [ ] Publish @iknowaguy/cli to npm
-- [ ] Configure custom domain (iknowaguy.ai)
 - [ ] Live Stripe keys + real payment flow
 - [ ] Redis-backed rate limiting (currently in-memory fallback)
 - [ ] E2E tests, expanded test coverage
-
-## Installation
-
-### Option A: curl (one-liner, works on macOS + Linux)
-```bash
-curl -sL https://website-ochre-sigma-97.vercel.app/install.sh | bash
-```
-
-### Option B: npm
-```bash
-npm install -g @iknowaguy/cli
-```
-
-### Post-install
-```bash
-iknowaguy init      # Register tenant
-iknowaguy start     # Start API + MCP server
-iknowaguy status    # Verify running
-```
 
 ## License
 

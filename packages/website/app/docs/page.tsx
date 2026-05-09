@@ -5,10 +5,14 @@ export default function DocsPage() {
     <>
       <nav>
         <div className="container">
-          <div className="logo">iknowaguy</div>
+          <div className="logo">
+            <div className="logo-icon">⚡</div>
+            iknowaguy
+          </div>
           <div className="nav-links">
             <Link href="/">Home</Link>
             <Link href="/download">Download</Link>
+            <Link href="/" className="btn-nav">Get Started</Link>
           </div>
         </div>
       </nav>
@@ -16,7 +20,9 @@ export default function DocsPage() {
       <section className="docs-hero">
         <div className="container">
           <h1>Documentation</h1>
-          <p>Everything you need to integrate iknowaguy with your AI agents.</p>
+          <p className="hero-description">
+            Everything you need to integrate iknowaguy with your AI agents.
+          </p>
         </div>
       </section>
 
@@ -24,38 +30,61 @@ export default function DocsPage() {
         <div className="container">
           <div className="docs-grid">
             <aside className="docs-sidebar">
-              <h3>Getting Started</h3>
-              <ul>
-                <li><Link href="#installation">Installation</Link></li>
-                <li><Link href="#quickstart">Quick Start</Link></li>
-                <li><Link href="#configuration">Configuration</Link></li>
-              </ul>
-              <h3 style={{ marginTop: '32px' }}>Reference</h3>
-              <ul>
-                <li><Link href="#mcp-tools">MCP Tools</Link></li>
-                <li><Link href="#api-endpoints">API Endpoints</Link></li>
-                <li><Link href="#cli-commands">CLI Commands</Link></li>
-              </ul>
+              <div className="docs-sidebar-section">
+                <h4>Getting Started</h4>
+                <ul>
+                  <li><a href="#installation">Installation</a></li>
+                  <li><a href="#quickstart">Quick Start</a></li>
+                  <li><a href="#configuration">Configuration</a></li>
+                </ul>
+              </div>
+              <div className="docs-sidebar-section">
+                <h4>Reference</h4>
+                <ul>
+                  <li><a href="#mcp-tools">MCP Tools</a></li>
+                  <li><a href="#cli-commands">CLI Commands</a></li>
+                  <li><a href="#examples">Examples</a></li>
+                </ul>
+              </div>
             </aside>
 
             <div className="docs-content">
+              <h1>Welcome to iknowaguy</h1>
+              <p className="lead">
+                A local-first developer tool that gives AI agents access to human workers 
+                via the MCP (Model Context Protocol) server running on your laptop.
+              </p>
+
               <h2 id="installation">Installation</h2>
-              <p>Install the iknowaguy CLI with a single command:</p>
-              <pre><code>curl -sL https://website-ochre-sigma-97.vercel.app/install.sh | bash</code></pre>
+              <p>
+                Install the iknowaguy CLI with a single command. Works on macOS and Linux.
+              </p>
+              <pre><code>curl -sL https://iknowaguy.dev/install.sh | bash</code></pre>
               <p>Or via npm:</p>
               <pre><code>npm install -g @iknowaguy/cli</code></pre>
 
+              <div className="note">
+                <p><strong>Prerequisites:</strong> Node.js 18+ and a Supabase project. 
+                You'll need your Supabase URL and service role key.</p>
+              </div>
+
               <h2 id="quickstart">Quick Start</h2>
+              
               <h3>1. Initialize</h3>
               <pre><code>iknowaguy init</code></pre>
-              <p>This registers your tenant with the Supabase backend and stores credentials in ~/.iknowaguy/config.json</p>
+              <p>
+                This registers your tenant with Supabase and stores credentials in 
+                <code>~/.iknowaguy/config.json</code>.
+              </p>
 
               <h3>2. Start</h3>
               <pre><code>iknowaguy start</code></pre>
-              <p>Starts the local API (port 3001) and MCP server (port 3000).</p>
+              <p>
+                Starts the local API server on port 3001 and MCP server on port 3000.
+              </p>
 
-              <h3>3. Connect your AI Agent</h3>
-              <p>Add to your MCP config:</p>
+              <h3>3. Connect Your AI Agent</h3>
+              <p>Add to your MCP configuration:</p>
               <pre><code>{`{
   "mcpServers": {
     "iknowaguy": {
@@ -70,7 +99,9 @@ export default function DocsPage() {
 }`}</code></pre>
 
               <h2 id="configuration">Configuration</h2>
-              <p>The config file is stored at ~/.iknowaguy/config.json:</p>
+              <p>
+                The config file is stored at <code>~/.iknowaguy/config.json</code>:
+              </p>
               <pre><code>{`{
   "version": "0.1.0",
   "tenant_id": "uuid",
@@ -82,6 +113,7 @@ export default function DocsPage() {
 }`}</code></pre>
 
               <h2 id="mcp-tools">MCP Tools</h2>
+              
               <h3>Discovery</h3>
               <ul>
                 <li><code>list_categories</code> — List all available task categories</li>
@@ -126,6 +158,12 @@ iknowaguy start    # Start API and MCP server
 iknowaguy stop     # Stop background processes
 iknowaguy status   # Check if running
 iknowaguy update   # Update to latest version`}</code></pre>
+
+              <h2 id="examples">Examples</h2>
+              <p>
+                Check out the <a href="https://github.com/jayamitkatariya/iknowaguy">GitHub repository</a> for 
+                example implementations with different AI agents.
+              </p>
             </div>
           </div>
         </div>
@@ -133,7 +171,17 @@ iknowaguy update   # Update to latest version`}</code></pre>
 
       <footer>
         <div className="container">
-          <p>© 2026 iknowaguy — Open source, MIT license</p>
+          <div className="footer-left">
+            <div className="footer-logo">⚡ iknowaguy</div>
+            <div className="footer-links">
+              <Link href="/docs">Documentation</Link>
+              <Link href="/download">Download</Link>
+              <a href="https://github.com/jayamitkatariya/iknowaguy" target="_blank" rel="noopener noreferrer">GitHub</a>
+            </div>
+          </div>
+          <div className="footer-right">
+            MIT License © 2026
+          </div>
         </div>
       </footer>
     </>

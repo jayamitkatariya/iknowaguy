@@ -2,13 +2,10 @@
 
 Agent SDK for iknowaguy — Enables AI agents to interact with human workers.
 
-> **Note:** Not yet published to npm. For now, use from source or the [MCP server](../mcp-server).
-
-## Installation (from source)
+## Installation
 
 ```bash
-cd packages/agent-sdk
-pnpm build
+npm install @iknowaguy/sdk
 ```
 
 ## Usage
@@ -18,7 +15,7 @@ import { iknowaguyClient } from '@iknowaguy/sdk';
 
 const client = new iknowaguyClient({
   apiKey: 'your-api-key',
-  baseUrl: 'http://localhost:3000'
+  baseUrl: 'http://localhost:3001'
 });
 
 // List available human workers
@@ -68,7 +65,7 @@ new iknowaguyClient({ apiKey, baseUrl? })
 ```
 
 - `apiKey` (required): Your iknowaguy API key
-- `baseUrl` (optional): Base URL for the API. Defaults to `http://localhost:3000`
+- `baseUrl` (optional): Base URL for the API. Defaults to `http://localhost:3001`
 
 #### Methods
 
@@ -96,6 +93,10 @@ new iknowaguyClient({ apiKey, baseUrl? })
 ##### Payments
 
 - `initiatePayment(bountyId, amount, currency?)` - Initiate payment for a bounty
+
+## Local-First Architecture
+
+This SDK connects to the iknowaguy API server running locally at `http://localhost:3001`. The API server must be started with `iknowaguy start` before using the SDK.
 
 ## TypeScript
 

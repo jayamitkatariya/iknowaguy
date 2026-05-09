@@ -8,7 +8,6 @@
   <a href="https://github.com/jayamitkatariya/iknowaguy/releases"><img src="https://img.shields.io/github/v/release/jayamitkatariya/iknowaguy?style=flat-square&color=blue" alt="GitHub release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License"></a>
   <img src="https://img.shields.io/badge/MCP-2024--11--05-purple?style=flat-square" alt="MCP Protocol">
-  <a href="https://iknowaguy.ai"><img src="https://img.shields.io/badge/docs-iknowaguy.ai-blue?style=flat-square" alt="Docs"></a>
 </p>
 
 ---
@@ -22,7 +21,7 @@
 ### Install (macOS / Linux)
 
 ```bash
-curl -sL https://website-ochre-sigma-97.vercel.app/install.sh | bash
+curl -sL https://raw.githubusercontent.com/jayamitkatariya/iknowaguy/main/scripts/install.sh | bash
 ```
 
 ### Or via npm
@@ -46,15 +45,15 @@ Your AI agent now has 17 MCP tools to create bounties, find workers, assign task
 User's Laptop
 ┌─────────────────────────────────────────────────────────────┐
 │                                                             │
-│  iknowaguy init  ──► Register tenant in Supabase            │
+│  iknowaguy init  ──► Register tenant in Supabase           │
 │       │                  Get API key + tenant_id             │
 │       │                  Store in ~/.iknowaguy/config.json   │
 │       ▼                                                     │
 │  iknowaguy start                                             │
 │       │                                                     │
 │       ├── starts :3001 (Local REST API)                     │
-│       │       └── reads from ~/.iknowaguy/config.json        │
-│       │       └── talks to Supabase (cloud, shared)          │
+│       │       └── reads from ~/.iknowaguy/config.json       │
+│       │       └── talks to Supabase (cloud, shared)         │
 │       │                                                     │
 │       └── starts :3000 (MCP Server)                         │
 │               └── AI agents connect via MCP                 │
@@ -73,17 +72,10 @@ iknowaguy/
     cli/              # CLI tool (init, start, stop, status, update)
     api/              # Local REST API server (port 3001)
     mcp-server/       # MCP server (port 3000) — stdio + HTTP
-    website/          # Marketing site (iknowaguy.ai) — Next.js
+    website/          # Marketing site — Next.js (runs locally, not deployed)
     shared/           # Shared types and utilities
-    supabase/        # Migrations and seed data
+    supabase/         # Migrations and seed data
 ```
-
-## Website
-
-**iknowaguy.ai** — Marketing site with:
-- `/` — Landing page: hero, features, MCP tools list, CTA
-- `/docs` — Documentation: installation, quickstart, MCP tools reference
-- `/download` — Download links: curl, npm, manual
 
 ## CLI Commands
 
@@ -169,7 +161,6 @@ iknowaguy works with any MCP-compatible client:
 | Database | Supabase (PostgreSQL + Realtime + Auth + Storage) |
 | Auth | Supabase Auth (web) + API keys SHA-256 (MCP) |
 | Payments | Stripe (PaymentIntents + Webhooks) with stub mode fallback |
-| Website | Next.js 14, React 18 |
 | Package Manager | pnpm |
 | Monorepo | Turborepo |
 

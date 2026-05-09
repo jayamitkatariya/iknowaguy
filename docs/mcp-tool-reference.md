@@ -1,6 +1,6 @@
 # MCP Tool Reference
 
-All tools are exposed via the **iknowaguy MCP Server** over JSON-RPC 2.0. Authentication is via `Authorization: Bearer <API_KEY>` header.
+All tools are exposed via the **iknowaguy MCP Server** over JSON-RPC 2.0. Authentication is via `Authorization: Bearer ***` header.
 
 **Base URL:** `http://localhost:3001/mcp`  
 **Protocol:** MCP 2024-11-05  
@@ -71,7 +71,7 @@ List all available task categories.
   "result": {
     "content": [{
       "type": "text",
-      "text": "{\n  \"categories\": [\n    { \"id\": \"...\", \"name\": \"Photography\", \"slug\": \"photography\" },\n    { \"id\": \"...\", \"name\": \"Inspection\", \"slug\": \"inspection\" }\n  ],\n  \"total\": 2\n}"
+      "text": "{\"categories\": [\n  { \"id\": \"...\", \"name\": \"Photography\", \"slug\": \"photography\" },\n  { \"id\": \"...\", \"name\": \"Inspection\", \"slug\": \"inspection\" }\n],\n\"total\": 2}"
     }]
   }
 }
@@ -955,7 +955,7 @@ JSON-RPC level errors (method not found, invalid params, etc.) are returned as s
 Every `/mcp` request must include:
 
 ```
-Authorization: Bearer <API_KEY>
+Authorization: Bearer ***
 ```
 
 The API key is validated against the `tenants` table. Invalid or missing keys return HTTP 401.
