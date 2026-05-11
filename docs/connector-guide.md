@@ -1,288 +1,103 @@
 # Connector Guide
 
-A **connector** is any MCP-compatible AI agent or platform that integrates with iknowaguy to call human workers for physical and digital tasks.
+Connect any MCP-compatible AI agent to iknowaguy to hire human workers.
 
-iknowaguy exposes a full [MCP](https://modelcontextprotocol.io) server with 17 tools covering the entire bounty lifecycle — from creating tasks and discovering human workers, to handling payments and disputes.
-
-This guide covers:
-- [Architecture overview](#architecture-overview)
-- [Connecting via MCP](#connecting-via-mcp)
-- [Tool reference](#tool-reference)
-- [Error handling](#error-handling)
-- [Multi-tenancy](#multi-tenancy)
-
----
-
-## Architecture Overview
+## Architecture
 
 ```
-User's Laptop
-┌─────────────────────────────────────────────────────────────┐
-│  AI Agent (Hermes / Claude / OpenClaw)                       │
-│      │                                                       │
-│      │ MCP JSON-RPC 2.0 (HTTP or stdio)                      │
-│      ▼                                                       │
-│  ┌──────────────────────────────────────────────────────┐   │
-│  │  iknowaguy MCP Server (port 3000)                      │   │
-│  │  iknowaguy API Server (port 3001)                      │   │
-│  │                                                      │   │
-│  │  Auth · Rate Limiting · Tenant RLS                    │   │
-│  │  17 MCP Tools · Stripe Webhooks                      │   │
-│  └──────────────────────┬───────────────────────────────┘   │
-│                         │                                    │
-│         ┌───────────────┴───────────────┐                   │
-│         ▼                               ▼                   │
-│  ┌──────────────┐           ┌──────────────────┐            │
-│  │  Supabase    │           │     Stripe       │            │
-│  │  (DB + RLS)  │           │  (Payments)      │            │
-│  └──────────────┘           └──────────────────┘            │
-└─────────────────────────────────────────────────────────────┘
+AI Agent → MCP (stdio) → iknowaguy CLI Proxy → REST → iknowaguy Platform (Vercel)
 ```
 
-The MCP server and API server run **locally on the user's laptop**. Supabase is the cloud dependency.
+The CLI runs locally. The platform is hosted. No Supabase or Stripe on your machine.
 
----
+## Connect via MCP
 
-## Connecting via MCP
-
-### Option A — stdio (Recommended)
+Add to your agent's MCP config:
 
 ```json
-// claude_desktop_config.json (or your agent's MCP config)
 {
   "mcpServers": {
     "iknowaguy": {
-      "command": "npx",
-      "args": ["-y", "@iknowaguy/mcp-server", "--stdio"],
-      "env": {
-        "IKNOWAGUY_API_KEY": "ikg_live_your-key",
-        "SUPABASE_URL": "https://your-project.supabase.co",
-        "SUPABASE_SERVICE_ROLE_KEY": "your-service-role-key"
-      }
+      "command": "iknowaguy",
+      "args": ["start"]
     }
   }
 }
 ```
-
-### Option B — HTTP
-
-```bash
-# MCP server HTTP endpoint
-MCP_SERVER_URL=http://localhost:3001/mcp
-
-# Health check
-curl $MCP_SERVER_URL/health
-
-# Tools list
-curl -X POST $MCP_SERVER_URL/mcp \
-  -H "Authorization: Bearer $IKNOW...KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
-```
-
----
 
 ## Connector Quick-Start
 
 ### 1. Create a bounty
 
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1,
-  "method": "tools/call",
-  "params": {
-    "name": "create_bounty",
-    "arguments": {
-      "title": "Inspect roof damage after storm",
-      "description": "Take photos of the roof at 123 Main St, Austin TX. Check for missing shingles, water damage, or structural issues.",
-      "instructions": "1. Set ladder safely. 2. Walk roof perimeter. 3. Take 5 photos from each side. 4. Note any damage in detail.",
-      "category_id": "roof-inspection",
-      "location_address": "123 Main St, Austin, TX 78701",
-      "reward_amount": 75.00,
-      "currency": "USD",
-      "deadline": "2026-06-01T18:00:00Z"
-    }
-  }
-}
+```
+create_bounty: title="Inspect roof damage", description="Take photos...", reward_amount=75
 ```
 
-### 2. Wait for a human to accept
+### 2. Find a worker
 
-```json
-{
-  "method": "tools/call",
-  "params": {
-    "name": "get_bounty",
-    "arguments": { "id": "<bounty_id>" }
-  }
-}
+```
+list_humans: skills=["photography","inspection"]
+accept_bounty: id="<bounty_id>", human_id="<human_id>"
 ```
 
-### 3. Review the completed work
+### 3. Review and pay
 
-```json
-{
-  "method": "tools/call",
-  "params": {
-    "name": "review_bounty",
-    "arguments": {
-      "id": "<bounty_id>",
-      "decision": "approved",
-      "notes": "Photos clearly show the damage. Well documented."
-    }
-  }
-}
 ```
-
-### 4. Release payment
-
-```json
-{
-  "method": "tools/call",
-  "params": {
-    "name": "release_payment",
-    "arguments": { "bounty_id": "<bounty_id>" }
-  }
-}
+review_bounty: id="<bounty_id>", decision="approved"
+release_payment: bounty_id="<bounty_id>"
 ```
-
----
 
 ## Tool Reference
 
 ### Discovery
-
-| Tool | Description |
-|---|---|
-| `list_categories` | List all task categories |
-| `get_category` | Get a specific category by ID or slug |
-| `list_humans` | Search human workers by skills, location, and verification status |
-| `get_human` | Get a specific worker's full profile |
-
-### Assignment
-
-| Tool | Description |
-|---|---|
-| `request_human` | Create a task assigned to a specific human or auto-select by skills |
+- `list_categories` — List all task categories
+- `list_humans` — Search available workers
+- `get_human` — Get worker profile
 
 ### Bounty Lifecycle
-
-| Tool | Description |
-|---|---|
-| `create_bounty` | Post a new task to the worker pool |
-| `list_bounties` | Search bounties by status, category, or assignee |
-| `get_bounty` | Get full details of a single bounty |
-| `accept_bounty` | Worker accepts a bounty (assigns to them) |
-| `submit_bounty` | Worker submits completed work + evidence |
-| `review_bounty` | Agent approves or rejects submission |
-| `raise_dispute` | Open a dispute on a bounty |
+- `create_bounty` — Post a new task
+- `list_bounties` — List bounties with filters
+- `get_bounty` — Get single bounty details
+- `accept_bounty` — Assign bounty to worker
+- `submit_bounty` — Submit completed work + evidence
+- `review_bounty` — Approve or reject submission
+- `request_human` — Auto-assign by skills
 
 ### Communication
+- `send_message` — Send message in thread
+- `list_messages` — Get thread messages
 
-| Tool | Description |
-|---|---|
-| `send_message` | Send a message in a bounty thread |
-| `list_messages` | Get all messages in a bounty thread |
+### Disputes
+- `raise_dispute` — Open a dispute
 
 ### Payments
-
-| Tool | Description |
-|---|---|
-| `initiate_payment` | Create a Stripe PaymentIntent and escrow funds |
-| `get_payment_status` | Check payment and transaction status |
-| `release_payment` | Capture escrowed funds and pay the worker |
-| `refund_payment` | Refund escrowed funds back to payer |
-
----
-
-## Error Handling
-
-All MCP responses follow [JSON-RPC 2.0 error format](https://www.jsonrpc.org/specification#error_object):
-
-```json
-{
-  "jsonrpc": "2.0",
-  "id": 1,
-  "error": {
-    "code": -32602,
-    "message": "Invalid params: title: Required"
-  }
-}
-```
-
-### Error Codes
-
-| Code | Meaning |
-|---|---|
-| `-32600` | Invalid Request (malformed JSON-RPC) |
-| `-32601` | Method not found / Tool not found |
-| `-32602` | Invalid params (validation failure) |
-| `-32603` | Internal error |
-| `401` | Unauthorized (invalid/missing API key) |
-| `429` | Rate limit exceeded |
-
----
-
-## Multi-Tenancy
-
-Every tenant has isolated data via Supabase Row-Level Security (RLS). The MCP server injects `tenant_id` from the authenticated API key into every query.
-
-When making tool calls, the tenant is automatically resolved from the Bearer token. You do **not** need to pass `tenant_id` in tool arguments.
-
----
+- `initiate_payment` — Escrow funds
+- `get_payment_status` — Check payment status
+- `release_payment` — Pay worker
+- `refund_payment` — Refund payer
+- `create_connect_account` — Stripe Connect setup
+- `get_account_link` — Onboarding link
+- `transfer_to_worker` — Direct transfer
 
 ## Example Integrations
 
-### Claude Desktop
+### Claude Desktop / Cursor / OpenClaw
 
 ```json
 {
   "mcpServers": {
     "iknowaguy": {
-      "command": "npx",
-      "args": ["-y", "@iknowaguy/mcp-server"],
-      "env": {
-        "IKNOWAGUY_API_KEY": "ikg_live_your-key",
-        "SUPABASE_URL": "https://your-project.supabase.co",
-        "SUPABASE_SERVICE_ROLE_KEY": "your-service-role-key"
-      }
+      "command": "iknowaguy",
+      "args": ["start"]
     }
   }
 }
 ```
 
-### Hermes Agent
+## Error Handling
 
-```json
-{
-  "mcpServers": {
-    "iknowaguy": {
-      "command": "npx",
-      "args": ["@iknowaguy/mcp-server", "--stdio"],
-      "env": {
-        "IKNOWAGUY_API_KEY": "ikg_live_your-key",
-        "SUPABASE_URL": "https://your-project.supabase.co",
-        "SUPABASE_SERVICE_ROLE_KEY": "your-service-role-key"
-      }
-    }
-  }
-}
-```
+All errors returned as MCP JSON-RPC error objects with standard codes.
 
-### Direct MCP / curl
+## Multi-Tenancy
 
-```bash
-curl -X POST http://localhost:3001/mcp \
-  -H "Authorization: Bearer $IKNOW...KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"create_bounty","arguments":{...}}}'
-```
-
----
-
-## Rate Limits
-
-Default rate limits:
-- 100 requests per minute per tenant
-- 1000 requests per hour per tenant
+Data is tenant-isolated via Supabase RLS. The platform resolves your tenant from the API key stored in `~/.iknowaguy/config.json`.

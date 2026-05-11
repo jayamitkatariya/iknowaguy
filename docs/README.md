@@ -1,62 +1,46 @@
 # iknowaguy
 
-> Open-source MCP-first platform for AI agents to bring humans into the loop.
-
-## What Is It?
-
-iknowaguy is a **local-first developer tool** that gives AI agents access to human workers for tasks requiring physical presence, judgment, or specialized skills. The MCP server runs on your laptop.
+> MCP-first platform for AI agents to bring humans into the loop.
 
 ## Architecture
 
 ```
-AI Agent (Hermes / Claude / OpenClaw)
-    │
-    │ MCP protocol (local, stdio or HTTP)
-    ▼
-MCP Server (runs on your laptop, port 3000)
-    │
-    │ Direct Supabase connection (service role)
-    ▼
-Supabase (PostgreSQL + Auth + Storage + Realtime)  ← cloud
+Your Laptop                        Cloud (Vercel)
+┌──────────────────┐              ┌──────────────────────────┐
+│  AI Agent         │              │  iknowaguy Platform       │
+│  (Claude/Cursor)  │              │                           │
+│       │           │  REST API   │  └─ REST API backend      │
+│       ▼  MCP      │◄────────────│── └─ Stripe payments      │
+│  iknowaguy CLI    │              │  └─ Supabase database     │
+│  (MCP proxy)      │              │                           │
+└──────────────────┘              └──────────────────────────┘
 ```
 
-All data is tenant-isolated via Supabase Row-Level Security.
+The CLI is a thin MCP proxy that talks to the hosted platform. No Supabase or Stripe running locally.
 
 ## Quick Start
 
-### Install
-
 ```bash
-curl -sL https://raw.githubusercontent.com/jayamitkatariya/iknowaguy/main/scripts/install.sh | bash
+curl -fsSL https://iknowaguy.com/install.sh | bash
 ```
-
-Or via npm:
+or
 ```bash
 npm install -g @iknowaguy/cli
 ```
 
-### Initialize and start
-
 ```bash
-iknowaguy init      # Register tenant + create config at ~/.iknowaguy/config.json
-iknowaguy start     # Start API (port 3001) + MCP server (port 3000)
+iknowaguy init --email you@example.com --password "YourPassword123"
+iknowaguy start
 ```
 
-### Connect your agent
-
-Add to your agent's MCP config:
+## Connect Your Agent
 
 ```json
 {
   "mcpServers": {
     "iknowaguy": {
-      "command": "npx",
-      "args": ["-y", "@iknowaguy/mcp-server"],
-      "env": {
-        "IKNOWAGUY_API_KEY": "your-api-key",
-        "SUPABASE_URL": "https://your-project.supabase.co",
-        "SUPABASE_SERVICE_ROLE_KEY": "your-service-role-key"
-      }
+      "command": "iknowaguy",
+      "args": ["start"]
     }
   }
 }
@@ -64,13 +48,7 @@ Add to your agent's MCP config:
 
 ## MCP Tools
 
-17 tools covering the full bounty lifecycle:
-
-- **Discovery:** `list_categories`, `get_category`, `list_humans`, `get_human`
-- **Bounty:** `create_bounty`, `list_bounties`, `get_bounty`, `accept_bounty`, `submit_bounty`, `review_bounty`
-- **Communication:** `send_message`, `list_messages`
-- **Resolution:** `raise_dispute`
-- **Payment:** `initiate_payment`, `get_payment_status`, `release_payment`, `refund_payment`
+21 tools covering the full bounty lifecycle — discovery, bounties, communication, disputes, and payments.
 
 ## Development
 
@@ -79,6 +57,7 @@ git clone https://github.com/jayamitkatariya/iknowaguy.git
 cd iknowaguy
 pnpm install
 pnpm build
+cd packages/platform && pnpm dev   # http://localhost:3000
 ```
 
 ## License

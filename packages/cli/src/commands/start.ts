@@ -1,102 +1,69 @@
-/**
- * start command - Start API and MCP servers
- */
-import * as chalkNS from 'chalk'; const chalk = chalkNS.default;
-import { spawn } from 'child_process';
-import { join } from 'path';
-import { readConfig, writePid, RUN_DIR } from '../lib/config.js';
-import { mkdirSync, existsSync } from 'fs';
+import * as chalkNS from "chalk"; const chalk = chalkNS.default;
+import { spawn } from "child_process";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+import { readConfig, writePid, readPid, removePid, RUN_DIR } from "../lib/config.js";
+import { mkdirSync, existsSync } from "fs";
 
-const C = chalk.green;
+const G = chalk.green;
 const W = chalk.white.bold;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export class Start {
-  name = 'start';
-  description = 'Start API server and MCP server';
+  name = "start";
+  description = "Start the MCP proxy for AI agents to connect";
 
   async run(args: string[]): Promise<void> {
-    console.log(W('\n🚀 Starting iknowaguy\n'));
-
     const config = readConfig();
     if (!config) {
       console.error(chalk.red('Error: iknowaguy not initialized. Run "iknowaguy init" first.\n'));
       process.exit(1);
     }
 
-    // Determine ports
-    let apiPort = config.api_port || 3001;
-    let mcpPort = config.mcp_port || 3000;
+    const mcpEntry = join(__dirname, "..", "lib", "mcp-proxy.js");
+    if (!existsSync(mcpEntry)) {
+      console.error(chalk.red(`Error: MCP proxy entry not found at ${mcpEntry}`));
+      console.error('Please run "pnpm build" to build the CLI.\n');
+      process.exit(1);
+    }
 
-    for (let i = 0; i < args.length; i++) {
-      if (args[i] === '--api-port' && args[i + 1]) {
-        apiPort = parseInt(args[i + 1], 10);
-        i++;
-      } else if (args[i] === '--mcp-port' && args[i + 1]) {
-        mcpPort = parseInt(args[i + 1], 10);
-        i++;
+    const detach = args.includes("--detach");
+
+    if (detach) {
+      const existingPid = readPid("mcp");
+      if (existingPid) {
+        try { process.kill(existingPid, 0); } catch {
+          removePid("mcp");
+        }
+        if (readPid("mcp")) {
+          console.error(chalk.red("MCP proxy is already running. Use 'iknowaguy stop' first."));
+          process.exit(1);
+        }
       }
+
+      console.log(W("\n🚀 Starting iknowaguy MCP proxy (background)\n"));
+      mkdirSync(RUN_DIR, { recursive: true });
+
+      const proc = spawn(process.execPath, [mcpEntry], {
+        detached: true,
+        stdio: "ignore",
+      });
+
+      proc.on("error", (err) => {
+        console.error(chalk.red(`Failed to start MCP proxy: ${err.message}`));
+        process.exit(1);
+      });
+
+      proc.unref();
+      writePid("mcp", proc.pid!);
+      console.log(G(`   MCP proxy started (PID: ${proc.pid})`));
+      console.log(W("\n✅ MCP proxy running in background\n"));
+      console.log("Add this to your AI agent MCP config:\n");
+      console.log(chalk.cyan(`  {"command":"iknowaguy","args":["start"]}\n`));
+    } else {
+      const { runMcpProxy } = await import("../lib/mcp-proxy.js");
+      await runMcpProxy();
     }
-
-    // Create run directory
-    mkdirSync(RUN_DIR, { recursive: true });
-
-    // Get the packages directory
-    const packagesDir = join(process.cwd(), 'packages');
-    const apiDist = join(packagesDir, 'api', 'dist', 'index.js');
-    const mcpDist = join(packagesDir, 'mcp-server', 'dist', 'index.js');
-
-    // Check if dist exists
-    if (!existsSync(apiDist)) {
-      console.error(chalk.red(`Error: API dist not found at ${apiDist}`));
-      console.error('Please run "pnpm build" first.\n');
-      process.exit(1);
-    }
-
-    if (!existsSync(mcpDist)) {
-      console.error(chalk.red(`Error: MCP server dist not found at ${mcpDist}`));
-      console.error('Please run "pnpm build" first.\n');
-      process.exit(1);
-    }
-
-    // Start API server
-    console.log(C('Starting API server on port ' + apiPort + '...'));
-    const apiEnv = {
-      ...process.env,
-      SUPABASE_URL: config.supabase_url,
-      SUPABASE_SERVICE_ROLE_KEY: config.supabase_service_role_key,
-      API_PORT: apiPort.toString(),
-      PORT: apiPort.toString(),
-    };
-
-    const apiProcess = spawn('node', [apiDist], {
-      env: apiEnv,
-      detached: true,
-      stdio: 'ignore',
-    });
-
-    apiProcess.unref();
-    writePid('api', apiProcess.pid!);
-    console.log(C(`   API server started (PID: ${apiProcess.pid})`));
-
-    // Start MCP server (stdio mode for AI agents)
-    console.log(C('Starting MCP server on port ' + mcpPort + '...'));
-    const mcpEnv = {
-      ...process.env,
-      SUPABASE_URL: config.supabase_url,
-      SUPABASE_SERVICE_ROLE_KEY: config.supabase_service_role_key,
-      PORT: mcpPort.toString(),
-    };
-
-    const mcpProcess = spawn('node', [mcpDist, '--stdio'], {
-      env: mcpEnv,
-      detached: true,
-      stdio: 'ignore',
-    });
-
-    mcpProcess.unref();
-    writePid('mcp', mcpProcess.pid!);
-    console.log(C(`   MCP server started (PID: ${mcpProcess.pid})`));
-
-    console.log(W('\n✅ iknowaguy is running on ports ' + mcpPort + ' (MCP) and ' + apiPort + ' (API)\n'));
   }
 }

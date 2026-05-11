@@ -1,14 +1,9 @@
 # Getting Started
 
-## Prerequisites
-
-- Node.js 20+
-- pnpm 10+
-
-## Step 1: Install iknowaguy
+## 1. Install
 
 ```bash
-curl -sL https://raw.githubusercontent.com/jayamitkatariya/iknowaguy/main/scripts/install.sh | bash
+curl -fsSL https://iknowaguy.com/install.sh | bash
 ```
 
 Or via npm:
@@ -16,45 +11,36 @@ Or via npm:
 npm install -g @iknowaguy/cli
 ```
 
-## Step 2: Initialize
+## 2. Initialize
 
 ```bash
-iknowaguy init
+iknowaguy init --email you@example.com --password "YourPassword123"
 ```
 
-This registers your tenant with Supabase and saves config to `~/.iknowaguy/config.json`.
+Registers with the iknowaguy platform and saves config to `~/.iknowaguy/config.json`.
 
-## Step 3: Start
+## 3. Start MCP Proxy
 
 ```bash
 iknowaguy start
 ```
 
-This starts:
-- **API server** on port 3001 (local REST API)
-- **MCP server** on port 3000 (for AI agents to connect)
+Starts the MCP proxy in stdio mode. Your AI agent can now connect.
 
-## Step 4: Connect Your AI Agent
-
-Add iknowaguy to your agent's MCP config:
+## 4. Connect Your AI Agent
 
 ```json
 {
   "mcpServers": {
     "iknowaguy": {
-      "command": "npx",
-      "args": ["-y", "@iknowaguy/mcp-server"],
-      "env": {
-        "IKNOWAGUY_API_KEY": "your-api-key",
-        "SUPABASE_URL": "https://your-project.supabase.co",
-        "SUPABASE_SERVICE_ROLE_KEY": "your-service-role-key"
-      }
+      "command": "iknowaguy",
+      "args": ["start"]
     }
   }
 }
 ```
 
-## Step 5: Verify Status
+## 5. Verify
 
 ```bash
 iknowaguy status
@@ -64,21 +50,24 @@ iknowaguy status
 
 | Command | Description |
 |---------|-------------|
-| `iknowaguy init` | Register tenant + create config |
-| `iknowaguy start` | Start API (3001) and MCP (3000) servers |
-| `iknowaguy stop` | Stop background servers |
+| `iknowaguy init` | Register with the platform |
+| `iknowaguy start` | Start MCP proxy |
+| `iknowaguy stop` | Stop MCP proxy |
 | `iknowaguy status` | Check if running |
-| `iknowaguy update` | Update to latest version |
+| `iknowaguy version` | Show version |
 
-## Config Location
+## Config
 
-Config is stored at `~/.iknowaguy/config.json`. The MCP server and API read from this file.
-
-## MCP Server URL
-
-- **HTTP:** `http://localhost:3001/mcp`
-- **Stdio:** `npx -y @iknowaguy/mcp-server --stdio`
+`~/.iknowaguy/config.json` (chmod 600):
+```json
+{
+  "version": "0.1.0",
+  "tenant_id": "uuid",
+  "api_key": "ikg_live_...",
+  "platform_url": "https://iknowaguy.com"
+}
+```
 
 ## Need Help?
 
-Open a [GitHub Issue](https://github.com/jayamitkatariya/iknowaguy/issues).
+[GitHub Issues](https://github.com/jayamitkatariya/iknowaguy/issues)

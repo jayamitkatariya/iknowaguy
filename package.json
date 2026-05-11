@@ -2,40 +2,26 @@
   "name": "iknowaguy",
   "version": "0.1.0",
   "private": true,
-  "description": "Open-source framework for AI agents to bring humans into the loop",
-  "packages": [
-    "packages/*"
-  ],
+  "description": "Open-source platform for AI agents to hire human workers",
   "scripts": {
-    "build:all": "turbo run build",
+    "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "clean": "turbo clean && rm -rf node_modules .turbo",
-    "setup": "pnpm install && pnpm build",
-    "db:migrate": "psql $DATABASE_URL -f supabase/migrations/001_complete.sql",
-    "db:seed": "psql $DATABASE_URL -f supabase/seed.sql",
-    "test": "turbo test"
+    "typecheck": "turbo run typecheck",
+    "clean": "rm -rf node_modules packages/*/node_modules packages/*/.next packages/*/dist .turbo",
+    "test": "turbo run test",
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "turbo": "^2.3.0",
-    "typescript": "5.4.5",
-    "vitest": "^3.1.1"
+    "typescript": "^5.4.5",
+    "prettier": "^3.3.0"
   },
-  "keywords": [
-    "human-in-the-loop",
-    "ai-agents",
-    "mcp",
-    "marketplace",
-    "task-queue",
-    "physical-world"
-  ],
+  "keywords": ["human-in-the-loop", "ai-agents", "mcp", "marketplace"],
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/jayamitkatariya/iknowaguy"
   },
-  "packageManager": "pnpm@10.21.0",
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0"
-  }
+  "packageManager": "pnpm@10.21.0"
 }

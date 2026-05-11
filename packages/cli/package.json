@@ -1,7 +1,7 @@
 {
   "name": "@iknowaguy/cli",
   "version": "0.1.0",
-  "description": "iknowaguy CLI - Local-first CLI tool for AI agents to bring humans into the loop",
+  "description": "iknowaguy CLI - Local MCP proxy for AI agents to hire humans",
   "type": "module",
   "bin": {
     "iknowaguy": "./bin/iknowaguy.js"
@@ -13,18 +13,15 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc && node bin/iknowaguy.js",
-    "prepublishOnly": "npm run build"
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.45.0",
-    "axios": "^1.7.2",
+    "@modelcontextprotocol/sdk": "^1.0.0",
     "chalk": "^4.1.2",
-    "dotenv": "^16.4.5",
-    "fs-extra": "^11.2.0",
-    "nanoid": "^5.0.7"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.14.0",
     "typescript": "^5.4.5"
   },

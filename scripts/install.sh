@@ -1,7 +1,6 @@
 #!/bin/bash
 # iknowaguy CLI Installer
-# Usage: curl -sL https://website-ochre-sigma-97.vercel.app/install.sh | bash
-# Or:    npm install -g @iknowaguy/cli
+# Usage: curl -fsSL https://iknowaguy.com/install.sh | bash
 
 set -e
 
@@ -45,8 +44,8 @@ if [ -f "$BIN_SOURCE" ]; then
     
     echo ""
     echo "Next steps:"
-    echo "  1. iknowaguy init     # Register your tenant"
-    echo "  2. iknowaguy start    # Start API + MCP server"
+    echo "  1. iknowaguy init      # Register with platform"
+    echo "  2. iknowaguy start     # Start MCP proxy"
     echo "  3. iknowaguy status   # Verify it's running"
 else
     echo "❌ Installation failed — tarball may be corrupt or missing files"

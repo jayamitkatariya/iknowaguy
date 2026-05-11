@@ -1,10 +1,9 @@
 # MCP Tool Reference
 
-All tools are exposed via the **iknowaguy MCP Server** over JSON-RPC 2.0. Authentication is via `Authorization: Bearer ***` header.
+All tools are exposed via the **iknowaguy MCP Proxy** over MCP stdio. Connect by running `iknowaguy start`.
 
-**Base URL:** `http://localhost:3001/mcp`  
 **Protocol:** MCP 2024-11-05  
-**Namespace:** `iknowaguy`
+**Connection:** stdio (via `iknowaguy start`)
 
 ---
 
@@ -952,10 +951,4 @@ JSON-RPC level errors (method not found, invalid params, etc.) are returned as s
 
 ## Authentication
 
-Every `/mcp` request must include:
-
-```
-Authorization: Bearer ***
-```
-
-The API key is validated against the `tenants` table. Invalid or missing keys return HTTP 401.
+The MCP proxy authenticates via the API key stored in `~/.iknowaguy/config.json`. No manual auth required — just run `iknowaguy init` once.

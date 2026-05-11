@@ -32,7 +32,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- Functions
 -- ============================================================
 
-CREATE OR REPLACE FUNCTION generate_api_key(prefix TEXT DEFAULT 'hak_live')
+CREATE OR REPLACE FUNCTION generate_api_key(prefix TEXT DEFAULT 'ikg_live')
 RETURNS TEXT LANGUAGE plpgsql AS $$
 BEGIN
   RETURN prefix || '_' || encode(gen_random_bytes(24), 'hex');

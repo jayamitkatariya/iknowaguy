@@ -1,96 +1,11 @@
-version: '3.8'
-
 services:
-  # ── Redis (for rate limiting & caching) ───────────────────────────────────
-  redis:
-    image: redis:7-alpine
-    container_name: iknowaguy-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-
-  # ── MCP Server (HTTP mode on :3001, stdio mode via CLI) ──────────────────
-  mcp-server:
+  platform:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: iknowaguy-mcp
-    env_file:
-      - .env
-    environment:
-      PORT: 3001
-      REDIS_URL: redis://redis:6379
-    ports:
-      - "3001:3001"
-    depends_on:
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/health', (r) => r.statusCode === 200 ? process.exit(0) : process.exit(1))"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-
-  # ── REST API (Hono on :3000) ──────────────────────────────────────────────
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile.api
-    container_name: iknowaguy-api
-    env_file:
-      - .env
-    environment:
-      API_PORT: 3000
-      PORT: 3000
     ports:
       - "3000:3000"
-    depends_on:
-      - mcp-server
-
-  # ── Worker App (Next.js on :3002) ───────────────────────────────────────
-  worker-app:
-    build:
-      context: .
-      dockerfile: Dockerfile.nextjs
-      target: runner
-    container_name: iknowaguy-worker
     env_file:
-      - .env
+      - .env.local
     environment:
-      PORT: 3000
-      NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_URL}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
-      NEXT_PUBLIC_API_URL: http://api:3000
-    ports:
-      - "3002:3000"
-    depends_on:
-      - api
-
-  # ── Agent Portal (Next.js on :3003) ──────────────────────────────────────
-  agent-portal:
-    build:
-      context: .
-      dockerfile: Dockerfile.nextjs
-      target: runner
-    container_name: iknowaguy-agent-portal
-    env_file:
-      - .env
-    environment:
-      PORT: 3000
-      NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_URL}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
-      NEXT_PUBLIC_API_URL: http://api:3000
-    ports:
-      - "3003:3000"
-    depends_on:
-      - api
-
-volumes:
-  redis_data:
+      - NODE_ENV=production
