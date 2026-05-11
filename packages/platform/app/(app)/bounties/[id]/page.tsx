@@ -72,14 +72,14 @@ export default function BountyDetailPage() {
     return (
       <div style={{ padding: "2rem", maxWidth: "800px", margin: "0 auto", textAlign: "center" }}>
         <p style={{ color: "var(--oc-red)" }}>{error || "Bounty not found"}</p>
-        <Link href="/dashboard/bounties" style={{ color: "var(--oc-accent)", marginTop: "1rem", display: "inline-block" }}>← Back to Bounties</Link>
+        <Link href="/bounties" style={{ color: "var(--oc-accent)", marginTop: "1rem", display: "inline-block" }}>← Back to Bounties</Link>
       </div>
     );
   }
 
   return (
     <div style={{ padding: "2rem", maxWidth: "900px", margin: "0 auto" }}>
-      <Link href="/dashboard/bounties" style={{ color: "var(--oc-text-muted)", fontSize: "0.875rem", display: "inline-flex", alignItems: "center", gap: "0.25rem", marginBottom: "1.5rem", textDecoration: "none" }}>
+      <Link href="/bounties" style={{ color: "var(--oc-text-muted)", fontSize: "0.875rem", display: "inline-flex", alignItems: "center", gap: "0.25rem", marginBottom: "1.5rem", textDecoration: "none" }}>
         ← Back to Bounties
       </Link>
 

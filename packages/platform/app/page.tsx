@@ -4,19 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 
 export default function LandingPage() {
-  const [activeTab, setActiveTab] = useState<"curl" | "npm">("curl");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
-  const [email, setEmail] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const installCommands = {
-    curl: "curl -fsSL https://raw.githubusercontent.com/jaykatariya/iknowaguy/main/scripts/install.sh | bash",
-    npm: "npm install -g iknowaguy",
-  };
+  const installCommand = "curl -fsSL https://raw.githubusercontent.com/jaykatariya/iknowaguy/main/scripts/install.sh | bash";
 
-  const handleCopy = (text: string) => {
-    navigator.clipboard.writeText(text);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(installCommand);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -147,23 +141,17 @@ export default function LandingPage() {
             </p>
 
             <div className="install-box">
-              <div className="install-tabs">
-                {(["curl", "npm"] as const).map((tab) => (
-                  <button key={tab} onClick={() => setActiveTab(tab)} className={`install-tab ${activeTab === tab ? "active" : ""}`}>
-                    {tab}
-                  </button>
-                ))}
-              </div>
+              <div className="install-label">Install via GitHub</div>
               <div className="install-code">
-                <code>{installCommands[activeTab]}</code>
-                <button className="oc-copy-btn" onClick={() => handleCopy(installCommands[activeTab])}>
+                <code>{installCommand}</code>
+                <button className="oc-copy-btn" onClick={handleCopy}>
                   {copied ? "Copied!" : "Copy"}
                 </button>
               </div>
             </div>
 
             <div className="hero-ctas">
-              <Link href="/signup" className="oc-btn oc-btn-primary hero-cta">Start as Worker</Link>
+              <Link href="/signup" className="oc-btn oc-btn-primary hero-cta">Get Started</Link>
               <a href="https://github.com/jaykatariya/iknowaguy#readme" target="_blank" rel="noopener noreferrer" className="oc-btn oc-btn-ghost hero-cta">Read Docs</a>
             </div>
 
@@ -282,7 +270,7 @@ export default function LandingPage() {
               <div className="footer-col">
                 <h4>Resources</h4>
                 <a href="https://github.com/jaykatariya/iknowaguy#readme" target="_blank" rel="noopener noreferrer" className="footer-link">Documentation</a>
-                <Link href="/dashboard/api-keys" className="footer-link">API Keys</Link>
+                <Link href="/api-keys" className="footer-link">API Keys</Link>
                 <a href="https://github.com/jaykatariya/iknowaguy/issues" target="_blank" rel="noopener noreferrer" className="footer-link">Issues</a>
               </div>
 

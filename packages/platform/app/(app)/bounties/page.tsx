@@ -55,7 +55,7 @@ export default function BountiesPage() {
           <h1 style={{ fontSize: "1.875rem", fontWeight: "bold", marginBottom: "0.5rem" }}>Bounties</h1>
           <p style={{ color: "var(--oc-text-muted)" }}>Manage your posted bounties for human workers</p>
         </div>
-        <Link href="/dashboard/bounties/new" className="oc-btn oc-btn-primary">
+        <Link href="/bounties/new" className="oc-btn oc-btn-primary">
           + Create New Bounty
         </Link>
       </header>
@@ -84,7 +84,7 @@ export default function BountiesPage() {
           <div key={bounty.id} className="oc-card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
             <div style={{ flex: 1, minWidth: "200px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem" }}>
-                <Link href={`/dashboard/bounties/${bounty.id}`} style={{ fontSize: "1.125rem", fontWeight: 600, textDecoration: "none" }}>
+                <Link href={`/bounties/${bounty.id}`} style={{ fontSize: "1.125rem", fontWeight: 600, textDecoration: "none" }}>
                   {bounty.title}
                 </Link>
                 <span className={`oc-badge ${bounty.status === "open" || bounty.status === "in_progress" ? "oc-badge-green" : bounty.status === "completed" ? "oc-badge-green" : "oc-badge-amber"}`} style={{ textTransform: "capitalize" }}>
@@ -113,7 +113,7 @@ export default function BountiesPage() {
       {filteredBounties.length === 0 && (
         <div style={{ textAlign: "center", padding: "4rem 2rem", color: "var(--oc-text-muted)" }}>
           <p>No bounties found with this filter.</p>
-          <Link href="/dashboard/bounties/new" className="oc-btn oc-btn-primary" style={{ marginTop: "1rem", display: "inline-flex" }}>
+          <Link href="/bounties/new" className="oc-btn oc-btn-primary" style={{ marginTop: "1rem", display: "inline-flex" }}>
             Create your first bounty
           </Link>
         </div>

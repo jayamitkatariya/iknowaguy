@@ -94,13 +94,13 @@ export default function DashboardPage() {
       </div>
 
       <div style={{ display: "flex", gap: "1rem", marginBottom: "2rem", flexWrap: "wrap" }}>
-        <Link href="/dashboard/bounties/new" className="oc-btn oc-btn-primary">
+        <Link href="/bounties/new" className="oc-btn oc-btn-primary">
           + Create New Bounty
         </Link>
-        <Link href="/dashboard/bounties" className="oc-btn oc-btn-ghost">
+        <Link href="/bounties" className="oc-btn oc-btn-ghost">
           View All Bounties
         </Link>
-        <Link href="/dashboard/api-keys" className="oc-btn oc-btn-ghost">
+        <Link href="/api-keys" className="oc-btn oc-btn-ghost">
           Manage API Keys
         </Link>
         <Link href="/browse" className="oc-btn oc-btn-ghost">
@@ -111,7 +111,7 @@ export default function DashboardPage() {
       <section>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
           <h2 style={{ fontSize: "1.25rem", fontWeight: "600" }}>Recent Bounties</h2>
-          <Link href="/dashboard/bounties" style={{ color: "var(--oc-accent)", fontSize: "0.875rem" }}>
+          <Link href="/bounties" style={{ color: "var(--oc-accent)", fontSize: "0.875rem" }}>
             View all →
           </Link>
         </div>
@@ -119,7 +119,7 @@ export default function DashboardPage() {
         <div className="oc-card" style={{ padding: 0, overflow: "hidden" }}>
           {recentBounties.length === 0 ? (
             <div style={{ padding: "2rem", textAlign: "center", color: "var(--oc-text-muted)" }}>
-              No bounties yet. <Link href="/dashboard/bounties/new" style={{ color: "var(--oc-accent)" }}>Create one</Link>
+              No bounties yet. <Link href="/bounties/new" style={{ color: "var(--oc-accent)" }}>Create one</Link>
             </div>
           ) : (
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -135,7 +135,7 @@ export default function DashboardPage() {
                 {recentBounties.map((bounty) => (
                   <tr key={bounty.id} style={{ borderBottom: "1px solid var(--oc-border)" }}>
                     <td style={{ padding: "1rem" }}>
-                      <Link href={`/dashboard/bounties/${bounty.id}`} style={{ color: "var(--oc-text)", fontWeight: 500, textDecoration: "none" }}>
+                      <Link href={`/bounties/${bounty.id}`} style={{ color: "var(--oc-text)", fontWeight: 500, textDecoration: "none" }}>
                         {bounty.title}
                       </Link>
                     </td>

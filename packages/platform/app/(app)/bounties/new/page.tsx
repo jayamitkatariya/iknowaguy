@@ -50,7 +50,7 @@ export default function NewBountyPage() {
           deadline: formData.deadline || undefined,
         }),
       });
-      router.push("/dashboard/bounties");
+      router.push("/bounties");
     } catch (err: any) {
       setError(err.message || "Failed to create bounty");
       setIsSubmitting(false);
@@ -64,7 +64,7 @@ export default function NewBountyPage() {
   return (
     <div style={{ padding: "2rem", maxWidth: "800px", margin: "0 auto" }}>
       <header style={{ marginBottom: "2rem" }}>
-        <Link href="/dashboard/bounties" style={{ color: "var(--oc-text-muted)", fontSize: "0.875rem", display: "inline-flex", alignItems: "center", gap: "0.25rem", marginBottom: "1rem", textDecoration: "none" }}>
+        <Link href="/bounties" style={{ color: "var(--oc-text-muted)", fontSize: "0.875rem", display: "inline-flex", alignItems: "center", gap: "0.25rem", marginBottom: "1rem", textDecoration: "none" }}>
           ← Back to Bounties
         </Link>
         <h1 style={{ fontSize: "1.875rem", fontWeight: "bold", marginBottom: "0.5rem" }}>Create New Bounty</h1>
@@ -136,7 +136,7 @@ export default function NewBountyPage() {
         )}
 
         <div style={{ display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
-          <Link href="/dashboard/bounties" className="oc-btn oc-btn-ghost">Cancel</Link>
+          <Link href="/bounties" className="oc-btn oc-btn-ghost">Cancel</Link>
           <button type="submit" className="oc-btn oc-btn-primary" disabled={isSubmitting}>
             {isSubmitting ? "Creating..." : "Create Bounty"}
           </button>

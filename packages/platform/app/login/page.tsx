@@ -44,8 +44,7 @@ function LoginForm() {
         if (redirectParam && redirectParam.startsWith("/")) {
           router.push(redirectParam);
         } else {
-          const role = data.data.user?.role || 'agent';
-          router.push(role === 'human' ? '/browse' : '/dashboard');
+          router.push('/dashboard');
         }
         return;
       }

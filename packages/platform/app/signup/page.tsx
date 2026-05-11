@@ -6,12 +6,9 @@ import Link from "next/link";
 
 export default function SignupPage() {
   const router = useRouter();
-  const [role, setRole] = useState<"worker" | "agent">("worker");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [orgName, setOrgName] = useState("");
-  const [orgSlug, setOrgSlug] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -20,19 +17,18 @@ export default function SignupPage() {
     setLoading(true);
     setError("");
 
-    const orgSlugFinal = orgSlug || name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
-    const orgNameFinal = orgName || name;
+    const orgSlug = name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
 
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: orgNameFinal || name,
-          slug: orgSlugFinal,
+          name,
+          slug: orgSlug,
           email,
           password,
-          role: role === "agent" ? "admin" : "human",
+          role: "admin",
         }),
       });
 
@@ -45,13 +41,7 @@ export default function SignupPage() {
       if (data.data?.api_key) {
         localStorage.setItem('api_key', data.data.api_key);
         localStorage.setItem('auth_data', JSON.stringify(data.data));
-        
-        // Redirect based on role
-        if (role === "agent") {
-          router.push("/dashboard");
-        } else {
-          router.push("/browse");
-        }
+        router.push("/dashboard");
       } else {
         throw new Error('No API key received');
       }
@@ -114,40 +104,13 @@ export default function SignupPage() {
         justifyContent: "center",
         padding: "48px 24px",
       }}>
-        <div style={{ width: "100%", maxWidth: "460px" }}>
+        <div style={{ width: "100%", maxWidth: "420px" }}>
           <div style={{ textAlign: "center", marginBottom: "32px" }}>
             <h1 className="oc-page-title">Create your account</h1>
-            <p className="oc-page-subtitle">Join iknowaguy</p>
+            <p className="oc-page-subtitle">One account for everything</p>
           </div>
 
           <div className="oc-card" style={{ padding: "32px" }}>
-            <div style={{ display: "flex", marginBottom: "1.5rem", borderBottom: "1px solid var(--oc-border)" }}>
-              <button
-                onClick={() => setRole("worker")}
-                style={{
-                  flex: 1, padding: "0.75rem",
-                  background: "none", border: "none",
-                  borderBottom: role === "worker" ? "2px solid var(--oc-accent)" : "2px solid transparent",
-                  color: role === "worker" ? "var(--oc-accent)" : "var(--oc-text-muted)",
-                  cursor: "pointer", fontWeight: 600, fontSize: "0.875rem",
-                }}
-              >
-                I want to work
-              </button>
-              <button
-                onClick={() => setRole("agent")}
-                style={{
-                  flex: 1, padding: "0.75rem",
-                  background: "none", border: "none",
-                  borderBottom: role === "agent" ? "2px solid var(--oc-accent)" : "2px solid transparent",
-                  color: role === "agent" ? "var(--oc-accent)" : "var(--oc-text-muted)",
-                  cursor: "pointer", fontWeight: 600, fontSize: "0.875rem",
-                }}
-              >
-                I have an AI agent
-              </button>
-            </div>
-
             <form onSubmit={handleSignup}>
               <div style={{ marginBottom: "16px" }}>
                 <label style={{ display: "block", color: "var(--oc-text-muted)", fontSize: "12px", fontWeight: 700, marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
@@ -155,23 +118,6 @@ export default function SignupPage() {
                 </label>
                 <input type="text" className="oc-input" placeholder="Jane Smith" value={name} onChange={(e) => setName(e.target.value)} required />
               </div>
-
-              {role === "agent" && (
-                <>
-                  <div style={{ marginBottom: "16px" }}>
-                    <label style={{ display: "block", color: "var(--oc-text-muted)", fontSize: "12px", fontWeight: 700, marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                      Organization Name
-                    </label>
-                    <input type="text" className="oc-input" placeholder="Acme Corp" value={orgName} onChange={(e) => setOrgName(e.target.value)} />
-                  </div>
-                  <div style={{ marginBottom: "16px" }}>
-                    <label style={{ display: "block", color: "var(--oc-text-muted)", fontSize: "12px", fontWeight: 700, marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                      Organization Slug
-                    </label>
-                    <input type="text" className="oc-input" placeholder="acme" value={orgSlug} onChange={(e) => setOrgSlug(e.target.value)} pattern="[a-z0-9-]+" />
-                  </div>
-                </>
-              )}
 
               <div style={{ marginBottom: "16px" }}>
                 <label style={{ display: "block", color: "var(--oc-text-muted)", fontSize: "12px", fontWeight: 700, marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
@@ -192,7 +138,7 @@ export default function SignupPage() {
               )}
 
               <button type="submit" className="oc-btn oc-btn-primary" disabled={loading} style={{ width: "100%", padding: "14px 24px", opacity: loading ? 0.7 : 1 }}>
-                {loading ? "Creating account..." : role === "agent" ? "Create Agent Account" : "Create Worker Account"}
+                {loading ? "Creating account..." : "Create Account"}
               </button>
             </form>
 
