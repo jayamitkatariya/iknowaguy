@@ -9,9 +9,18 @@ export async function POST(req: Request) {
   const { bounty_id, reason, description, evidence_urls } = await req.json();
   if (!bounty_id || !reason) return Response.json({ error: "bounty_id and reason are required" }, { status: 400 });
 
+  const { data: user } = await getSupabaseAdmin()
+    .from("users")
+    .select("id")
+    .eq("tenant_id", auth.tenantId)
+    .limit(1)
+    .single();
+
+  const raised_by = user?.id || auth.tenantId;
+
   const { data: dispute, error: disputeError } = await getSupabaseAdmin()
     .from("disputes")
-    .insert({ bounty_id, raised_by: auth.tenantId, reason: sanitizeInput(reason, 200), description: description ? sanitizeInput(description) : null, evidence_urls: evidence_urls || [], status: "open" })
+    .insert({ bounty_id, raised_by, reason: sanitizeInput(reason, 200), description: description ? sanitizeInput(description) : null, evidence_urls: evidence_urls || [], status: "open" })
     .select()
     .single();
 

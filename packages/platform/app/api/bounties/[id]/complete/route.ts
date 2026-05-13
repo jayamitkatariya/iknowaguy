@@ -7,8 +7,17 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
   const { content, media_urls } = await req.json();
 
-  const { data: bounty } = await getSupabaseAdmin().from("bounties").select("assigned_human_id").eq("id", params.id).eq("tenant_id", auth.tenantId).single();
-  if (!bounty?.assigned_human_id) return Response.json({ error: "Bounty has no assigned human" }, { status: 400 });
+  const { data: bounty } = await getSupabaseAdmin()
+    .from("bounties")
+    .select("id, assigned_human_id, tenant_id, status")
+    .eq("id", params.id)
+    .single();
+
+  if (!bounty) return Response.json({ error: "Bounty not found" }, { status: 404 });
+  if (!bounty.assigned_human_id) return Response.json({ error: "Bounty has no assigned human" }, { status: 400 });
+  if (bounty.status !== "accepted" && bounty.status !== "in_progress") {
+    return Response.json({ error: "Bounty is not in progress" }, { status: 409 });
+  }
 
   const { data: submission, error: subError } = await getSupabaseAdmin()
     .from("task_submissions")
@@ -22,7 +31,6 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     .from("bounties")
     .update({ status: "submitted", updated_at: new Date().toISOString() })
     .eq("id", params.id)
-    .eq("tenant_id", auth.tenantId)
     .select()
     .single();
 

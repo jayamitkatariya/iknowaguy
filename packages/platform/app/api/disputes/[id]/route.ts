@@ -7,7 +7,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
   const { data, error } = await getSupabaseAdmin()
     .from("disputes")
-    .select("*, bounty:bounty_id(id, title, status)")
+    .select("*, bounty:bounties(id, title, status)")
     .eq("id", params.id)
     .single();
 

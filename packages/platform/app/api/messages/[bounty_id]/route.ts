@@ -7,7 +7,7 @@ export async function GET(req: Request, { params }: { params: { bounty_id: strin
 
   const { data, error } = await getSupabaseAdmin()
     .from("messages")
-    .select("*, sender:sender_id(id, email)")
+    .select("*")
     .eq("bounty_id", params.bounty_id)
     .order("created_at", { ascending: true });
 

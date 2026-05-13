@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     const pi = event.data.object as { id: string; metadata?: Record<string, string> };
 
     if (event.type === "payment_intent.succeeded") {
-      await getSupabaseAdmin().from("payment_transactions").update({ status: "succeeded" }).eq("stripe_payment_intent_id", pi.id);
+      await getSupabaseAdmin().from("payment_transactions").update({ status: "completed" }).eq("stripe_payment_intent_id", pi.id);
     } else if (event.type === "payment_intent.payment_failed") {
       await getSupabaseAdmin().from("payment_transactions").update({ status: "failed" }).eq("stripe_payment_intent_id", pi.id);
     }

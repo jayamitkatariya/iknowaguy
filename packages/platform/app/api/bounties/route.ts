@@ -29,6 +29,8 @@ export async function GET(req: Request) {
   if (scope === "all") {
     if (status) query = query.eq("status", status);
     else query = query.eq("status", "open");
+  } else if (assigned_human_id) {
+    if (status) query = query.eq("status", status);
   } else {
     query = query.eq("tenant_id", auth.tenantId);
     if (status) query = query.eq("status", status);
@@ -44,6 +46,8 @@ export async function GET(req: Request) {
   if (scope === "all") {
     if (status) countQuery = countQuery.eq("status", status);
     else countQuery = countQuery.eq("status", "open");
+  } else if (assigned_human_id) {
+    if (status) countQuery = countQuery.eq("status", status);
   } else {
     countQuery = countQuery.eq("tenant_id", auth.tenantId);
     if (status) countQuery = countQuery.eq("status", status);

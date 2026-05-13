@@ -15,32 +15,23 @@ export async function POST(req: Request) {
 
     if (userError || !user) return Response.json({ error: "Invalid credentials" }, { status: 401 });
     if (!user.is_active) return Response.json({ error: "Account is deactivated" }, { status: 403 });
+    if (!user.password_hash) return Response.json({ error: "Invalid credentials" }, { status: 401 });
     if (!await bcrypt.compare(password, user.password_hash)) return Response.json({ error: "Invalid credentials" }, { status: 401 });
 
-    const { data: tenantData } = await getSupabaseAdmin()
+    const apiKey = generateApiKey();
+    await getSupabaseAdmin()
       .from("tenants")
-      .select("api_key_hash")
-      .eq("id", user.tenant_id)
-      .single();
-
-    let apiKey: string;
-    if (tenantData?.api_key_hash) {
-      apiKey = "";
-    } else {
-      apiKey = generateApiKey();
-      await getSupabaseAdmin().from("tenants").update({ api_key_hash: hashApiKey(apiKey) }).eq("id", user.tenant_id);
-    }
+      .update({ api_key_hash: hashApiKey(apiKey) })
+      .eq("id", user.tenant_id);
 
     const res = Response.json({
       data: {
         tenant: user.tenants,
         user: { id: user.id, email: user.email, role: user.role },
-        api_key: apiKey || null,
+        api_key: apiKey,
       },
     });
-    if (apiKey) {
-      res.headers.set("Set-Cookie", `ikg_token=${encodeURIComponent(apiKey)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7 * 24 * 3600}`);
-    }
+    res.headers.set("Set-Cookie", `ikg_token=${encodeURIComponent(apiKey)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7 * 24 * 3600}`);
     return res;
   } catch {
     return Response.json({ error: "Internal server error" }, { status: 500 });

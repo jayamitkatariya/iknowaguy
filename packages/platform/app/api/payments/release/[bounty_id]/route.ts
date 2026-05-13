@@ -8,7 +8,7 @@ export async function POST(req: Request, { params }: { params: { bounty_id: stri
   const { data: txn } = await getSupabaseAdmin().from("payment_transactions").select("stripe_payment_intent_id").eq("bounty_id", params.bounty_id).eq("tenant_id", auth.tenantId).single();
 
   if (!txn?.stripe_payment_intent_id || !process.env.STRIPE_SECRET_KEY) {
-    return Response.json({ data: { status: "completed", stub: true } });
+    return Response.json({ data: { status: "released", stub: true } });
   }
 
   try {
@@ -16,9 +16,9 @@ export async function POST(req: Request, { params }: { params: { bounty_id: stri
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     await stripe.paymentIntents.capture(txn.stripe_payment_intent_id);
 
-    await getSupabaseAdmin().from("bounties").update({ payment_status: "completed" }).eq("id", params.bounty_id).eq("tenant_id", auth.tenantId);
+    await getSupabaseAdmin().from("bounties").update({ payment_status: "released" }).eq("id", params.bounty_id).eq("tenant_id", auth.tenantId);
 
-    return Response.json({ data: { status: "completed" } });
+    return Response.json({ data: { status: "released" } });
   } catch (err: any) {
     return Response.json({ error: err.message }, { status: 500 });
   }

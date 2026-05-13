@@ -16,7 +16,7 @@ export default function MyTasksPage() {
       const userId = getUserId();
       if (!userId) { setLoading(false); return; }
       try {
-        const res = await apiFetch(`/api/bounties?assigned_human_id=${userId}&limit=100`);
+        const res = await apiFetch(`/api/bounties?assigned_human_id=${userId}&scope=all&limit=100`);
         if (!cancelled) setTasks(res.data || []);
       } catch {}
       if (!cancelled) setLoading(false);

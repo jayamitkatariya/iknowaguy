@@ -11,15 +11,16 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   const auth = await verifyApiKey(req.headers.get("Authorization"));
   if (!auth) return Response.json({ error: "Invalid API key" }, { status: 401 });
 
-  const { data, error } = await getSupabaseAdmin()
+  const { data: bounty, error } = await getSupabaseAdmin()
     .from("bounties")
     .select("*, category:categories(name, slug, icon), submissions:task_submissions(id, status, created_at, content, media_urls)")
     .eq("id", params.id)
-    .eq("tenant_id", auth.tenantId)
     .single();
 
   if (error) return Response.json({ error: error.message }, { status: error.code === "PGRST116" ? 404 : 500 });
-  return Response.json({ data });
+  if (!bounty) return Response.json({ error: "Bounty not found" }, { status: 404 });
+
+  return Response.json({ data: bounty });
 }
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {

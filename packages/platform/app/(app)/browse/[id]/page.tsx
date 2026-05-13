@@ -109,7 +109,7 @@ export default function BountyDetailPage() {
         </div>
         <div className="oc-stat-card">
           <div className="oc-stat-label">Category</div>
-          <div className="oc-stat-value" style={{ fontSize: 14 }}>{bounty.categories?.name || "—"}</div>
+          <div className="oc-stat-value" style={{ fontSize: 14 }}>{bounty.category?.name || "—"}</div>
         </div>
         <div className="oc-stat-card">
           <div className="oc-stat-label">Deadline</div>

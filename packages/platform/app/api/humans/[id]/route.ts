@@ -7,7 +7,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
   const { data, error } = await getSupabaseAdmin()
     .from("human_profiles")
-    .select("id, full_name, avatar_url, location_city, location_country, bio, skills, languages, verification_status, rating, completed_tasks, hourly_rate, created_at, updated_at")
+    .select("id, full_name, avatar_url, location_city, location_country, bio, skills, languages, verification_status, rating, completed_tasks, hourly_rate, created_at, updated_at, stripe_account_id")
     .eq("id", params.id)
     .single();
 

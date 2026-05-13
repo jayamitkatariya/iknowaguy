@@ -95,7 +95,7 @@ export default function MyTaskDetailPage() {
               </span>
             </div>
           </div>
-          {bounty.status === "in_progress" || bounty.status === "accepted" && (
+          {(bounty.status === "in_progress" || bounty.status === "accepted") && (
             <Link href={`/my-tasks/${bountyId}/submit`} className="oc-btn oc-btn-primary">
               Submit Work
             </Link>
